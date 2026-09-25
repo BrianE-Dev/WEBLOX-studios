@@ -1,8 +1,7 @@
-const apiBase = import.meta.env.API_URL || ''
 const sessionKey = 'weblox-staff-session'
 
 export async function authRequest(path, options = {}) {
-  const response = await fetch(`${apiBase}/api/auth${path}`, {
+  const response = await fetch(`/api/auth${path}`, {
     ...options,
     credentials: 'include',
     headers: { 'content-type': 'application/json', ...options.headers },
@@ -13,7 +12,7 @@ export async function authRequest(path, options = {}) {
 }
 
 export async function staffRequest(path, options = {}) {
-  const response = await fetch(`${apiBase}${path}`, {
+  const response = await fetch(path, {
     ...options,
     credentials: 'include',
     headers: { 'content-type': 'application/json', ...options.headers },

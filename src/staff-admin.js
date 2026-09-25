@@ -1,11 +1,10 @@
 import { authRequest, clearStaffSession, saveStaffSession } from './lib/staffAuth.js'
 
 const $ = (id) => document.getElementById(id)
-const apiBase = import.meta.env.API_URL || ''
 document.documentElement.dataset.theme = localStorage.getItem('weblox-theme') || 'dark'
 
 async function adminRequest(path, options = {}) {
-  const response = await fetch(`${apiBase}${path}`, {
+  const response = await fetch(path, {
     ...options,
     credentials: 'include',
     headers: { 'content-type': 'application/json', ...options.headers },
