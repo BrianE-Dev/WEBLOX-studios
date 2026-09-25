@@ -1,1 +1,29 @@
-﻿<!doctype html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><meta name="theme-color" content="#0e0e11"/><title>Staff Portfolio | WEBLOX Studios</title><link rel="icon" href="/assets/weblox-app-icon.png"/><link rel="stylesheet" href="/src/styles.css"/><link rel="stylesheet" href="/src/portfolio.css"/></head><body><main id="portfolio" class="portfolio-public"><a class="eyebrow" href="/">WEBLOX STUDIOS · STAFF PORTFOLIO</a><span id="location" class="eyebrow public-location"></span><h1 id="headline">Portfolio</h1><p id="about" class="public-about"></p><div id="skills" class="skill-pills"></div><h2 class="projects-heading">Selected work</h2><section id="projects" class="public-projects"></section><footer class="public-foot">Built with the WEBLOX Staff Portfolio Builder · <span id="staffName"></span></footer></main><script type="module" src="/src/portfolio.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0e0e11" />
+  <meta name="referrer" content="no-referrer" />
+  <title>Staff Portfolio | WEBLOX Studios</title>
+  <link rel="icon" href="/assets/weblox-app-icon.png" />
+  <link rel="stylesheet" href="/src/styles.css" />
+  <link rel="stylesheet" href="/src/portfolio.css" />
+</head>
+<body>
+  <main id="portfolio" class="portfolio-public">
+    <a class="portfolio-brand" href="/"><img src="/assets/weblox-logo.png" alt="WEBLOX Studios"/><span>WEBLOX <small>STAFF PORTFOLIO</small></span></a>
+    <div id="portfolioUnavailable" class="portfolio-unavailable hidden" role="status"><span class="eyebrow">PORTFOLIO UNAVAILABLE</span><h1>This portfolio isn’t available.</h1><p>It may be unpublished or the link may be incorrect.</p><a class="button secondary" href="/">Return to WEBLOX Studios</a></div>
+    <div id="portfolioContent" class="hidden">
+      <header class="portfolio-hero"><img id="profilePhoto" class="portfolio-photo hidden" alt=""/><div id="profileInitials" class="portfolio-photo portfolio-initials"></div><span id="location" class="eyebrow"></span><h1 id="headline">Portfolio</h1><p id="professionalTitle" class="portfolio-title"></p><p id="about" class="public-about"></p><div id="socialLinks" class="portfolio-social"></div></header>
+      <section id="skillsSection" class="portfolio-section hidden"><span class="eyebrow">CAPABILITIES</span><h2>Skills and tools</h2><div id="skills" class="skill-pills"></div></section>
+      <section id="projectsSection" class="portfolio-section hidden"><span class="eyebrow">SELECTED WORK</span><h2>Projects</h2><div id="projects" class="public-projects"></div></section>
+      <section id="experienceSection" class="portfolio-section hidden"><span class="eyebrow">CAREER</span><h2>Experience</h2><div id="experience"></div></section>
+      <section id="educationSection" class="portfolio-section hidden"><span class="eyebrow">LEARNING</span><h2>Education</h2><div id="education"></div></section>
+      <section id="contactSection" class="portfolio-contact hidden"><div><span class="eyebrow">LET’S CONNECT</span><h2>Have a project in mind?</h2></div><a id="contactLink" class="button" rel="noreferrer">Contact me →</a></section>
+      <footer class="public-foot">Portfolio by <span id="staffName"></span> · Built with WEBLOX Studios</footer>
+    </div>
+  </main>
+  <script type="module" src="/src/portfolio.js"></script>
+</body>
+</html>

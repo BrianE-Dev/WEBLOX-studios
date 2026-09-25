@@ -1,5 +1,8 @@
 node_modules/
 dist/
+.env
+.env.*
+!.env.example
 DESIGN.md
 desktop DESIGN.md
 mobile DESIGN.md

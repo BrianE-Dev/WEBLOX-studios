@@ -1,15 +1,92 @@
-﻿const sessionKey='weblox-staff-session',staffKey='weblox-master-staff',portfolioKey='weblox-staff-portfolios';
-const session=JSON.parse(sessionStorage.getItem(sessionKey)||'null');
-if(!session?.email){location.replace('/staff-sign-in.html')}
-const staff=JSON.parse(localStorage.getItem(staffKey)||'[]').find(x=>x.email===session.email);
-if(!staff){sessionStorage.removeItem(sessionKey);location.replace('/staff-sign-in.html')}
-const $=id=>document.getElementById(id);function syncThemeButton(){const light=document.documentElement.dataset.theme==='light';const next=light?'dark':'light';$('themeToggle').setAttribute('aria-label',`Switch to ${next} mode`);$('themeToggle').setAttribute('title',`Switch to ${next} mode`);$('themeToggle').querySelector('span').textContent=light?'☀':'◐'}$('themeToggle').addEventListener('click',()=>{const next=document.documentElement.dataset.theme==='light'?'dark':'light';document.documentElement.dataset.theme=next;localStorage.setItem('weblox-theme',next);syncThemeButton()});$('logout').addEventListener('click',()=>{sessionStorage.removeItem(sessionKey);location.replace('/staff-sign-in.html')});document.documentElement.dataset.theme=localStorage.getItem('weblox-theme')||'dark';syncThemeButton();const all=JSON.parse(localStorage.getItem(portfolioKey)||'{}');let portfolio=all[staff.email]||{headline:'',location:'',about:'',skills:'',projects:[]};
-$('staffName').textContent=staff.name.split(' ')[0];$('profileName').textContent=staff.name;$('staffRole').textContent=staff.role.toUpperCase();$('profileMeta').textContent=`${staff.role} · ${staff.email}`;
-function link(){return `${location.origin}/portfolio.html?staff=${encodeURIComponent(staff.email)}`}
-function renderSummary(){const saved=all[staff.email];if(saved){$('portfolioSummary').className='portfolio-result';$('portfolioSummary').innerHTML='';const a=document.createElement('a');a.href=link();a.textContent='Open your portfolio →';a.target='_blank';a.rel='noreferrer';a.style.color='#d1bcff';$('portfolioSummary').append(a)}else{$('portfolioSummary').className='dash-muted';$('portfolioSummary').textContent='Your portfolio is not published yet.'}}
-function renderPreview(){const box=$('miniPreview');box.innerHTML='';(portfolio.projects||[]).filter(p=>p.title).forEach(p=>{const card=document.createElement('article');const title=document.createElement('b');title.textContent=p.title;const desc=document.createElement('p');desc.textContent=p.description||'Project description';card.append(title,desc);box.append(card)})}
-function loadForm(){const f=$('portfolioForm');f.elements.headline.value=portfolio.headline||'';f.elements.location.value=portfolio.location||'';f.elements.about.value=portfolio.about||'';f.elements.skills.value=portfolio.skills||'';for(let i=1;i<=2;i++){const p=portfolio.projects?.[i-1]||{};f.elements[`project${i}`].value=p.title||'';f.elements[`projectUrl${i}`].value=p.url||'';f.elements[`projectDesc${i}`].value=p.description||''}if(all[staff.email]){$('share').classList.remove('hidden');$('portfolioUrl').value=link();$('openPortfolio').href=link()}renderPreview()}
-function openTab(name){document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));$('overview').classList.toggle('hidden',name!=='overview');$('portfolio').classList.toggle('hidden',name!=='portfolio');if(name==='portfolio')loadForm()}
-document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>openTab(b.dataset.tab)));document.querySelector('[data-open-portfolio]').addEventListener('click',()=>openTab('portfolio'));
-$('portfolioForm').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;portfolio={headline:f.elements.headline.value.trim(),location:f.elements.location.value.trim(),about:f.elements.about.value.trim(),skills:f.elements.skills.value.split(',').map(x=>x.trim()).filter(Boolean),projects:[1,2].map(i=>({title:f.elements[`project${i}`].value.trim(),url:f.elements[`projectUrl${i}`].value.trim(),description:f.elements[`projectDesc${i}`].value.trim()})).filter(p=>p.title)};all[staff.email]=portfolio;localStorage.setItem(portfolioKey,JSON.stringify(all));$('share').classList.remove('hidden');$('portfolioUrl').value=link();$('openPortfolio').href=link();$('portfolioNotice').textContent='Portfolio saved. Your share link is ready.';renderPreview();renderSummary()});
-$('copyPortfolio').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(link());$('portfolioNotice').textContent='Portfolio link copied.'}catch{$('portfolioUrl').select();document.execCommand('copy');$('portfolioNotice').textContent='Portfolio link copied.'}});renderSummary();
+import { authRequest, clearStaffSession, staffRequest } from './lib/staffAuth.js'
+
+const $ = (id) => document.getElementById(id)
+const session = await authRequest('/session').catch(() => null)
+if (!session?.account || session.account.accountType !== 'staff') {
+  clearStaffSession()
+  location.replace('/staff-sign-in.html')
+  throw new Error('A valid staff session is required.')
+}
+const staff = session.account
+document.documentElement.dataset.theme = localStorage.getItem('weblox-theme') || 'dark'
+$('staffName').textContent = staff.name.split(' ')[0]
+$('profileName').textContent = staff.name
+$('staffRole').textContent = staff.role.toUpperCase()
+$('profileMeta').textContent = `${staff.role} · ${staff.email}`
+
+function updateThemeButton() {
+  const light = document.documentElement.dataset.theme === 'light'
+  const next = light ? 'dark' : 'light'
+  $('themeToggle').setAttribute('aria-label', `Switch to ${next} mode`)
+  $('themeToggle').setAttribute('title', `Switch to ${next} mode`)
+  $('themeToggle').querySelector('span').textContent = light ? '☀' : '◐'
+}
+
+$('themeToggle').addEventListener('click', () => {
+  const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'
+  document.documentElement.dataset.theme = next
+  localStorage.setItem('weblox-theme', next)
+  updateThemeButton()
+})
+$('logout').addEventListener('click', async () => {
+  await authRequest('/logout', { method: 'POST' }).catch(() => {})
+  clearStaffSession()
+  location.replace('/staff-sign-in.html')
+})
+updateThemeButton()
+
+function openPortfolioBuilder() {
+  location.assign('/staff-portfolio.html')
+}
+
+document.querySelector('[data-open-portfolio]').addEventListener('click', openPortfolioBuilder)
+document.querySelectorAll('[data-tab]').forEach((button) => button.addEventListener('click', () => {
+  if (button.dataset.tab === 'portfolio') return openPortfolioBuilder()
+  document.querySelectorAll('[data-tab]').forEach((item) => item.classList.toggle('active', item === button))
+  $('overview').classList.remove('hidden')
+}))
+
+async function renderPortfolioSummary() {
+  const box = $('portfolioSummary')
+  try {
+    const { portfolio } = await staffRequest('/api/portfolios/me')
+    box.replaceChildren()
+    if (!portfolio) {
+      box.className = 'dash-muted'
+      box.textContent = 'Your portfolio is empty. Add your profile and work to get started.'
+      return
+    }
+    const draft = portfolio.draft || {}
+    const complete = [draft.name && draft.title, draft.biography, draft.skills?.length, draft.projects?.length, draft.experience?.length, draft.education?.length]
+    const progress = Math.round((complete.filter(Boolean).length / complete.length) * 100)
+    box.className = 'dash-muted'
+    const status = document.createElement('strong')
+    status.textContent = portfolio.status === 'published' ? 'Published' : portfolio.status === 'unpublished' ? 'Unpublished' : 'Draft'
+    const progressText = document.createElement('p')
+    progressText.textContent = `Portfolio completion: ${progress}%`
+    const updated = document.createElement('p')
+    updated.textContent = `Last saved: ${new Date(portfolio.updatedAt).toLocaleString()}`
+    box.append(status, progressText, updated)
+    if (portfolio.status === 'published' && portfolio.slug) {
+      const publicLink = document.createElement('a')
+      publicLink.href = `/portfolio.html?slug=${encodeURIComponent(portfolio.slug)}`
+      publicLink.target = '_blank'
+      publicLink.rel = 'noopener noreferrer'
+      publicLink.textContent = 'Open public portfolio →'
+      publicLink.style.color = '#d1bcff'
+      box.append(publicLink)
+    }
+    const edit = document.createElement('button')
+    edit.type = 'button'
+    edit.className = 'button secondary dash-secondary'
+    edit.textContent = 'Edit portfolio'
+    edit.style.marginTop = '12px'
+    edit.addEventListener('click', openPortfolioBuilder)
+    box.append(edit)
+  } catch (error) {
+    box.className = 'dash-muted'
+    box.textContent = error.message || 'Portfolio details are temporarily unavailable.'
+  }
+}
+
+renderPortfolioSummary()

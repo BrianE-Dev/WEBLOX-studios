@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0e0e11" />
+  <title>Staff Access | WEBLOX Studios</title>
+  <link rel="icon" href="/assets/weblox-app-icon.png" />
+  <link rel="stylesheet" href="/src/styles.css" />
+  <style>
+    .admin-shell{width:min(980px,calc(100% - 36px));margin:42px auto 80px}.admin-head{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:24px}.admin-title{font-size:clamp(30px,5vw,42px);margin:7px 0}.admin-card{padding:25px;margin:15px 0;background:#1b1b1ed9;border:1px solid #4a445599;border-radius:11px}.admin-card h2{font-size:20px;margin:5px 0 8px}.admin-card>p{color:var(--muted);font-size:12px;line-height:1.7}.admin-form{display:grid;grid-template-columns:1fr 1fr;gap:13px}.admin-form label{display:flex;flex-direction:column;gap:7px;color:#d1bcff;font:600 11px 'JetBrains Mono'}.admin-form input,.admin-form select{font:14px Inter,Arial,sans-serif}.admin-form .wide{grid-column:1/-1}.admin-form .button{justify-self:start}.admin-notice{min-height:20px;margin-top:12px;color:#ffaaa2;font-size:12px}.admin-notice.success{color:#7fe5a2}.admin-invite-result{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:15px}.admin-invite-result input{min-width:0;font:12px 'JetBrains Mono'}.admin-list{margin-top:14px}.admin-person{display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid #4a445544}.admin-person>div{flex:1;min-width:0}.admin-person b,.admin-person small{display:block}.admin-person small{margin-top:4px;color:var(--muted);font-size:11px;overflow-wrap:anywhere}.admin-state{padding:5px 8px;border:1px solid #7fe5a244;border-radius:5px;color:#7fe5a2;font:9px 'JetBrains Mono';white-space:nowrap}.admin-state.pending{border-color:#f1b45a55;color:#f1c77e}.admin-actions{display:flex;gap:9px;align-items:center}.hidden{display:none!important}html[data-theme="light"] .admin-card{background:white;border-color:#c9c1d1}html[data-theme="light"] .admin-card h2,html[data-theme="light"] .admin-title{color:#17131b}@media(max-width:620px){.admin-shell{margin-top:25px}.admin-card{padding:19px}.admin-form{grid-template-columns:1fr}.admin-form .wide{grid-column:auto}.admin-invite-result{grid-template-columns:1fr}.admin-head{align-items:flex-start;flex-direction:column}}
+  </style>
+</head>
+<body>
+  <main class="admin-shell">
+    <header class="admin-head">
+      <div><span class="eyebrow">WEBLOX · STAFF ACCESS</span><h1 class="admin-title">Staff administrator</h1><p>Invite staff and manage account access.</p></div>
+      <div id="adminActions" class="admin-actions hidden"><button id="changePasswordButton" class="button secondary" type="button">Change password</button><button id="logoutButton" class="button secondary" type="button">Sign out</button></div>
+    </header>
+    <section id="loginPanel" class="admin-card">
+      <h2>Administrator sign in</h2><p>Use the administrator account created by the local bootstrap command.</p>
+      <form id="loginForm" class="admin-form">
+        <label class="wide">Email address<input name="email" type="email" autocomplete="username" required/></label>
+        <label class="wide">Password<input name="password" type="password" autocomplete="current-password" required/></label>
+        <button class="button wide" type="submit">Sign in →</button>
+      </form>
+      <div id="loginNotice" class="admin-notice" role="status" aria-live="polite"></div>
+    </section>
+    <div id="adminConsole" class="hidden">
+      <section class="admin-card">
+        <span class="eyebrow">NEW STAFF MEMBER</span><h2>Send an account invitation</h2>
+        <p>Invitations expire after 48 hours and can only activate one account. Copy the link and send it to the staff member through your usual private channel.</p>
+        <form id="inviteForm" class="admin-form">
+          <label>Full name<input name="name" maxlength="120" required autocomplete="name"/></label>
+          <label>Work email<input name="email" type="email" maxlength="254" required autocomplete="email"/></label>
+          <label>Job role<select name="role" required><option value="">Select a role</option><option>Studio Manager</option><option>Software Engineer</option><option>Product Designer</option><option>Digital Marketer</option><option>Business Operations</option><option>People &amp; Culture</option><option>Finance</option><option>Other</option></select></label>
+          <button class="button" type="submit">Create invitation →</button>
+        </form>
+        <div id="inviteNotice" class="admin-notice" role="status" aria-live="polite"></div>
+        <div id="inviteResult" class="admin-invite-result hidden"><input id="inviteUrl" readonly aria-label="Staff invitation link"/><button id="copyInvite" class="button secondary" type="button">Copy link</button></div>
+      </section>
+      <section class="admin-card"><span class="eyebrow">STAFF DIRECTORY</span><h2>Accounts and invitations</h2><div id="staffList" class="admin-list" aria-live="polite"></div></section>
+      <section id="passwordPanel" class="admin-card hidden"><h2>Change administrator password</h2><form id="passwordForm" class="admin-form"><label>Current password<input name="currentPassword" type="password" autocomplete="current-password" required/></label><label>New password<input name="newPassword" type="password" minlength="12" autocomplete="new-password" required/></label><button class="button" type="submit">Update password</button></form><div id="passwordNotice" class="admin-notice" role="status"></div></section>
+    </div>
+  </main>
+  <script type="module" src="/src/staff-admin.js"></script>
+</body>
+</html>

@@ -1,21 +1,34 @@
+import "dotenv/config";
 import { createServer } from "node:http";
+import pg from "pg";
 import {
   randomBytes,
   scrypt as scryptCallback,
   timingSafeEqual,
   createHash,
+  randomUUID,
 } from "node:crypto";
 import { promisify } from "node:util";
-import { createMemoryStore } from "./store.js";
+import { createPostgresStore } from "./store.js";
+import { migrate } from "./migrate.js";
 
 const scrypt = promisify(scryptCallback);
-const store = createMemoryStore();
-const sessions = new Map();
-const port = Number(process.env.API_PORT || 3001);
+const { Pool } = pg;
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL is required. Copy .env.example to .env and configure PostgreSQL.");
+}
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  max: Number(process.env.DB_POOL_MAX || 10),
+  connectionTimeoutMillis: 5000,
+  ...(process.env.DATABASE_SSL === "true" ? { ssl: { rejectUnauthorized: true } } : {}),
+});
+const store = createPostgresStore(pool);
+const port = Number(process.env.PORT || process.env.API_PORT || 3001);
 const allowedOrigin = process.env.APP_ORIGIN || `http://localhost:5173`;
 const cookieName = "weblox_session";
 const sessionTtl = 1000 * 60 * 60 * 24 * 7;
-const staffDirectory = new Map();
+const cookieSecure = process.env.NODE_ENV === "production" ? "; Secure" : "";
 
 function send(res, status, data, headers = {}) {
   res.writeHead(status, {
@@ -63,6 +76,95 @@ function publicAccount(account) {
     email: account.email,
     name: account.name,
     role: account.role,
+    accountType: account.accountType || account.account_type || (account.role === "admin" ? "admin" : "staff"),
+  };
+}
+
+async function currentSession(req) {
+  const token = parseCookies(req.headers.cookie)[cookieName];
+  if (!token) return null;
+  const tokenHash = createHash("sha256").update(token).digest("hex");
+  const account = await store.findSession(tokenHash);
+  return account ? { token, tokenHash, account } : null;
+}
+
+function validEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function cleanText(value, maxLength) {
+  return String(value ?? "").trim().slice(0, maxLength);
+}
+
+function safeWebUrl(value) {
+  const text = cleanText(value, 2048);
+  if (!text) return "";
+  try {
+    const url = new URL(text);
+    return ["http:", "https:"].includes(url.protocol) ? url.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
+function cleanStringList(value, maxItems = 40, maxLength = 60) {
+  const values = Array.isArray(value) ? value : String(value ?? "").split(",");
+  return [...new Set(values.map((item) => cleanText(item, maxLength)).filter(Boolean))].slice(0, maxItems);
+}
+
+function cleanPortfolio(body, account) {
+  const experience = Array.isArray(body.experience) ? body.experience : [];
+  const education = Array.isArray(body.education) ? body.education : [];
+  const projects = Array.isArray(body.projects) ? body.projects : [];
+  const social = body.socialLinks && typeof body.socialLinks === "object" ? body.socialLinks : {};
+  const email = cleanText(body.contactEmail, 254).toLowerCase();
+  const accentColor = /^#[0-9a-f]{6}$/i.test(body.accentColor) ? body.accentColor : "#a259ff";
+  return {
+    name: cleanText(body.name, 120) || account.name,
+    title: cleanText(body.title, 120),
+    photoUrl: safeWebUrl(body.photoUrl),
+    location: cleanText(body.location, 100),
+    biography: cleanText(body.biography, 3000),
+    skills: cleanStringList(body.skills),
+    experience: experience.slice(0, 30).map((item) => ({
+      id: cleanText(item?.id, 80) || randomUUID(),
+      title: cleanText(item?.title, 120),
+      organization: cleanText(item?.organization, 120),
+      location: cleanText(item?.location, 100),
+      startDate: cleanText(item?.startDate, 30),
+      endDate: cleanText(item?.endDate, 30),
+      description: cleanText(item?.description, 1500),
+    })).filter((item) => item.title || item.organization),
+    education: education.slice(0, 30).map((item) => ({
+      id: cleanText(item?.id, 80) || randomUUID(),
+      qualification: cleanText(item?.qualification, 120),
+      institution: cleanText(item?.institution, 120),
+      location: cleanText(item?.location, 100),
+      startDate: cleanText(item?.startDate, 30),
+      endDate: cleanText(item?.endDate, 30),
+      description: cleanText(item?.description, 1000),
+    })).filter((item) => item.qualification || item.institution),
+    socialLinks: {
+      linkedin: safeWebUrl(social.linkedin),
+      github: safeWebUrl(social.github),
+      website: safeWebUrl(social.website),
+      instagram: safeWebUrl(social.instagram),
+    },
+    contactEmail: validEmail(email) ? email : "",
+    projects: projects.slice(0, 40).map((item) => ({
+      id: cleanText(item?.id, 80) || randomUUID(),
+      title: cleanText(item?.title, 120),
+      description: cleanText(item?.description, 2000),
+      imageUrl: safeWebUrl(item?.imageUrl),
+      technologies: cleanStringList(item?.technologies, 30, 50),
+      liveUrl: safeWebUrl(item?.liveUrl),
+      sourceUrl: safeWebUrl(item?.sourceUrl),
+      startDate: cleanText(item?.startDate, 30),
+      endDate: cleanText(item?.endDate, 30),
+      featured: item?.featured === true,
+    })).filter((item) => item.title || item.description),
+    layout: body.layout === "cards" ? "cards" : "editorial",
+    accentColor,
   };
 }
 
@@ -83,7 +185,53 @@ async function handler(req, res) {
 
   const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
   if (req.method === "GET" && url.pathname === "/api/health")
-    return send(res, 200, { status: "ok" });
+    return send(res, 200, { status: "ok", database: "connected" });
+
+  const publicPortfolioRoute = url.pathname.match(/^\/api\/portfolios\/public\/([a-z0-9-]{1,180})$/i);
+  if (req.method === "GET" && publicPortfolioRoute) {
+    const portfolio = await store.findPublishedPortfolio(publicPortfolioRoute[1].toLowerCase());
+    if (!portfolio) return send(res, 404, { error: "This portfolio is unavailable." });
+    return send(res, 200, { portfolio });
+  }
+
+  if (url.pathname === "/api/portfolios/me") {
+    const current = await currentSession(req);
+    if (!current || current.account.accountType !== "staff")
+      return send(res, 401, { error: "A staff session is required." });
+    if (req.method === "GET")
+      return send(res, 200, { portfolio: await store.getPortfolio(current.account.id) });
+    if (req.method === "PUT") {
+      const body = await readBody(req, 2 * 1024 * 1024);
+      if (!body || typeof body !== "object" || Array.isArray(body))
+        return send(res, 400, { error: "Portfolio data must be a JSON object." });
+      const draft = cleanPortfolio(body, current.account);
+      return send(res, 200, { portfolio: await store.savePortfolioDraft(current.account.id, draft) });
+    }
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/portfolios/me/publish") {
+    const current = await currentSession(req);
+    if (!current || current.account.accountType !== "staff")
+      return send(res, 401, { error: "A staff session is required." });
+    const portfolio = await store.getPortfolio(current.account.id);
+    const draft = portfolio?.draft;
+    if (!draft?.name || !draft?.title || !draft?.biography)
+      return send(res, 400, { error: "Add your name, professional title, and biography before publishing." });
+    const slugBase = (draft.name || current.account.name)
+      .normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "staff-portfolio";
+    const published = await store.publishPortfolio(current.account.id, slugBase);
+    return send(res, 200, { portfolio: published });
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/portfolios/me/unpublish") {
+    const current = await currentSession(req);
+    if (!current || current.account.accountType !== "staff")
+      return send(res, 401, { error: "A staff session is required." });
+    const portfolio = await store.unpublishPortfolio(current.account.id);
+    if (!portfolio) return send(res, 404, { error: "There is no saved portfolio to unpublish." });
+    return send(res, 200, { portfolio });
+  }
 
   if (req.method === "POST" && url.pathname === "/api/enquiries") {
     const body = await readBody(req);
@@ -158,54 +306,73 @@ async function handler(req, res) {
     return send(res, 201, { application: { id: saved.id, createdAt: saved.createdAt } });
   }
 
-  if (req.method === "POST" && url.pathname === "/api/staff/sync") {
-    const body = await readBody(req);
-    const entries = Array.isArray(body.staff) ? body.staff : [];
-    for (const entry of entries) {
-      const email = String(entry.email || "")
-        .trim()
-        .toLowerCase();
-      if (email)
-        staffDirectory.set(email, {
-          email,
-          name: String(entry.name || "").trim(),
-          role: String(entry.role || "").trim(),
-        });
-    }
-    return send(res, 200, { staff: [...staffDirectory.values()] });
-  }
-
-  if (req.method === "GET" && url.pathname === "/api/staff") {
-    return send(res, 200, { staff: [...staffDirectory.values()] });
-  }
-
-  if (req.method === "POST" && url.pathname === "/api/auth/register") {
+  if (req.method === "POST" && url.pathname === "/api/auth/activate") {
     const body = await readBody(req);
     const email = String(body.email || "")
       .trim()
       .toLowerCase();
     const password = String(body.password || "");
-    const name = String(body.name || "").trim();
-    const role = String(body.role || "").trim();
-    if (!email || !name || !role || password.length < 10)
-      return send(res, 400, {
-        error:
-          "Name, email, role, and a password of at least 10 characters are required.",
-      });
+    const invite = String(body.invite || "").trim();
+    if (!validEmail(email) || invite.length < 32 || password.length < 12)
+      return send(res, 400, { error: "Enter a valid email, a valid staff invitation, and a password of at least 12 characters." });
     const credentials = await passwordRecord(password);
     const account = {
-      id: createHash("sha256").update(email).digest("hex").slice(0, 16),
+      id: randomUUID(),
       email,
-      name,
-      role,
+      name: "",
+      role: "staff",
+      accountType: "staff",
       ...credentials,
       createdAt: new Date().toISOString(),
     };
-    if (!(await store.createAccount(account)))
-      return send(res, 409, {
-        error: "An account already exists for this email.",
+    try {
+      const activated = await store.activateStaffInvitation({
+        email,
+        tokenHash: createHash("sha256").update(invite).digest("hex"),
+        account,
       });
-    return send(res, 201, { account: publicAccount(account) });
+      if (!activated) return send(res, 400, { error: "That staff invitation is invalid, expired, or already used." });
+      return send(res, 201, { account: publicAccount(account) });
+    } catch (error) {
+      if (error.code === "23505") return send(res, 409, { error: "An account already exists for this email." });
+      throw error;
+    }
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/admin/staff/invitations") {
+    const current = await currentSession(req);
+    if (!current || current.account.accountType !== "admin")
+      return send(res, 403, { error: "Administrator access is required." });
+    const body = await readBody(req);
+    const email = String(body.email || "").trim().toLowerCase();
+    const name = String(body.name || "").trim();
+    const role = String(body.role || "").trim();
+    if (!validEmail(email) || !name || name.length > 120 || !role || role.length > 80)
+      return send(res, 400, { error: "Enter a valid email, full name, and job role." });
+    const token = randomBytes(32).toString("base64url");
+    try {
+      await store.createStaffInvitation({
+        email,
+        name,
+        role,
+        tokenHash: createHash("sha256").update(token).digest("hex"),
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 48).toISOString(),
+      });
+    } catch (error) {
+      if (error.code === "STAFF_ACCOUNT_EXISTS") return send(res, 409, { error: error.message });
+      throw error;
+    }
+    const inviteUrl = new URL("/staff-sign-in.html", allowedOrigin);
+    inviteUrl.searchParams.set("email", email);
+    inviteUrl.searchParams.set("invite", token);
+    return send(res, 201, { inviteUrl: inviteUrl.toString(), expiresInHours: 48 });
+  }
+
+  if (req.method === "GET" && url.pathname === "/api/admin/staff") {
+    const current = await currentSession(req);
+    if (!current || current.account.accountType !== "admin")
+      return send(res, 403, { error: "Administrator access is required." });
+    return send(res, 200, { staff: await store.listStaff() });
   }
 
   if (req.method === "POST" && url.pathname === "/api/auth/login") {
@@ -214,7 +381,7 @@ async function handler(req, res) {
       .trim()
       .toLowerCase();
     const password = String(body.password || "");
-    const account = await store.findAccountByEmail(email);
+    const account = validEmail(email) ? await store.findAccountByEmail(email) : null;
     if (!account)
       return send(res, 401, { error: "Email or password is incorrect." });
     const actual = await passwordRecord(
@@ -229,45 +396,73 @@ async function handler(req, res) {
     )
       return send(res, 401, { error: "Email or password is incorrect." });
     const token = randomBytes(32).toString("hex");
-    sessions.set(token, { account, expiresAt: Date.now() + sessionTtl });
+    const expiresAt = new Date(Date.now() + sessionTtl);
+    await store.createSession(account.id, createHash("sha256").update(token).digest("hex"), expiresAt.toISOString());
     return send(
       res,
       200,
       { account: publicAccount(account) },
       {
-        "set-cookie": `${cookieName}=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${sessionTtl / 1000}`,
+        "set-cookie": `${cookieName}=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${sessionTtl / 1000}${cookieSecure}`,
       },
     );
   }
 
   if (req.method === "GET" && url.pathname === "/api/auth/session") {
-    const token = parseCookies(req.headers.cookie)[cookieName];
-    const session = token && sessions.get(token);
-    if (!session || session.expiresAt < Date.now())
+    const current = await currentSession(req);
+    if (!current)
       return send(res, 401, { error: "Not signed in." });
-    return send(res, 200, { account: publicAccount(session.account) });
+    return send(res, 200, { account: publicAccount(current.account) });
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/auth/password") {
+    const current = await currentSession(req);
+    if (!current) return send(res, 401, { error: "Not signed in." });
+    const body = await readBody(req);
+    const oldPassword = String(body.currentPassword || "");
+    const newPassword = String(body.newPassword || "");
+    if (newPassword.length < 12) return send(res, 400, { error: "Use a password with at least 12 characters." });
+    const account = await store.findAccountByEmail(current.account.email);
+    const actual = await passwordRecord(oldPassword, Buffer.from(account.salt, "hex"));
+    if (!timingSafeEqual(Buffer.from(actual.hash, "hex"), Buffer.from(account.hash, "hex")))
+      return send(res, 401, { error: "Current password is incorrect." });
+    const credentials = await passwordRecord(newPassword);
+    await store.updatePassword(account.id, credentials.salt, credentials.hash);
+    await store.deleteOtherSessions(account.id, current.tokenHash);
+    return send(res, 200, { ok: true });
   }
 
   if (req.method === "POST" && url.pathname === "/api/auth/logout") {
-    const token = parseCookies(req.headers.cookie)[cookieName];
-    if (token) sessions.delete(token);
+    const current = await currentSession(req);
+    if (current) await store.deleteSession(current.tokenHash);
     return send(
       res,
       200,
       { ok: true },
       {
-        "set-cookie": `${cookieName}=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0`,
+        "set-cookie": `${cookieName}=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0${cookieSecure}`,
       },
     );
   }
   return send(res, 404, { error: "Not found." });
 }
 
-createServer((req, res) => {
+const server = createServer((req, res) => {
   handler(req, res).catch((error) => {
     console.error(error);
-    send(res, 400, { error: error.message || "Request failed." });
+    const clientError = error.message === "Request body is too large" || error.message === "Invalid JSON body";
+    send(res, clientError ? 400 : 500, { error: clientError ? error.message : "Request failed." });
   });
-}).listen(port, () =>
-  console.log(`WEBLOX auth API listening on http://localhost:${port}`),
-);
+});
+
+try {
+  await migrate(pool);
+  await pool.query("SELECT 1");
+  server.listen(port, () =>
+    console.log(`WEBLOX API connected to PostgreSQL and listening on http://localhost:${port}`),
+  );
+} catch (error) {
+  console.error("Could not initialize PostgreSQL:", error.message);
+  await pool.end();
+  process.exitCode = 1;
+}

@@ -12,6 +12,17 @@ export async function authRequest(path, options = {}) {
   return data
 }
 
+export async function staffRequest(path, options = {}) {
+  const response = await fetch(`${apiBase}${path}`, {
+    ...options,
+    credentials: 'include',
+    headers: { 'content-type': 'application/json', ...options.headers },
+  })
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(data.error || 'Request failed.')
+  return data
+}
+
 export function saveStaffSession(account) {
   sessionStorage.setItem(sessionKey, JSON.stringify(account))
 }
