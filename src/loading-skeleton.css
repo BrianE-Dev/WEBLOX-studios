@@ -124,7 +124,7 @@ html[data-theme="light"] .page-loading-skeleton span {
   position: relative;
   width: min(190px, 42vw);
   height: auto;
-  animation: weblox-loader-pulse 2.4s ease-in-out infinite;
+  animation: weblox-loader-pulse 4.5s ease-in-out infinite;
 }
 
 .weblox-branded-loader.is-hidden {
