@@ -5,6 +5,7 @@
 export function createMemoryStore() {
   const accounts = new Map();
   const enquiries = [];
+  const internshipApplications = [];
 
   return {
     async findAccountByEmail(email) {
@@ -23,6 +24,15 @@ export function createMemoryStore() {
         createdAt: new Date().toISOString(),
       };
       enquiries.push(record);
+      return record;
+    },
+    async createInternshipApplication(application) {
+      const record = {
+        id: internshipApplications.length + 1,
+        ...application,
+        createdAt: new Date().toISOString(),
+      };
+      internshipApplications.push(record);
       return record;
     },
   };

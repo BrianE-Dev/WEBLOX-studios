@@ -25,12 +25,12 @@ function send(res, status, data, headers = {}) {
   res.end(JSON.stringify(data));
 }
 
-function readBody(req) {
+function readBody(req, maxBytes = 16_384) {
   return new Promise((resolve, reject) => {
     let raw = "";
     req.on("data", (chunk) => {
       raw += chunk;
-      if (raw.length > 16_384) reject(new Error("Request body is too large"));
+      if (raw.length > maxBytes) reject(new Error("Request body is too large"));
     });
     req.on("end", () => {
       try {
@@ -121,6 +121,41 @@ async function handler(req, res) {
       timeline,
     });
     return send(res, 201, { enquiry });
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/internship-applications") {
+    const body = await readBody(req, 8 * 1024 * 1024);
+    const fields = [
+      "fullName", "email", "phone", "track", "background", "skills",
+      "motivation", "startDate", "duration", "availability",
+    ];
+    const application = Object.fromEntries(
+      fields.map((field) => [field, String(body[field] || "").trim()]),
+    );
+    application.email = application.email.toLowerCase();
+    if (fields.some((field) => !application[field]) || body.consent !== true)
+      return send(res, 400, { error: "Complete all required fields and confirm the accuracy statement." });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(application.email))
+      return send(res, 400, { error: "Enter a valid email address." });
+    const resume = body.resume;
+    if (!resume || typeof resume !== "object" || typeof resume.data !== "string")
+      return send(res, 400, { error: "Please attach your CV or résumé." });
+    const allowedTypes = new Set([
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ]);
+    const size = Buffer.from(resume.data, "base64").length;
+    if (!allowedTypes.has(resume.type) || size > 5 * 1024 * 1024)
+      return send(res, 400, { error: "Upload a PDF, DOC, or DOCX file no larger than 5 MB." });
+    application.backgroundDetails = String(body.backgroundDetails || "").trim();
+    application.portfolioUrl = String(body.portfolioUrl || "").trim();
+    application.githubUrl = String(body.githubUrl || "").trim();
+    application.linkedinUrl = String(body.linkedinUrl || "").trim();
+    application.contribution = String(body.contribution || "").trim();
+    application.resume = { name: String(resume.name || "resume"), type: resume.type, size, data: resume.data };
+    const saved = await store.createInternshipApplication(application);
+    return send(res, 201, { application: { id: saved.id, createdAt: saved.createdAt } });
   }
 
   if (req.method === "POST" && url.pathname === "/api/staff/sync") {
