@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=390, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>WEBLOX STUDIOS | Technology Venture Studio</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface-variant": "#353438",
+            "on-surface": "#e4e1e5",
+            "surface-container-highest": "#353438",
+            "surface-bright": "#39393c",
+            "error-container": "#93000a",
+            "inverse-on-surface": "#303033",
+            "on-primary-fixed": "#23005b",
+            "primary-fixed-dim": "#d1bcff",
+            "inverse-surface": "#e4e1e5",
+            "on-surface-variant": "#ccc3d8",
+            "on-secondary-fixed": "#290055",
+            "surface-container": "#1f1f22",
+            "surface-dim": "#131316",
+            "on-tertiary-fixed": "#1a1c1d",
+            "primary-container": "#7b3ff2",
+            "tertiary-fixed-dim": "#c6c6c8",
+            "secondary-container": "#6904c5",
+            "on-tertiary": "#2f3132",
+            "error": "#ffb4ab",
+            "secondary-fixed": "#eedcff",
+            "on-error": "#690005",
+            "surface-container-low": "#1b1b1e",
+            "secondary-fixed-dim": "#d8b9ff",
+            "on-secondary-fixed-variant": "#6300bb",
+            "primary": "#d1bcff",
+            "on-primary-container": "#f0e6ff",
+            "on-secondary": "#450086",
+            "inverse-primary": "#7030e6",
+            "surface-container-high": "#2a2a2d",
+            "tertiary": "#c6c6c8",
+            "background": "#131316",
+            "on-background": "#e4e1e5",
+            "on-secondary-container": "#d0acff",
+            "surface-container-lowest": "#0e0e11",
+            "on-primary-fixed-variant": "#5700c9",
+            "on-tertiary-container": "#e9e9eb",
+            "outline": "#958da1",
+            "surface": "#131316",
+            "on-error-container": "#ffdad6",
+            "secondary": "#d8b9ff",
+            "primary-fixed": "#e9ddff",
+            "surface-tint": "#d1bcff",
+            "tertiary-fixed": "#e2e2e4",
+            "outline-variant": "#4a4455",
+            "on-primary": "#3c0090",
+            "tertiary-container": "#68696b",
+            "on-tertiary-fixed-variant": "#454749"
+          },
+          borderRadius: {
+            DEFAULT: "0.125rem",
+            lg: "0.25rem",
+            xl: "0.5rem",
+            full: "0.75rem"
+          },
+          spacing: {
+            "gutter-desktop": "2rem",
+            "space-3xl": "4rem",
+            "space-md": "1rem",
+            "space-xl": "2rem",
+            "space-lg": "1.5rem",
+            "space-4xl": "6rem",
+            "space-2xl": "3rem",
+            "space-sm": "0.75rem",
+            "space-2xs": "0.25rem",
+            "space-xs": "0.5rem",
+            "container-max": "80rem",
+            "gutter-mobile": "1rem"
+          },
+          fontFamily: {
+            caption: ["Inter"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "headline-xl-mobile": ["Plus Jakarta Sans"],
+            "display-hero": ["Plus Jakarta Sans"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "body-xl": ["Inter"],
+            "display-hero-mobile": ["Plus Jakarta Sans"],
+            "headline-xl": ["Plus Jakarta Sans"],
+            "body-sm": ["Inter"],
+            "label-studio": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "headline-lg-mobile": ["Plus Jakarta Sans"],
+            "body-md": ["Inter"],
+            "label-tech": ["JetBrains Mono"]
+          },
+          fontSize: {
+            caption: ["12px", { lineHeight: "18px", letterSpacing: "0.01em", fontWeight: "400" }],
+            "headline-sm": ["20px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "600" }],
+            "headline-xl-mobile": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700" }],
+            "display-hero": ["64px", { lineHeight: "72px", letterSpacing: "-0.03em", fontWeight: "800" }],
+            "headline-md": ["24px", { lineHeight: "32px", letterSpacing: "-0.015em", fontWeight: "600" }],
+            "body-xl": ["18px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "400" }],
+            "display-hero-mobile": ["38px", { lineHeight: "44px", letterSpacing: "-0.02em", fontWeight: "800" }],
+            "headline-xl": ["48px", { lineHeight: "56px", letterSpacing: "-0.025em", fontWeight: "700" }],
+            "body-sm": ["14px", { lineHeight: "22px", letterSpacing: "0em", fontWeight: "400" }],
+            "label-studio": ["11px", { lineHeight: "16px", letterSpacing: "0.22em", fontWeight: "700" }],
+            "headline-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700" }],
+            "headline-lg-mobile": ["26px", { lineHeight: "34px", letterSpacing: "-0.02em", fontWeight: "700" }],
+            "body-md": ["16px", { lineHeight: "26px", letterSpacing: "0em", fontWeight: "400" }],
+            "label-tech": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "500" }]
+          }
+        }
+      }
+    };
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 20px;
+      line-height: 1;
+      display: inline-block;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+    }
+    /* Subtle geometric grid background */
+    .tech-grid-bg {
+      background-size: 32px 32px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    }
+    .neon-card-glow {
+      box-shadow: 0 0 30px -10px rgba(123, 63, 242, 0.35);
+    }
+    .laser-border-t {
+      border-top: 1px solid rgba(162, 89, 255, 0.5);
+    }
+  </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface antialiased overflow-x-hidden min-h-screen relative">
+<!-- ================= TOP APP BAR (Shared Component Anchor) ================= -->
+<header class="fixed top-0 left-0 w-full z-50 bg-surface-container-lowest/80 backdrop-blur-md dark:bg-surface-container-lowest/80 border-b border-outline-variant/30 shadow-[0_4px_20px_-4px_rgba(123,63,242,0.15)]">
+<div class="flex justify-between items-center w-full px-gutter-mobile h-16 max-w-container-max mx-auto">
+<!-- Monogram + Brand -->
+<div class="flex items-center gap-2.5">
+<div class="relative w-8 h-8 rounded-xl bg-gradient-to-br from-primary-container to-secondary-container flex items-center justify-center p-[1px] shadow-[0_0_12px_rgba(123,63,242,0.5)]">
+<div class="w-full h-full bg-surface-container-lowest rounded-xl flex items-center justify-center">
+<!-- Interlocking WX geometric Monogram icon -->
+<svg class="w-5 h-5" fill="none" viewbox="0 0 40 32" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 4L12 24L20 4L16 4L12 16L8 4H4Z" fill="#7B3FF2"></path>
+<path d="M14 4L22 24H26L18 4H14Z" fill="#A259FF"></path>
+<path d="M28 4L20 18L24 24L34 6H29L22 18" stroke="#F3F3F5" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+<path d="M30 4L34 4" stroke="#A259FF" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm-mobile text-headline-sm-mobile tracking-wider uppercase text-on-surface dark:text-on-surface font-extrabold leading-none">WEBLOX</span>
+<span class="font-label-studio text-label-studio text-primary tracking-[0.25em] text-[8px] leading-none mt-1">STUDIOS</span>
+</div>
+</div>
+<!-- Center Status Pill (Live Studio Node) -->
+<div class="hidden xs:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-high/60 border border-outline-variant/40">
+<span class="relative flex h-1.5 w-1.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary-container"></span>
+</span>
+<span class="font-label-tech text-[9px] tracking-wider text-on-surface-variant font-medium">STUDIO LIVE • LOS</span>
+</div>
+<!-- Trailing Action & Mobile Drawer Toggle -->
+<div class="flex items-center gap-2">
+<a class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-primary-container to-secondary-container text-on-primary font-headline-sm text-[12px] font-bold shadow-[0_2px_10px_rgba(123,63,242,0.4)] active:scale-95 transition-transform duration-150" href="#build-section">
+          Build
+        </a>
+<button class="w-9 h-9 rounded-xl bg-surface-container-high/80 border border-outline-variant/40 flex items-center justify-center text-on-surface hover:text-primary active:scale-95 transition-all" id="drawer-toggle-btn">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</div>
+</header>
+<!-- ================= NAVIGATION DRAWER (Shared Component Anchor) ================= -->
+<aside class="fixed inset-y-0 left-0 z-50 flex flex-col p-6 w-4/5 max-w-xs bg-surface-container-lowest dark:bg-surface-container-lowest border-r border-outline-variant/30 shadow-[12px_0_36px_-8px_rgba(123,63,242,0.25)] -translate-x-full transition-transform duration-300 ease-in-out" id="nav-drawer">
+<!-- Header -->
+<div class="flex items-center justify-between pb-6 border-b border-outline-variant/20 mb-6">
+<div class="flex items-center gap-2">
+<div class="w-2.5 h-2.5 rounded-full bg-primary-container shadow-[0_0_8px_#7B3FF2]"></div>
+<span class="font-headline-sm-mobile text-headline-sm-mobile uppercase text-on-surface dark:text-on-surface font-extrabold tracking-wider">WEBLOX STUDIOS</span>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface p-1" id="drawer-close-btn">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Navigation Items -->
+<nav class="flex flex-col gap-2">
+<!-- 1. Venture Model (Active) -->
+<a class="flex items-center gap-3 bg-primary-container/20 text-primary dark:text-primary border-l-2 border-primary px-4 py-3 rounded-r-xl active:scale-[0.98] transition-all duration-150" href="#venture-model">
+<span class="material-symbols-outlined text-primary">hub</span>
+<span class="font-label-studio text-label-studio tracking-wider">Venture Model</span>
+</a>
+<!-- 2. Ventures -->
+<a class="flex items-center gap-3 text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/40 px-4 py-3 rounded-xl active:scale-[0.98] transition-all duration-150" href="#ventures-showcase">
+<span class="material-symbols-outlined">rocket_launch</span>
+<span class="font-label-studio text-label-studio tracking-wider">Ventures</span>
+</a>
+<!-- 3. Capabilities -->
+<a class="flex items-center gap-3 text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/40 px-4 py-3 rounded-xl active:scale-[0.98] transition-all duration-150" href="#capabilities">
+<span class="material-symbols-outlined">terminal</span>
+<span class="font-label-studio text-label-studio tracking-wider">Capabilities</span>
+</a>
+<!-- 4. Studio Insights -->
+<a class="flex items-center gap-3 text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/40 px-4 py-3 rounded-xl active:scale-[0.98] transition-all duration-150" href="#insights">
+<span class="material-symbols-outlined">article</span>
+<span class="font-label-studio text-label-studio tracking-wider">Studio Insights</span>
+</a>
+<!-- 5. Contact -->
+<a class="flex items-center gap-3 text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/40 px-4 py-3 rounded-xl active:scale-[0.98] transition-all duration-150" href="#build-section">
+<span class="material-symbols-outlined">mail</span>
+<span class="font-label-studio text-label-studio tracking-wider">Contact</span>
+</a>
+</nav>
+<!-- Drawer Footer Metadata -->
+<div class="mt-auto pt-6 border-t border-outline-variant/20">
+<div class="p-3 rounded-xl bg-surface-container-low border border-outline-variant/30 flex flex-col gap-1">
+<span class="font-label-tech text-[10px] text-primary font-semibold">HEADQUARTERS</span>
+<span class="font-caption text-caption text-on-surface">Lagos, Nigeria (WAT)</span>
+<span class="font-caption text-[11px] text-outline">Operating asynchronously worldwide</span>
+</div>
+</div>
+</aside>
+<!-- Overlay for drawer -->
+<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 hidden transition-opacity duration-300" id="drawer-overlay"></div>
+<!-- MAIN CANVAS CONTAINER -->
+<main class="pt-20 pb-16 flex flex-col w-full max-w-[390px] mx-auto tech-grid-bg relative px-4">
+<!-- ================= 2. HERO SECTION ================= -->
+<section class="py-space-xl flex flex-col gap-5 relative">
+<!-- Glow ambient backdrop element -->
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 w-64 h-64 bg-primary-container/20 blur-[90px] pointer-events-none rounded-full"></div>
+<!-- Eyebrow Tag -->
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-container/10 border border-primary/40 w-fit backdrop-blur-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-tech text-[11px] tracking-wider uppercase text-primary font-semibold">TECHNOLOGY VENTURE STUDIO</span>
+</div>
+<!-- Massive Editorial Headline -->
+<h1 class="font-display-hero-mobile text-display-hero-mobile text-on-surface font-extrabold tracking-tight">
+        We build the <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary-fixed to-primary-container">technology</span> companies of tomorrow.
+      </h1>
+<!-- Supporting Narrative -->
+<p class="font-body-md text-body-md text-on-surface-variant font-normal leading-relaxed">
+        WEBLOX Studios is a technology venture studio building, launching, and scaling digital products from Africa for global markets.
+      </p>
+<!-- Dual CTAs -->
+<div class="flex flex-col sm:flex-row gap-3 pt-2">
+<a class="h-12 px-6 rounded-xl bg-gradient-to-r from-primary-container to-secondary-container text-on-primary font-headline-sm text-body-sm font-semibold flex items-center justify-center gap-2 shadow-[0_4px_20px_rgba(123,63,242,0.4)] active:scale-[0.98] transition-transform" href="#ventures-showcase">
+<span>Explore Ventures</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+<a class="h-12 px-6 rounded-xl bg-surface-container/70 border border-outline-variant/50 text-on-surface font-headline-sm text-body-sm font-medium flex items-center justify-center hover:border-primary transition-colors active:scale-[0.98]" href="#build-section">
+<span>Build With Us</span>
+</a>
+</div>
+<!-- Hero Visual Architecture: Interactive Telemetry Preview Bento -->
+<div class="mt-4 p-4 rounded-xl bg-surface-container-low/80 backdrop-blur-md border border-outline-variant/40 neon-card-glow relative overflow-hidden">
+<!-- Laser Accent Line -->
+<div class="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-primary to-transparent"></div>
+<!-- Terminal Header -->
+<div class="flex items-center justify-between pb-3 border-b border-outline-variant/30 mb-3">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-outline-variant/60"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-outline-variant/60"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-primary-container"></span>
+<span class="ml-2 font-label-tech text-[10px] text-outline">wx-kernel-v2.8 // engine</span>
+</div>
+<span class="font-label-tech text-[10px] text-primary bg-primary-container/20 px-2 py-0.5 rounded">99.98% SYNC</span>
+</div>
+<!-- Telemetry Matrix Content -->
+<div class="space-y-2.5 font-label-tech text-[11px]">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="flex items-center gap-1.5 text-on-surface">
+<span class="material-symbols-outlined text-primary text-xs">memory</span> AI Core Pipeline
+            </span>
+<span class="text-primary font-mono">1.4B tokens/sec</span>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-gradient-to-r from-primary-container to-primary h-full w-[84%] rounded-full"></div>
+</div>
+<div class="pt-2 grid grid-cols-2 gap-2 text-[10px]">
+<div class="p-2 rounded-lg bg-surface-container-highest/30 border border-outline-variant/20">
+<span class="text-outline block">VENTURES IN INCUBATION</span>
+<span class="text-sm font-bold text-on-surface font-headline-sm mt-0.5">3 Active Pods</span>
+</div>
+<div class="p-2 rounded-lg bg-surface-container-highest/30 border border-outline-variant/20">
+<span class="text-outline block">TARGET DEPLOYMENT</span>
+<span class="text-sm font-bold text-primary font-headline-sm mt-0.5">Global (Day 1)</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= 3. BRAND POSITIONING BANNER ================= -->
+<section class="py-space-xl border-y border-outline-variant/20 flex flex-col gap-6">
+<!-- Big Credo Statement -->
+<div class="flex flex-col gap-1">
+<span class="font-label-studio text-[11px] text-primary tracking-[0.25em] uppercase">STRATEGIC ANCHOR</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-surface">
+          From Africa. <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary-fixed to-secondary-container">Built for the world.</span>
+</h2>
+</div>
+<!-- The 3 Pillars with geometric iconography -->
+<div class="grid grid-cols-1 gap-3">
+<!-- Innovation -->
+<div class="p-4 rounded-xl bg-surface-container-low/60 border border-outline-variant/30 flex items-start gap-3.5">
+<div class="w-10 h-10 rounded-xl bg-primary-container/20 border border-primary/30 flex items-center justify-center shrink-0 text-primary">
+<span class="material-symbols-outlined">data_object</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-base font-bold text-on-surface">INNOVATION</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Modern technology solving meaningful systemic challenges.</p>
+</div>
+</div>
+<!-- Quality -->
+<div class="p-4 rounded-xl bg-surface-container-low/60 border border-outline-variant/30 flex items-start gap-3.5">
+<div class="w-10 h-10 rounded-xl bg-primary-container/20 border border-primary/30 flex items-center justify-center shrink-0 text-primary">
+<span class="material-symbols-outlined">verified</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-base font-bold text-on-surface">QUALITY</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">World-class architectural integrity, security, and precision engineering.</p>
+</div>
+</div>
+<!-- Impact -->
+<div class="p-4 rounded-xl bg-surface-container-low/60 border border-outline-variant/30 flex items-start gap-3.5">
+<div class="w-10 h-10 rounded-xl bg-primary-container/20 border border-primary/30 flex items-center justify-center shrink-0 text-primary">
+<span class="material-symbols-outlined">bolt</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-base font-bold text-on-surface">IMPACT</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Measurable commercial value and scalable global reach.</p>
+</div>
+</div>
+</div>
+<!-- Tagline Quote Box -->
+<div class="p-4 rounded-xl bg-gradient-to-r from-primary-container/20 via-surface-container-high/40 to-primary-container/10 border border-primary/30 relative">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-surface-container-lowest border border-primary/40 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-sm">widgets</span>
+</div>
+<p class="font-headline-sm text-sm font-semibold text-on-surface italic">
+            "We build powerful digital solutions that solve real problems."
+          </p>
+</div>
+</div>
+</section>
+<!-- ================= 4. WHAT WEBLOX IS (Venture Model) ================= -->
+<section class="py-space-2xl flex flex-col gap-6" id="venture-model">
+<div class="flex flex-col gap-2">
+<span class="font-label-tech text-label-tech text-primary uppercase">[THE VENTURE MODEL]</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-surface">More than a software studio.</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          We combine institutional Product Strategy, Engineering, AI Systems, and Cloud Architecture into an autonomous venture-founding vehicle.
+        </p>
+</div>
+<!-- The 3-Stage Model -->
+<div class="flex flex-col gap-4">
+<!-- Step 01 -->
+<div class="p-5 rounded-xl bg-surface-container/70 border border-outline-variant/40 relative">
+<div class="flex items-center justify-between mb-3">
+<span class="px-2.5 py-1 rounded-md bg-primary-container/20 border border-primary/40 font-label-tech text-xs text-primary font-bold">STAGE 01</span>
+<span class="font-label-studio text-[10px] text-outline uppercase tracking-wider">OPPORTUNITY</span>
+</div>
+<h3 class="font-headline-sm text-lg font-bold text-on-surface">Discover</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1.5">
+            Identify meaningful problems, deep market gaps, and asymmetric opportunities with unfair continent-scale leverage.
+          </p>
+</div>
+<!-- Step 02 -->
+<div class="p-5 rounded-xl bg-surface-container/70 border border-outline-variant/40 relative">
+<div class="flex items-center justify-between mb-3">
+<span class="px-2.5 py-1 rounded-md bg-primary-container/20 border border-primary/40 font-label-tech text-xs text-primary font-bold">STAGE 02</span>
+<span class="font-label-studio text-[10px] text-outline uppercase tracking-wider">EXECUTION</span>
+</div>
+<h3 class="font-headline-sm text-lg font-bold text-on-surface">Build</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1.5">
+            Turn validated concepts into production-grade, scalable digital products through relentless 6-week engineering sprint cycles.
+          </p>
+</div>
+<!-- Step 03 -->
+<div class="p-5 rounded-xl bg-surface-container/70 border border-outline-variant/40 relative">
+<div class="flex items-center justify-between mb-3">
+<span class="px-2.5 py-1 rounded-md bg-primary-container/20 border border-primary/40 font-label-tech text-xs text-primary font-bold">STAGE 03</span>
+<span class="font-label-studio text-[10px] text-outline uppercase tracking-wider">EXPANSION</span>
+</div>
+<h3 class="font-headline-sm text-lg font-bold text-on-surface">Scale</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1.5">
+            Inject enterprise-grade growth infrastructure, regulatory conduits, and international distribution to build enduring category champions.
+          </p>
+</div>
+</div>
+</section>
+<!-- ================= 5. FLAGSHIP VENTURE SHOWCASE ================= -->
+<section class="py-space-2xl flex flex-col gap-6" id="ventures-showcase">
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span class="font-label-tech text-label-tech text-primary uppercase">[BUILT AT WEBLOX]</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-surface">Featured Studio Venture</h2>
+</div>
+<!-- SIGNAROL PRODUCT CARD -->
+<div class="rounded-2xl bg-surface-container-low border border-primary/40 p-5 neon-card-glow relative overflow-hidden flex flex-col gap-4">
+<!-- Laser edge indicator -->
+<div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-secondary via-primary to-primary-container"></div>
+<!-- Header info -->
+<div class="flex justify-between items-start pt-1">
+<div>
+<div class="flex items-center gap-2">
+<h3 class="font-headline-md text-xl font-extrabold text-on-surface tracking-tight">SIGNAROL</h3>
+<span class="px-2 py-0.5 rounded-full bg-primary-container/20 border border-primary/40 text-[9px] font-label-tech text-primary font-semibold">LIVE POD</span>
+</div>
+<p class="font-body-sm text-body-sm text-outline mt-0.5">AI-Powered Coding Interview Intelligence</p>
+</div>
+<span class="material-symbols-outlined text-primary">psychology</span>
+</div>
+<!-- Tags -->
+<div class="flex flex-wrap gap-1.5">
+<span class="px-2 py-1 rounded bg-surface-container-high font-label-tech text-[10px] text-on-surface-variant">AI</span>
+<span class="px-2 py-1 rounded bg-surface-container-high font-label-tech text-[10px] text-on-surface-variant">DEV TOOLS</span>
+<span class="px-2 py-1 rounded bg-surface-container-high font-label-tech text-[10px] text-on-surface-variant">SOFTWARE</span>
+<span class="px-2 py-1 rounded bg-primary-container/20 text-primary border border-primary/30 font-label-tech text-[10px]">IN PRODUCTION</span>
+</div>
+<!-- Realistic High-Fidelity UI Interface Preview -->
+<div class="rounded-xl bg-surface-container-lowest border border-outline-variant/40 p-3.5 flex flex-col gap-3 font-label-tech">
+<div class="flex items-center justify-between text-[10px] border-b border-outline-variant/30 pb-2">
+<span class="text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">code</span> candidate_eval.py
+            </span>
+<span class="text-on-surface-variant">LLM Telemetry: Stream</span>
+</div>
+<!-- Code Snippet -->
+<div class="text-[11px] text-on-surface-variant space-y-1 font-mono leading-relaxed">
+<div><span class="text-primary-container">def</span> <span class="text-secondary">evaluate_candidate_ast</span>(node):</div>
+<div class="pl-4"><span class="text-outline"># Compute algorithmic complexity</span></div>
+<div class="pl-4">metrics = analyzer.<span class="text-primary">compute_entropy</span>(node)</div>
+<div class="pl-4">return metrics.<span class="text-secondary-fixed">infer_realtime_bias</span>()</div>
+</div>
+<!-- Metrics telemetry panel -->
+<div class="grid grid-cols-2 gap-2 pt-1">
+<div class="p-2 rounded bg-surface-container-high/60 border border-outline-variant/30">
+<span class="text-[9px] text-outline block">COMPLEXITY SCORE</span>
+<span class="text-xs font-bold text-primary font-mono">O(N log N) • 96%</span>
+</div>
+<div class="p-2 rounded bg-surface-container-high/60 border border-outline-variant/30">
+<span class="text-[9px] text-outline block">COGNITIVE LATENCY</span>
+<span class="text-xs font-bold text-on-surface font-mono">142ms latency</span>
+</div>
+</div>
+</div>
+<!-- Action Link -->
+<a class="inline-flex items-center justify-between text-primary hover:text-secondary-fixed font-headline-sm text-sm font-semibold pt-1 transition-colors" href="#build-section">
+<span>Explore Signarol Architecture</span>
+<span class="material-symbols-outlined text-base">arrow_forward</span>
+</a>
+</div>
+<!-- Stealth Ventures Teaser Box -->
+<div class="p-4 rounded-xl bg-surface-container-high/30 border border-outline-variant/30 border-dashed flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-outline">
+<span class="material-symbols-outlined text-base">lock</span>
+</div>
+<p class="font-body-sm text-caption text-on-surface-variant">
+<span class="text-on-surface font-semibold">+ 2 Stealth Ventures</span> currently in validation &amp; engineering phase (Target: Q2 2026).
+        </p>
+</div>
+</section>
+<!-- ================= 6. WHAT WE BUILD (Capabilities Matrix) ================= -->
+<section class="py-space-2xl border-t border-outline-variant/20 flex flex-col gap-6" id="capabilities">
+<div class="flex flex-col gap-1.5">
+<span class="font-label-tech text-label-tech text-primary uppercase">[CAPABILITIES]</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-surface">What we build.</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          Full-cycle technical capabilities for internal ventures and select enterprise partners.
+        </p>
+</div>
+<!-- 7 Core Tech Capability Cards -->
+<div class="flex flex-col gap-3">
+<!-- 1. Product Engineering -->
+<div class="p-4 rounded-xl bg-surface-container-low/70 border border-outline-variant/30 hover:border-primary/50 transition-all flex flex-col gap-2">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary">deployed_code</span>
+<h3 class="font-headline-sm text-base font-bold text-on-surface">Product Engineering</h3>
+</div>
+<p class="font-body-sm text-caption text-on-surface-variant">
+            SaaS platforms, web applications, distributed APIs, and scalable microservice architectures engineered for massive concurrency.
+          </p>
+</div>
+<!-- 2. AI & Automation -->
+<div class="p-4 rounded-xl bg-surface-container-low/70 border border-outline-variant/30 hover:border-primary/50 transition-all flex flex-col gap-2">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary">neurology</span>
+<h3 class="font-headline-sm text-base font-bold text-on-surface">AI &amp; Automation</h3>
+</div>
+<p class="font-body-sm text-caption text-on-surface-variant">
+            Applied LLMs, autonomous intelligent agent workflows, and predictive pipelines integrated directly into business software.
+          </p>
+</div>
+<!-- 3. SaaS Development -->
+<div class="p-4 rounded-xl bg-surface-container-low/70 border border-outline-variant/30 hover:border-primary/50 transition-all flex flex-col gap-2">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary">dashboard</span>
+<h3 class="font-headline-sm text-base font-bold text-on-surface">SaaS Development</h3>
+</div>
+<p class="font-body-sm text-caption text-on-surface-variant">
+            Zero-to-one MVPs, multi-tenant analytics dashboards, role permissions, and robust subscription billing engines.
+          </p>
+</div>
+<!-- 4. Web Development -->
+<div class="p-4 rounded-xl bg-surface-container-low/70 border border-outline-variant/30 hover:border-primary/50 transition-all flex flex-col gap-2">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary">web</span>
+<h3 class="font-headline-sm text-base font-bold text-on-surface">Web Development</h3>
+</div>
+<p class="font-body-sm text-caption text-on-surface-variant">
+            High-performance web experiences, corporate digital flagships, and ultra-fluid responsive interface systems.
+          </p>
+</div>
+<!-- 5. E-Commerce Systems -->
+<div class="p-4 rounded-xl bg-surface-container-low/70 border border-outline-variant/30 hover:border-primary/50 transition-all flex flex-col gap-2">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary">shopping_cart</span>
+<h3 class="font-headline-sm text-base font-bold text-on-surface">E-Commerce Systems</h3>
+</div>
+<p class="font-body-sm text-caption text-on-surface-variant">
+            Scalable commerce backbones, multi-currency payment orchestration, and cross-border settlement infrastructure.
+          </p>
+</div>
+<!-- 6. Product Strategy -->
+<div class="p-4 rounded-xl bg-surface-container-low/70 border border-outline-variant/30 hover:border-primary/50 transition-all flex flex-col gap-2">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary">architecture</span>
+<h3 class="font-headline-sm text-base font-bold text-on-surface">Product Strategy</h3>
+</div>
+<p class="font-body-sm text-caption text-on-surface-variant">
+            Technical feasibility audits, system architecture discovery, MVP scoping, and data-informed product roadmapping.
+          </p>
+</div>
+<!-- 7. Maintenance & Security -->
+<div class="p-4 rounded-xl bg-surface-container-low/70 border border-outline-variant/30 hover:border-primary/50 transition-all flex flex-col gap-2">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary">shield</span>
+<h3 class="font-headline-sm text-base font-bold text-on-surface">Maintenance &amp; Security</h3>
+</div>
+<p class="font-body-sm text-caption text-on-surface-variant">
+            24/7 automated telemetry monitoring, proactive penetration defense, dependency hardening, and zero-downtime upgrades.
+          </p>
+</div>
+</div>
+</section>
+<!-- ================= 7. HOW WE BUILD (6-Step Lifecycle Progression) ================= -->
+<section class="py-space-2xl border-t border-outline-variant/20 flex flex-col gap-6">
+<div class="flex flex-col gap-1">
+<span class="font-label-tech text-label-tech text-primary uppercase">[METHODOLOGY]</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-surface">The WEBLOX Lifecycle</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          Precision execution from raw technical hypothesis to globally hardened production software.
+        </p>
+</div>
+<!-- Vertical Stepper with connected illuminated purple progress line -->
+<div class="relative pl-6 flex flex-col gap-6 border-l-2 border-primary-container/40 ml-2">
+<!-- Step 1 -->
+<div class="relative flex flex-col gap-1">
+<div class="absolute -left-[31px] top-0 w-3.5 h-3.5 rounded-full bg-primary-container ring-4 ring-surface-container-lowest"></div>
+<span class="font-label-tech text-xs text-primary font-semibold">01 / DISCOVER</span>
+<h4 class="font-headline-sm text-base font-bold text-on-surface">Problem Identification</h4>
+<p class="font-body-sm text-caption text-on-surface-variant">Rigorous market validation, asymmetry discovery, and regulatory clearance.</p>
+</div>
+<!-- Step 2 -->
+<div class="relative flex flex-col gap-1">
+<div class="absolute -left-[31px] top-0 w-3.5 h-3.5 rounded-full bg-primary-container ring-4 ring-surface-container-lowest"></div>
+<span class="font-label-tech text-xs text-primary font-semibold">02 / VALIDATE</span>
+<h4 class="font-headline-sm text-base font-bold text-on-surface">Technical Feasibility</h4>
+<p class="font-body-sm text-caption text-on-surface-variant">Architecture stress-testing, unit economics modeling, and API sandbox proofs.</p>
+</div>
+<!-- Step 3 -->
+<div class="relative flex flex-col gap-1">
+<div class="absolute -left-[31px] top-0 w-3.5 h-3.5 rounded-full bg-primary-container ring-4 ring-surface-container-lowest"></div>
+<span class="font-label-tech text-xs text-primary font-semibold">03 / DESIGN</span>
+<h4 class="font-headline-sm text-base font-bold text-on-surface">Precision UX &amp; Systems</h4>
+<p class="font-body-sm text-caption text-on-surface-variant">High-fidelity design tokens, interactive micro-prototyping, and user validation.</p>
+</div>
+<!-- Step 4 -->
+<div class="relative flex flex-col gap-1">
+<div class="absolute -left-[31px] top-0 w-3.5 h-3.5 rounded-full bg-primary-container ring-4 ring-surface-container-lowest"></div>
+<span class="font-label-tech text-xs text-primary font-semibold">04 / BUILD</span>
+<h4 class="font-headline-sm text-base font-bold text-on-surface">Sprint Software Engineering</h4>
+<p class="font-body-sm text-caption text-on-surface-variant">Clean codebases, automated testing fixtures, and proprietary AI engine integration.</p>
+</div>
+<!-- Step 5 -->
+<div class="relative flex flex-col gap-1">
+<div class="absolute -left-[31px] top-0 w-3.5 h-3.5 rounded-full bg-primary-container ring-4 ring-surface-container-lowest"></div>
+<span class="font-label-tech text-xs text-primary font-semibold">05 / LAUNCH</span>
+<h4 class="font-headline-sm text-base font-bold text-on-surface">Infrastructure Hardening</h4>
+<p class="font-body-sm text-caption text-on-surface-variant">Automated CI/CD pipelines, global CDN propagation, and day-one market rollout.</p>
+</div>
+<!-- Step 6 -->
+<div class="relative flex flex-col gap-1">
+<div class="absolute -left-[31px] top-0 w-3.5 h-3.5 rounded-full bg-primary ring-4 ring-surface-container-lowest"></div>
+<span class="font-label-tech text-xs text-secondary-fixed font-semibold">06 / SCALE</span>
+<h4 class="font-headline-sm text-base font-bold text-on-surface">Operational Expansion</h4>
+<p class="font-body-sm text-caption text-on-surface-variant">Throughput optimization, distributed caching, and capital allocation support.</p>
+</div>
+</div>
+</section>
+<!-- ================= 8. INSIDE THE STUDIO (Philosophy & Culture) ================= -->
+<section class="py-space-2xl border-t border-outline-variant/20 flex flex-col gap-6">
+<div class="flex flex-col gap-2">
+<span class="font-label-tech text-label-tech text-primary uppercase">[STUDIO PHILOSOPHY]</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-surface">Building from Africa. Thinking globally.</h2>
+</div>
+<div class="space-y-4">
+<!-- Mission & Vision Cards -->
+<div class="p-4 rounded-xl bg-surface-container-low/80 border border-outline-variant/30 flex flex-col gap-1.5">
+<span class="font-label-studio text-[10px] text-primary tracking-widest uppercase">OUR MISSION</span>
+<p class="font-body-sm text-body-sm text-on-surface">
+            Democratizing world-class technology creation from the African continent by pairing indigenous engineering mastery with borderless commercial distribution.
+          </p>
+</div>
+<div class="p-4 rounded-xl bg-surface-container-low/80 border border-outline-variant/30 flex flex-col gap-1.5">
+<span class="font-label-studio text-[10px] text-primary tracking-widest uppercase">OUR VISION</span>
+<p class="font-body-sm text-body-sm text-on-surface">
+            Establishing Africa's most formidable venture-building engine for high-leverage software products that win on quality, not charity.
+          </p>
+</div>
+<!-- Engineering Philosophy Statement -->
+<div class="p-4 rounded-xl bg-gradient-to-br from-surface-container-high to-surface-container-low border border-primary/30 flex flex-col gap-2">
+<span class="font-label-studio text-[10px] text-secondary tracking-widest uppercase">ENGINEERING ETHOS</span>
+<p class="font-headline-sm text-base font-bold text-on-surface">
+            "Zero technical debt tolerance. Radical shipping velocity. Relentless attention to craft."
+          </p>
+<div class="flex items-center gap-2 pt-2 border-t border-outline-variant/30 text-[11px] font-label-tech text-outline">
+<span class="material-symbols-outlined text-sm text-primary">location_on</span>
+<span>Studio Hub: Lagos, Nigeria — Async Worldwide</span>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= 9. STUDIO INSIGHTS (Editorial Articles Preview) ================= -->
+<section class="py-space-2xl border-t border-outline-variant/20 flex flex-col gap-6" id="insights">
+<div class="flex flex-col gap-1.5">
+<span class="font-label-tech text-label-tech text-primary uppercase">[STUDIO INTELLIGENCE]</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-surface">Perspectives on technology, AI, and venture building.</h2>
+</div>
+<!-- Curated Article Cards -->
+<div class="flex flex-col gap-3">
+<!-- Card 1 -->
+<div class="p-4 rounded-xl bg-surface-container-low/70 border border-outline-variant/30 hover:border-primary/50 transition-all flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="font-label-tech text-[10px] text-primary bg-primary-container/20 px-2 py-0.5 rounded">AI &amp; ENGINEERING</span>
+<span class="font-caption text-caption text-outline">6 min read</span>
+</div>
+<h3 class="font-headline-sm text-sm font-bold text-on-surface leading-snug">
+            Architecting Real-Time Evaluation Engines for Autonomous Code Intelligence
+          </h3>
+</div>
+<!-- Card 2 -->
+<div class="p-4 rounded-xl bg-surface-container-low/70 border border-outline-variant/30 hover:border-primary/50 transition-all flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="font-label-tech text-[10px] text-primary bg-primary-container/20 px-2 py-0.5 rounded">VENTURE STRATEGY</span>
+<span class="font-caption text-caption text-outline">8 min read</span>
+</div>
+<h3 class="font-headline-sm text-sm font-bold text-on-surface leading-snug">
+            Why Frontier African Software Companies Must Target Global Day-One Markets
+          </h3>
+</div>
+<!-- Card 3 -->
+<div class="p-4 rounded-xl bg-surface-container-low/70 border border-outline-variant/30 hover:border-primary/50 transition-all flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="font-label-tech text-[10px] text-primary bg-primary-container/20 px-2 py-0.5 rounded">PRODUCT DESIGN</span>
+<span class="font-caption text-caption text-outline">5 min read</span>
+</div>
+<h3 class="font-headline-sm text-sm font-bold text-on-surface leading-snug">
+            Designing for High-Stakes Developer Tools: Lessons from Building Signarol
+          </h3>
+</div>
+</div>
+</section>
+<!-- ================= 10. LET'S BUILD CTA CONVERSION SECTION ================= -->
+<section class="py-space-2xl my-2 rounded-2xl bg-gradient-to-b from-surface-container to-surface-container-lowest border border-primary/50 p-6 neon-card-glow relative overflow-hidden flex flex-col gap-5" id="build-section">
+<!-- Glow ambient backdrop element -->
+<div class="absolute -top-10 -right-10 w-48 h-48 bg-primary-container/30 blur-[70px] pointer-events-none rounded-full"></div>
+<div class="flex flex-col gap-2 relative z-10">
+<span class="font-label-studio text-[10px] text-primary tracking-[0.2em] uppercase font-bold">INITIATE PARTNERSHIP</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-surface">Have an idea worth building?</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          Tell us what you're working on. Whether you represent an ambitious enterprise or an exceptional founder, we'll figure out the next step together.
+        </p>
+</div>
+<!-- Interactive Input Field Mockup -->
+<form class="flex flex-col gap-3 relative z-10" onsubmit="event.preventDefault(); alert('Message dispatched to WEBLOX Studio partners.');">
+<div class="flex flex-col gap-1.5">
+<label class="font-label-tech text-[10px] text-outline uppercase">Direct Channel</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-xl px-4 py-3 text-on-surface placeholder:text-outline font-body-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-sm" placeholder="Enter your email or project brief..." required="" type="email"/>
+</div>
+<button class="h-12 w-full rounded-xl bg-gradient-to-r from-primary-container to-secondary-container text-on-primary font-headline-sm text-sm font-bold flex items-center justify-center gap-2 shadow-[0_4px_20px_rgba(123,63,242,0.4)] active:scale-[0.98] transition-transform" type="submit">
+<span>Let's Build</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</form>
+<!-- Direct Contact Link -->
+<div class="flex items-center justify-center pt-2 relative z-10">
+<a class="font-label-tech text-xs text-outline hover:text-primary transition-colors flex items-center gap-1.5" href="mailto:studio@weblox.io">
+<span class="material-symbols-outlined text-xs">mail</span>
+<span>or email studio@weblox.io</span>
+</a>
+</div>
+</section>
+</main>
+<!-- ================= 11. STUDIO FOOTER (Shared Component Anchor) ================= -->
+<footer class="w-full px-gutter-mobile py-space-2xl flex flex-col gap-6 max-w-container-max mx-auto bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant/20">
+<!-- Brand Lockup -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-lg bg-primary-container flex items-center justify-center text-on-primary font-black text-xs">
+          W
+        </div>
+<span class="font-headline-sm-mobile text-headline-sm-mobile tracking-widest text-on-surface dark:text-on-surface font-extrabold uppercase">WEBLOX STUDIOS</span>
+</div>
+<p class="font-body-sm text-caption text-on-surface-variant max-w-xs">
+        We build powerful digital solutions that solve real problems.
+      </p>
+</div>
+<!-- Core Nav Links from Shared Component JSON -->
+<div class="grid grid-cols-2 gap-y-2.5 gap-x-4 pt-2">
+<a class="font-label-tech text-label-tech text-primary dark:text-primary font-medium hover:text-primary transition-colors duration-200 active:opacity-80" href="#ventures-showcase">Discover</a>
+<a class="font-label-tech text-label-tech text-on-surface-variant dark:text-on-surface-variant hover:text-primary transition-colors duration-200 active:opacity-80" href="#ventures-showcase">Ventures</a>
+<a class="font-label-tech text-label-tech text-on-surface-variant dark:text-on-surface-variant hover:text-primary transition-colors duration-200 active:opacity-80" href="#capabilities">Capabilities</a>
+<a class="font-label-tech text-label-tech text-on-surface-variant dark:text-on-surface-variant hover:text-primary transition-colors duration-200 active:opacity-80" href="#venture-model">Philosophy</a>
+<a class="font-label-tech text-label-tech text-on-surface-variant dark:text-on-surface-variant hover:text-primary transition-colors duration-200 active:opacity-80" href="#insights">Insights</a>
+<a class="font-label-tech text-label-tech text-on-surface-variant dark:text-on-surface-variant hover:text-primary transition-colors duration-200 active:opacity-80" href="#">Privacy Policy</a>
+</div>
+<!-- Credo Strip -->
+<div class="py-3 border-y border-outline-variant/15 flex items-center justify-between text-[11px] font-label-studio text-primary tracking-[0.2em]">
+<span>INNOVATION</span>
+<span class="text-outline">•</span>
+<span>QUALITY</span>
+<span class="text-outline">•</span>
+<span>IMPACT</span>
+</div>
+<!-- Bottom Telemetry & Copyright -->
+<div class="flex flex-col gap-2 pt-1 font-caption text-caption text-outline">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+<span>All systems operational</span>
+</div>
+<span class="font-mono text-[10px]">Latency 14ms</span>
+</div>
+<p class="text-[11px]">
+        © 2025 WEBLOX Studios. Lagos, Nigeria. Built for the world.
+      </p>
+</div>
+</footer>
+<!-- Vanilla JS Drawer Micro-interactions -->
+<script>
+    const drawerToggleBtn = document.getElementById('drawer-toggle-btn');
+    const drawerCloseBtn = document.getElementById('drawer-close-btn');
+    const navDrawer = document.getElementById('nav-drawer');
+    const drawerOverlay = document.getElementById('drawer-overlay');
+
+    function openDrawer() {
+      navDrawer.classList.remove('-translate-x-full');
+      drawerOverlay.classList.remove('hidden');
+    }
+
+    function closeDrawer() {
+      navDrawer.classList.add('-translate-x-full');
+      drawerOverlay.classList.add('hidden');
+    }
+
+    drawerToggleBtn.addEventListener('click', openDrawer);
+    drawerCloseBtn.addEventListener('click', closeDrawer);
+    drawerOverlay.addEventListener('click', closeDrawer);
+
+    // Close on navigation click inside drawer
+    navDrawer.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', closeDrawer);
+    });
+  </script>
+</body></html>

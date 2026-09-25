@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>WEBLOX STUDIOS — African Technology Venture Studio</title>
+<!-- Google Fonts & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration Token Anchor -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary-fixed": "#eedcff",
+            "surface-bright": "#39393c",
+            "on-primary": "#3c0090",
+            "secondary": "#d8b9ff",
+            "error-container": "#93000a",
+            "on-primary-container": "#f0e6ff",
+            "error": "#ffb4ab",
+            "on-tertiary": "#2f3132",
+            "tertiary": "#c6c6c8",
+            "on-error-container": "#ffdad6",
+            "on-secondary-fixed-variant": "#6300bb",
+            "on-surface": "#e4e1e5",
+            "on-error": "#690005",
+            "inverse-surface": "#e4e1e5",
+            "surface-container-low": "#1b1b1e",
+            "tertiary-fixed": "#e2e2e4",
+            "tertiary-fixed-dim": "#c6c6c8",
+            "outline-variant": "#4a4455",
+            "background": "#131316",
+            "on-tertiary-fixed-variant": "#454749",
+            "tertiary-container": "#68696b",
+            "primary-container": "#7b3ff2",
+            "surface-container": "#1f1f22",
+            "surface": "#131316",
+            "surface-dim": "#131316",
+            "on-secondary-container": "#d0acff",
+            "surface-variant": "#353438",
+            "on-tertiary-fixed": "#1a1c1d",
+            "surface-tint": "#d1bcff",
+            "on-tertiary-container": "#e9e9eb",
+            "secondary-container": "#6904c5",
+            "primary-fixed": "#e9ddff",
+            "surface-container-lowest": "#0e0e11",
+            "surface-container-highest": "#353438",
+            "primary": "#d1bcff",
+            "on-secondary": "#450086",
+            "primary-fixed-dim": "#d1bcff",
+            "surface-container-high": "#2a2a2d",
+            "on-primary-fixed-variant": "#5700c9",
+            "inverse-on-surface": "#303033",
+            "on-background": "#e4e1e5",
+            "on-secondary-fixed": "#290055",
+            "inverse-primary": "#7030e6",
+            "secondary-fixed-dim": "#d8b9ff",
+            "on-surface-variant": "#ccc3d8",
+            "outline": "#958da1",
+            "on-primary-fixed": "#23005b"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "gutter-desktop": "2rem",
+            "space-lg": "1.5rem",
+            "space-4xl": "6rem",
+            "space-3xl": "4rem",
+            "space-2xl": "3rem",
+            "space-sm": "0.75rem",
+            "space-2xs": "0.25rem",
+            "space-xs": "0.5rem",
+            "space-xl": "2rem",
+            "container-max": "80rem",
+            "space-md": "1rem",
+            "gutter-mobile": "1rem"
+          },
+          "fontFamily": {
+            "caption": ["Inter"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "label-tech": ["JetBrains Mono"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "headline-xl-mobile": ["Plus Jakarta Sans"],
+            "display-hero-mobile": ["Plus Jakarta Sans"],
+            "body-sm": ["Inter"],
+            "headline-xl": ["Plus Jakarta Sans"],
+            "body-md": ["Inter"],
+            "body-xl": ["Inter"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "label-studio": ["Plus Jakarta Sans"],
+            "display-hero": ["Plus Jakarta Sans"]
+          },
+          "fontSize": {
+            "caption": ["12px", { "lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "400" }],
+            "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "label-tech": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+            "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "headline-xl-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "display-hero-mobile": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+            "body-sm": ["14px", { "lineHeight": "22px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-xl": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.025em", "fontWeight": "700" }],
+            "body-md": ["16px", { "lineHeight": "26px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-xl": ["18px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "400" }],
+            "headline-sm": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "label-studio": ["12px", { "lineHeight": "16px", "letterSpacing": "0.28em", "fontWeight": "700" }],
+            "display-hero": ["64px", { "lineHeight": "72px", "letterSpacing": "-0.03em", "fontWeight": "800" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      background-color: #0e0e11;
+      color: #e4e1e5;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+    
+    /* Cyber Studio Precision Grid & Glow */
+    .bg-tech-grid {
+      background-size: 32px 32px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    }
+    .neon-border-top {
+      position: relative;
+    }
+    .neon-border-top::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, #7b3ff2 50%, transparent 100%);
+    }
+    .purple-bleed {
+      box-shadow: 0 0 40px -10px rgba(123, 63, 242, 0.35);
+    }
+    .glass-panel {
+      background: rgba(26, 26, 29, 0.72);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(243, 243, 245, 0.08);
+    }
+    .glass-panel-active {
+      background: rgba(31, 31, 34, 0.85);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(162, 89, 255, 0.28);
+    }
+  </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface antialiased bg-tech-grid selection:bg-primary-container selection:text-white">
+<!-- ========================================================================= -->
+<!-- 1. SHARED COMPONENT: TopAppBar (Desktop Navigation Shell Anchor) -->
+<!-- ========================================================================= -->
+<header class="fixed top-0 left-0 w-full z-50 bg-surface-container-lowest/80 backdrop-blur-md dark:bg-surface-container-lowest/80 shadow-[0_4px_20px_-4px_rgba(123,63,242,0.15)]">
+<div class="flex justify-between items-center w-full px-gutter-desktop h-16 max-w-container-max mx-auto">
+<!-- Brand Logo Lockup with Monogram -->
+<div class="flex items-center gap-3">
+<a class="flex items-center gap-2.5 group" href="#">
+<!-- Geometric WX Monogram SVG -->
+<div class="w-8 h-8 flex items-center justify-center bg-surface-container border border-outline-variant/40 rounded-lg group-hover:border-primary transition-colors">
+<svg fill="none" height="20" viewbox="0 0 32 32" width="20" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 8L10 24L14 16L18 24L24 8" stroke="#7B3FF2" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+<path d="M19 12L28 24M28 12L21 21" stroke="#F3F3F5" stroke-linecap="round" stroke-width="2.5"></path>
+</svg>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm tracking-wider uppercase text-on-surface font-extrabold flex items-center gap-1.5">
+              WEBLOX <span class="text-primary text-[10px] px-1.5 py-0.5 rounded bg-primary-container/20 border border-primary/30 tracking-normal font-label-tech">STUDIOS</span>
+</span>
+</div>
+</a>
+</div>
+<!-- Center Desktop Navigation Links -->
+<nav class="hidden md:flex items-center gap-8 text-label-studio font-label-studio">
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200" href="#ventures">Ventures</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200" href="#capabilities">Capabilities</a>
+<a class="text-primary font-bold transition-colors duration-200" href="#venture-model">Venture Model</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200" href="#studio">Studio</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200" href="#insights">Insights</a>
+</nav>
+<!-- Right Action CTA -->
+<div class="flex items-center gap-4">
+<a class="inline-flex items-center gap-2 bg-primary-container hover:bg-secondary-container text-white px-5 py-2.5 rounded-xl font-headline-sm text-[13px] font-semibold tracking-wide shadow-[0_4px_16px_rgba(123,63,242,0.4)] active:scale-95 transition-all duration-200" href="#contact">
+<span>Let's Build</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+</header>
+<!-- ========================================================================= -->
+<!-- 2. HERO SECTION: Technological Geometric Realism (Split 2-Column) -->
+<!-- ========================================================================= -->
+<section class="relative pt-32 pb-20 max-w-container-max mx-auto px-gutter-desktop overflow-hidden">
+<div class="grid grid-cols-12 gap-8 items-center">
+<!-- Left Column (60% / 7 Cols) -->
+<div class="col-span-12 lg:col-span-7 flex flex-col gap-6">
+<!-- Category Pill & Studio Coordinates -->
+<div class="inline-flex items-center gap-3">
+<span class="inline-flex items-center gap-2 bg-primary-container/15 border border-primary/30 px-3.5 py-1 rounded-full text-primary font-label-tech text-[11px] tracking-wider uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+            [ TECHNOLOGY VENTURE STUDIO ]
+          </span>
+<span class="text-on-surface-variant/60 font-label-tech text-[11px] tracking-wider">
+            LOS 06°27'N • 03°23'E — GLOBAL REACH
+          </span>
+</div>
+<!-- Headline -->
+<h1 class="font-display-hero text-display-hero tracking-tight text-white leading-none">
+          We build the <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-white">technology companies</span> of tomorrow.
+        </h1>
+<!-- Supporting Copy -->
+<p class="font-body-xl text-body-xl text-on-surface-variant max-w-2xl leading-relaxed">
+          WEBLOX Studios is a technology venture studio building, launching, and scaling digital products from Africa for global markets. We engineer high-velocity systems that solve real problems.
+        </p>
+<!-- CTA Cluster -->
+<div class="flex flex-wrap items-center gap-4 pt-2">
+<a class="inline-flex items-center gap-3 bg-gradient-to-r from-primary-container to-secondary-container hover:opacity-95 text-white px-7 py-3.5 rounded-xl font-headline-sm text-sm font-semibold tracking-wide shadow-[0_4px_24px_rgba(123,63,242,0.45)] active:scale-95 transition-all" href="#ventures">
+<span>Explore Ventures</span>
+<span class="material-symbols-outlined text-lg">arrow_forward</span>
+</a>
+<a class="inline-flex items-center gap-2 bg-surface-container/60 hover:bg-surface-container-high border border-outline-variant/40 hover:border-primary text-on-surface px-6 py-3.5 rounded-xl font-headline-sm text-sm font-semibold tracking-wide active:scale-95 transition-all" href="#contact">
+<span class="material-symbols-outlined text-lg text-primary">terminal</span>
+<span>Build With Us</span>
+</a>
+</div>
+<!-- Metric Highlights Footer -->
+<div class="grid grid-cols-3 gap-6 pt-6 border-t border-outline-variant/30 max-w-xl">
+<div>
+<div class="font-label-tech text-xl font-bold text-white tracking-tight">100%</div>
+<div class="font-label-studio text-label-studio text-on-surface-variant uppercase text-[10px] mt-0.5">Proprietary IP Built</div>
+</div>
+<div>
+<div class="font-label-tech text-xl font-bold text-white tracking-tight">6 WEEKS</div>
+<div class="font-label-studio text-label-studio text-on-surface-variant uppercase text-[10px] mt-0.5">Hypothesis To MVP</div>
+</div>
+<div>
+<div class="font-label-tech text-xl font-bold text-primary tracking-tight">DAY 1</div>
+<div class="font-label-studio text-label-studio text-on-surface-variant uppercase text-[10px] mt-0.5">Global Architecture</div>
+</div>
+</div>
+</div>
+<!-- Right Column (40% / 5 Cols): Tech Telemetry Visual Terminal -->
+<div class="col-span-12 lg:col-span-5 relative">
+<div class="absolute -inset-4 bg-primary-container/10 rounded-2xl blur-2xl -z-10"></div>
+<div class="glass-panel rounded-xl overflow-hidden shadow-[0_12px_36px_-8px_rgba(123,63,242,0.25)] neon-border-top">
+<!-- Terminal Title Bar -->
+<div class="flex items-center justify-between px-4 py-3 bg-surface-container border-b border-outline-variant/30">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-error/80"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-green-500/80"></span>
+<span class="ml-2 font-label-tech text-[11px] text-on-surface-variant font-medium">weblox-core-telemetry // live</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-primary-container/20 text-primary font-label-tech text-[10px]">CONNECTED</span>
+</div>
+<!-- Terminal Content Cluster -->
+<div class="p-5 flex flex-col gap-4 font-label-tech text-xs">
+<!-- Pipeline telemetry block -->
+<div class="flex items-center justify-between p-3 rounded-lg bg-surface-container-lowest/80 border border-outline-variant/30">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary text-base">neurology</span>
+<div>
+<div class="text-white font-semibold text-[13px]">AI Core Pipeline</div>
+<div class="text-on-surface-variant text-[11px]">Dynamic token throughput</div>
+</div>
+</div>
+<div class="text-right">
+<div class="text-primary font-bold">3,480 tok/s</div>
+<div class="text-green-400 text-[10px]">p99: 88ms</div>
+</div>
+</div>
+<!-- Active Venture Matrix -->
+<div class="p-3.5 rounded-lg bg-surface-container-lowest/80 border border-outline-variant/30 flex flex-col gap-2">
+<div class="flex items-center justify-between text-[11px] text-on-surface-variant pb-1 border-b border-outline-variant/20">
+<span>VENTURE ENGINE STACK</span>
+<span class="text-primary">ACTIVE CLUSTER</span>
+</div>
+<div class="flex items-center justify-between py-1">
+<span class="text-white flex items-center gap-1.5 font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-green-400"></span> Signarol AI MVP
+                </span>
+<span class="text-on-surface-variant text-[11px]">v1.4.2 [LIVE]</span>
+</div>
+<div class="flex items-center justify-between py-1">
+<span class="text-white flex items-center gap-1.5 font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> ApexFlow FinTech
+                </span>
+<span class="text-on-surface-variant text-[11px]">Validation Q2 26</span>
+</div>
+<div class="flex items-center justify-between py-1">
+<span class="text-white flex items-center gap-1.5 font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span> Kinetix Logistics
+                </span>
+<span class="text-on-surface-variant text-[11px]">Synthesis Mode</span>
+</div>
+</div>
+<!-- Live Edge Deployment Nodes -->
+<div class="grid grid-cols-2 gap-3">
+<div class="p-3 rounded-lg bg-surface-container-lowest/80 border border-outline-variant/30">
+<div class="text-on-surface-variant text-[10px] uppercase tracking-wider">Deployment Topology</div>
+<div class="text-white font-bold text-sm mt-1">Global (Day 1)</div>
+<div class="text-primary text-[10px] mt-0.5 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">public</span> 24 Anycast PoPs
+                </div>
+</div>
+<div class="p-3 rounded-lg bg-surface-container-lowest/80 border border-outline-variant/30">
+<div class="text-on-surface-variant text-[10px] uppercase tracking-wider">System Health Pulse</div>
+<div class="text-green-400 font-bold text-sm mt-1">99.998% Uptime</div>
+<div class="text-on-surface-variant text-[10px] mt-0.5 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">speed</span> 14ms Median Latency
+                </div>
+</div>
+</div>
+<!-- Monospaced Code Execution snippet -->
+<div class="p-2.5 rounded bg-surface-container-high/50 text-[11px] text-tertiary-fixed-dim leading-snug">
+<span class="text-primary font-bold">&gt;</span> weblox.deploy({ engine: 'signarol', target: 'prod-global', auth: 'hardened' })<br/>
+<span class="text-green-400 font-medium">✓ Verification verified in 0.42s [Zero CVEs detected]</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 3. POSITIONING STATEMENT & VALUE PILLAR GRID -->
+<!-- ========================================================================= -->
+<section class="py-20 border-y border-outline-variant/20 bg-surface-container-lowest relative">
+<div class="max-w-container-max mx-auto px-gutter-desktop flex flex-col gap-12">
+<!-- Headline & Studio Tagline Lockup -->
+<div class="text-center max-w-3xl mx-auto flex flex-col items-center gap-3">
+<span class="text-primary font-label-studio text-xs uppercase tracking-widest">Architectural Principles</span>
+<h2 class="font-headline-xl text-headline-xl text-white font-bold tracking-tight">
+          From Africa. Built for the world.
+        </h2>
+<p class="font-body-lg text-body-md text-on-surface-variant">
+          "We build powerful digital solutions that solve real problems."
+        </p>
+</div>
+<!-- 3-Column Value Pillar Bento -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Pillar 1: INNOVATION -->
+<div class="glass-panel p-8 rounded-xl flex flex-col justify-between group hover:border-primary/50 transition-all duration-300">
+<div>
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary mb-6 border border-outline-variant/30 group-hover:scale-105 group-hover:border-primary transition-all">
+<span class="material-symbols-outlined text-2xl">lightbulb</span>
+</div>
+<div class="flex items-center justify-between mb-2">
+<h3 class="font-headline-sm text-headline-sm text-white font-bold tracking-wide">INNOVATION</h3>
+<span class="font-label-tech text-xs text-primary/80">01 / PILLAR</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+              Modern technology solving meaningful systemic challenges. We bypass legacy constraints by deploying autonomous AI agent systems and distributed architectures.
+            </p>
+</div>
+<div class="pt-6 mt-6 border-t border-outline-variant/20 flex items-center gap-2 text-primary text-xs font-label-tech">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>Asymmetric market positioning</span>
+</div>
+</div>
+<!-- Pillar 2: QUALITY -->
+<div class="glass-panel p-8 rounded-xl flex flex-col justify-between group hover:border-primary/50 transition-all duration-300 relative">
+<div class="absolute -top-[1px] left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent"></div>
+<div>
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary mb-6 border border-outline-variant/30 group-hover:scale-105 group-hover:border-primary transition-all">
+<span class="material-symbols-outlined text-2xl">verified</span>
+</div>
+<div class="flex items-center justify-between mb-2">
+<h3 class="font-headline-sm text-headline-sm text-white font-bold tracking-wide">QUALITY</h3>
+<span class="font-label-tech text-xs text-primary/80">02 / PILLAR</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+              World-class architectural integrity, military-grade security, and precision engineering. Zero tolerance for technical debt or slow interfaces.
+            </p>
+</div>
+<div class="pt-6 mt-6 border-t border-outline-variant/20 flex items-center gap-2 text-primary text-xs font-label-tech">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>Zero-defect production codebases</span>
+</div>
+</div>
+<!-- Pillar 3: IMPACT -->
+<div class="glass-panel p-8 rounded-xl flex flex-col justify-between group hover:border-primary/50 transition-all duration-300">
+<div>
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary mb-6 border border-outline-variant/30 group-hover:scale-105 group-hover:border-primary transition-all">
+<span class="material-symbols-outlined text-2xl">rocket_launch</span>
+</div>
+<div class="flex items-center justify-between mb-2">
+<h3 class="font-headline-sm text-headline-sm text-white font-bold tracking-wide">IMPACT</h3>
+<span class="font-label-tech text-xs text-primary/80">03 / PILLAR</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+              Measurable commercial enterprise value and scalable global distribution. Built for millions of concurrent interactions on day one.
+            </p>
+</div>
+<div class="pt-6 mt-6 border-t border-outline-variant/20 flex items-center gap-2 text-primary text-xs font-label-tech">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>High compounding leverage</span>
+</div>
+</div>
+</div>
+<!-- Preserved Visual Brand Statement Bar -->
+<div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/30 flex items-center justify-around text-center">
+<span class="font-headline-sm text-headline-sm font-bold tracking-widest text-on-surface">INNOVATION</span>
+<span class="text-primary font-bold">•</span>
+<span class="font-headline-sm text-headline-sm font-bold tracking-widest text-on-surface">QUALITY</span>
+<span class="text-primary font-bold">•</span>
+<span class="font-headline-sm text-headline-sm font-bold tracking-widest text-on-surface">IMPACT</span>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 4. THE VENTURE MODEL ('More than a software studio') -->
+<!-- ========================================================================= -->
+<section class="py-24 max-w-container-max mx-auto px-gutter-desktop" id="venture-model">
+<div class="flex flex-col gap-12">
+<!-- Section Header -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 pb-6 border-b border-outline-variant/20">
+<div>
+<span class="text-primary font-label-studio text-xs uppercase tracking-widest">Our Methodology</span>
+<h2 class="font-headline-xl text-headline-xl text-white font-bold tracking-tight mt-1">
+            The Venture Model
+          </h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md">
+          Combining Institutional Product Strategy, Engineering, AI Systems, and Cloud Architecture into an accelerated vehicle.
+        </p>
+</div>
+<!-- 3-Column Venture Model Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- 01 DISCOVER -->
+<div class="p-8 rounded-xl bg-surface-container/60 border border-outline-variant/30 relative flex flex-col justify-between hover:border-primary/40 transition-colors">
+<div>
+<div class="font-label-tech text-3xl font-bold text-primary mb-4">01</div>
+<h3 class="font-headline-md text-headline-md text-white font-bold mb-2">DISCOVER</h3>
+<div class="text-primary font-label-tech text-xs uppercase tracking-wider mb-4">[ Opportunity Synthesis ]</div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+              Identify asymmetric problems with continental leverage. We deconstruct operational friction, validate market appetite through real-time data, and engineer the core strategic thesis.
+            </p>
+</div>
+<div class="mt-8 pt-4 border-t border-outline-variant/20 text-xs font-label-tech text-tertiary">
+            Duration: 2-3 Weeks • Proof of Asymmetry
+          </div>
+</div>
+<!-- 02 BUILD -->
+<div class="p-8 rounded-xl bg-surface-container/80 border border-primary/40 shadow-[0_8px_30px_rgba(123,63,242,0.15)] relative flex flex-col justify-between neon-border-top">
+<div>
+<div class="font-label-tech text-3xl font-bold text-white mb-4">02</div>
+<h3 class="font-headline-md text-headline-md text-white font-bold mb-2">BUILD</h3>
+<div class="text-primary font-label-tech text-xs uppercase tracking-wider mb-4">[ Sprint Execution ]</div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+              Turn validated concepts into hardened production-grade systems via continuous 6-week engineering sprints. Full-stack TypeScript, distributed microservices, and bespoke AI modules.
+            </p>
+</div>
+<div class="mt-8 pt-4 border-t border-outline-variant/20 text-xs font-label-tech text-primary font-medium">
+            Duration: 6 Weeks • Live Production MVP
+          </div>
+</div>
+<!-- 03 SCALE -->
+<div class="p-8 rounded-xl bg-surface-container/60 border border-outline-variant/30 relative flex flex-col justify-between hover:border-primary/40 transition-colors">
+<div>
+<div class="font-label-tech text-3xl font-bold text-primary mb-4">03</div>
+<h3 class="font-headline-md text-headline-md text-white font-bold mb-2">SCALE</h3>
+<div class="text-primary font-label-tech text-xs uppercase tracking-wider mb-4">[ Global Expansion ]</div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+              Inject enterprise-grade growth infrastructure, multi-currency settlement rails, and international distribution networks. Built to sustain exponential traffic load seamlessly.
+            </p>
+</div>
+<div class="mt-8 pt-4 border-t border-outline-variant/20 text-xs font-label-tech text-tertiary">
+            Duration: Ongoing • Institutional Readiness
+          </div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 5. FEATURED STUDIO VENTURE: SIGNAROL -->
+<!-- ========================================================================= -->
+<section class="py-20 bg-surface-container-lowest relative border-y border-outline-variant/20" id="ventures">
+<div class="max-w-container-max mx-auto px-gutter-desktop flex flex-col gap-10">
+<!-- Section Header -->
+<div class="flex items-center justify-between">
+<div>
+<span class="text-primary font-label-studio text-xs uppercase tracking-widest">Venture Spotlight</span>
+<h2 class="font-headline-xl text-headline-xl text-white font-bold tracking-tight mt-1">Featured Venture: SIGNAROL</h2>
+</div>
+<span class="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded bg-green-500/10 text-green-400 border border-green-500/20 font-label-tech text-xs">
+<span class="w-2 h-2 rounded-full bg-green-400 animate-ping"></span>
+          LIVE PRODUCTION MVP
+        </span>
+</div>
+<!-- Spotlight Module Card -->
+<div class="glass-panel-active rounded-2xl p-8 lg:p-10 border border-primary/30 relative overflow-hidden purple-bleed">
+<!-- Header Info Cluster -->
+<div class="flex flex-wrap items-center justify-between gap-4 pb-8 border-b border-outline-variant/30">
+<div>
+<div class="flex items-center gap-3">
+<span class="font-headline-lg text-headline-lg font-bold text-white tracking-tight">SIGNAROL</span>
+<span class="bg-primary/20 text-primary border border-primary/40 font-label-tech text-xs px-2.5 py-0.5 rounded font-semibold">AI MVP</span>
+</div>
+<p class="font-body-lg text-body-md text-on-surface-variant mt-1">
+              AI-Powered Technical Interview Intelligence &amp; Live Coding Evaluation Engine
+            </p>
+</div>
+<!-- Badges -->
+<div class="flex flex-wrap gap-2 font-label-tech text-xs">
+<span class="px-3 py-1 bg-surface-container border border-outline-variant/40 rounded text-on-surface">DevTools</span>
+<span class="px-3 py-1 bg-surface-container border border-outline-variant/40 rounded text-on-surface">Autonomous AI</span>
+<span class="px-3 py-1 bg-surface-container border border-outline-variant/40 rounded text-on-surface">Compiler AST</span>
+<span class="px-3 py-1 bg-primary-container/30 border border-primary/40 rounded text-primary font-bold">In Production</span>
+</div>
+</div>
+<!-- Dual-Column Interactive Preview -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-8">
+<!-- Left: Code & AST Terminal (7 cols) -->
+<div class="lg:col-span-7 bg-surface-container-lowest rounded-xl border border-outline-variant/30 p-5 font-label-tech text-xs flex flex-col gap-3">
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant/20 text-[11px] text-on-surface-variant">
+<span class="flex items-center gap-2 text-white">
+<span class="material-symbols-outlined text-sm text-primary">data_object</span>
+                signarol_eval_worker.py
+              </span>
+<span>SYNTAX_TREE: PARSED (18ms)</span>
+</div>
+<pre class="text-tertiary-fixed-dim leading-relaxed overflow-x-auto py-1"><span class="text-primary font-semibold">import</span> signarol_kernel <span class="text-primary font-semibold">as</span> sk
+<span class="text-primary font-semibold">from</span> ast_analyzer <span class="text-primary font-semibold">import</span> DynamicComplexityEvaluator
+
+<span class="text-primary/70"># Initialize multi-modal AST evaluation instance</span>
+engine = sk.ExecutionSandbox(
+    runtime=<span class="text-green-300">"cpython-3.12-wasm"</span>,
+    timeout_ms=350,
+    isolate_memory_mb=128
+)
+
+<span class="text-on-surface-variant/80">@engine.observe(metric=["O_NOTATION", "MEM_SPIKE", "EDGE_CASES"])</span>
+<span class="text-primary font-semibold">def</span> <span class="text-secondary font-bold">evaluate_solution</span>(candidate_ast):
+    telemetry = engine.run_synthetic_stress(candidate_ast)
+    <span class="text-primary font-semibold">return</span> telemetry.generate_vector_score()
+            </pre>
+<div class="p-2.5 rounded bg-surface-container flex items-center justify-between text-[11px] border border-outline-variant/20">
+<span class="text-green-400 font-semibold flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-green-400"></span> AST Analysis Complete
+              </span>
+<span class="text-on-surface-variant">Passed 48/48 Test Assertions</span>
+</div>
+</div>
+<!-- Right: Architectural Stats & Telemetry (5 cols) -->
+<div class="lg:col-span-5 flex flex-col justify-between gap-4">
+<div class="flex flex-col gap-3">
+<!-- Metric Item 1 -->
+<div class="p-4 rounded-xl bg-surface-container/60 border border-outline-variant/30 flex items-center justify-between">
+<div>
+<div class="text-on-surface-variant font-label-tech text-xs">Algorithmic Efficiency</div>
+<div class="text-white font-headline-md text-headline-md font-bold mt-0.5">O(N log N)</div>
+</div>
+<div class="text-primary font-label-tech text-sm font-bold bg-primary-container/20 px-2.5 py-1 rounded">
+                  98.4% Rank
+                </div>
+</div>
+<!-- Metric Item 2 -->
+<div class="p-4 rounded-xl bg-surface-container/60 border border-outline-variant/30 flex items-center justify-between">
+<div>
+<div class="text-on-surface-variant font-label-tech text-xs">Inference Latency</div>
+<div class="text-white font-headline-md text-headline-md font-bold mt-0.5">142 ms</div>
+</div>
+<div class="text-green-400 font-label-tech text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">bolt</span> Realtime
+                </div>
+</div>
+<!-- Metric Item 3 -->
+<div class="p-4 rounded-xl bg-surface-container/60 border border-outline-variant/30 flex items-center justify-between">
+<div>
+<div class="text-on-surface-variant font-label-tech text-xs">Active Engine Core</div>
+<div class="text-white font-headline-sm text-headline-sm font-semibold mt-0.5">we-kernel-v3.8</div>
+</div>
+<span class="font-label-tech text-[10px] text-on-surface-variant uppercase">Isolated WebAssembly</span>
+</div>
+</div>
+<!-- Action Link -->
+<a class="w-full inline-flex items-center justify-center gap-2 bg-surface-container-high hover:bg-surface-bright border border-primary/40 text-white py-3 rounded-xl font-headline-sm text-xs font-semibold tracking-wide active:scale-95 transition-all" href="https://signarol.com" rel="noopener noreferrer" target="_blank">
+<span>Inspect Live Signarol Deployment</span>
+<span class="material-symbols-outlined text-sm text-primary">open_in_new</span>
+</a>
+</div>
+</div>
+<!-- Stealth Ventures Footer -->
+<div class="mt-8 pt-6 border-t border-outline-variant/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 font-label-tech text-xs text-on-surface-variant">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span>2 ADDITIONAL VENTURES CURRENTLY IN VALIDATION (STEALTH PHASE — TARGET LAUNCH Q2 2026)</span>
+</div>
+<span class="text-primary font-medium tracking-wider">PIPELINE SECURE • CLASSIFIED</span>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 6. CAPABILITIES GRID ('What we build.') -->
+<!-- ========================================================================= -->
+<section class="py-24 max-w-container-max mx-auto px-gutter-desktop" id="capabilities">
+<div class="flex flex-col gap-12">
+<!-- Section Header -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 pb-6 border-b border-outline-variant/20">
+<div>
+<span class="text-primary font-label-studio text-xs uppercase tracking-widest">Engineering Depth</span>
+<h2 class="font-headline-xl text-headline-xl text-white font-bold tracking-tight mt-1">Capabilities</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md">
+          Precision execution across full-lifecycle software creation, from custom machine learning inference to distributed financial primitives.
+        </p>
+</div>
+<!-- 3-Column by 2-Row Structured Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Cap 1: Product Engineering -->
+<div class="glass-panel p-7 rounded-xl flex flex-col justify-between group hover:border-primary/50 transition-all">
+<div>
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary mb-5 border border-outline-variant/30 group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-xl">developer_board</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-white mb-2">Product Engineering</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+              Distributed architectures, reactive frontends, and resilient microservices capable of processing high transactional volume under stringent SLA guarantees.
+            </p>
+</div>
+<div class="mt-6 pt-4 border-t border-outline-variant/20 font-label-tech text-[11px] text-primary flex items-center gap-2">
+<span>TypeScript • Go • Rust • Docker</span>
+</div>
+</div>
+<!-- Cap 2: AI & Automation -->
+<div class="glass-panel p-7 rounded-xl flex flex-col justify-between group hover:border-primary/50 transition-all">
+<div>
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary mb-5 border border-outline-variant/30 group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-xl">smart_toy</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-white mb-2">AI &amp; Automation</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+              Applied Large Language Models, custom fine-tuned weights, autonomous agent orchestration, and automated decision engines embedded seamlessly into operational workflows.
+            </p>
+</div>
+<div class="mt-6 pt-4 border-t border-outline-variant/20 font-label-tech text-[11px] text-primary flex items-center gap-2">
+<span>PyTorch • vLLM • LangGraph • Vector DBs</span>
+</div>
+</div>
+<!-- Cap 3: SaaS Development -->
+<div class="glass-panel p-7 rounded-xl flex flex-col justify-between group hover:border-primary/50 transition-all">
+<div>
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary mb-5 border border-outline-variant/30 group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-xl">grid_view</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-white mb-2">SaaS Development</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+              Multi-tenant foundations, role-based granular access controls, automated recurring billing engines, and telemetry monitoring suites built for scale.
+            </p>
+</div>
+<div class="mt-6 pt-4 border-t border-outline-variant/20 font-label-tech text-[11px] text-primary flex items-center gap-2">
+<span>Multi-Tenant • Stripe/Paystack • SOC2</span>
+</div>
+</div>
+<!-- Cap 4: Web Development -->
+<div class="glass-panel p-7 rounded-xl flex flex-col justify-between group hover:border-primary/50 transition-all">
+<div>
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary mb-5 border border-outline-variant/30 group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-xl">terminal</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-white mb-2">Flagship Web Development</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+              Sub-second page rendering, headless content architectures, dynamic edge caching, and bespoke interactive WebGL/Canvas micro-animations.
+            </p>
+</div>
+<div class="mt-6 pt-4 border-t border-outline-variant/20 font-label-tech text-[11px] text-primary flex items-center gap-2">
+<span>Next.js • TailwindCSS • Edge Workers</span>
+</div>
+</div>
+<!-- Cap 5: E-Commerce Systems -->
+<div class="glass-panel p-7 rounded-xl flex flex-col justify-between group hover:border-primary/50 transition-all">
+<div>
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary mb-5 border border-outline-variant/30 group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-xl">currency_exchange</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-white mb-2">E-Commerce Systems</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+              Multi-currency checkout funnels, cross-border African settlement infrastructure, real-time inventory reconciliation, and hyper-optimized conversions.
+            </p>
+</div>
+<div class="mt-6 pt-4 border-t border-outline-variant/20 font-label-tech text-[11px] text-primary flex items-center gap-2">
+<span>Cross-Border FX • Real-Time Ledgers</span>
+</div>
+</div>
+<!-- Cap 6: Product Strategy & Security -->
+<div class="glass-panel p-7 rounded-xl flex flex-col justify-between group hover:border-primary/50 transition-all">
+<div>
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary mb-5 border border-outline-variant/30 group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-xl">shield</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-white mb-2">Product Strategy &amp; Security</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+              Architecture stress-testing, automated vulnerability scanning, zero-trust perimeter configurations, and continuous commercial threat modeling.
+            </p>
+</div>
+<div class="mt-6 pt-4 border-t border-outline-variant/20 font-label-tech text-[11px] text-primary flex items-center gap-2">
+<span>Pen-Testing • Threat Modeling • CI/CD Hardening</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 7. THE WEBLOX PRODUCT LIFECYCLE (HORIZONTAL PROGRESSION TIMELINE) -->
+<!-- ========================================================================= -->
+<section class="py-24 bg-surface-container-lowest border-y border-outline-variant/20 relative overflow-hidden">
+<div class="max-w-container-max mx-auto px-gutter-desktop flex flex-col gap-16">
+<!-- Section Header -->
+<div class="text-center max-w-3xl mx-auto flex flex-col items-center gap-3">
+<span class="text-primary font-label-studio text-xs uppercase tracking-widest">Systematic Delivery</span>
+<h2 class="font-headline-xl text-headline-xl text-white font-bold tracking-tight">The WEBLOX Lifecycle</h2>
+<p class="font-body-lg text-body-md text-on-surface-variant">
+          Precision execution from raw technical hypothesis to globally hardened production software.
+        </p>
+</div>
+<!-- 6-Stage Continuous Horizontal Connected Timeline -->
+<div class="relative">
+<!-- Continuous Illuminated Horizontal Line Across Desktop -->
+<div class="hidden lg:block absolute top-[28px] left-8 right-8 h-[2px] bg-outline-variant/30 z-0">
+<div class="h-full w-full bg-gradient-to-r from-primary via-secondary to-primary/40"></div>
+</div>
+<!-- 6 Connected Stage Columns -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 relative z-10">
+<!-- Stage 01 -->
+<div class="flex flex-col gap-4 group">
+<div class="w-14 h-14 rounded-xl bg-surface-container border-2 border-primary flex items-center justify-center text-primary font-label-tech font-bold text-sm shadow-[0_0_16px_rgba(123,63,242,0.4)] group-hover:scale-110 transition-transform">
+              01
+            </div>
+<div>
+<div class="font-headline-sm text-headline-sm font-bold text-white">DISCOVER</div>
+<div class="font-label-tech text-[11px] text-primary mb-2 uppercase">[ Problem ID ]</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                Market validation, asymmetry discovery, and foundational thesis modeling.
+              </p>
+</div>
+</div>
+<!-- Stage 02 -->
+<div class="flex flex-col gap-4 group">
+<div class="w-14 h-14 rounded-xl bg-surface-container border border-outline-variant/60 flex items-center justify-center text-on-surface font-label-tech font-bold text-sm group-hover:border-primary group-hover:text-primary transition-colors">
+              02
+            </div>
+<div>
+<div class="font-headline-sm text-headline-sm font-bold text-white">VALIDATE</div>
+<div class="font-label-tech text-[11px] text-primary mb-2 uppercase">[ Feasibility ]</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                Technical feasibility, sandbox proofs-of-concept, and baseline unit economics.
+              </p>
+</div>
+</div>
+<!-- Stage 03 -->
+<div class="flex flex-col gap-4 group">
+<div class="w-14 h-14 rounded-xl bg-surface-container border border-outline-variant/60 flex items-center justify-center text-on-surface font-label-tech font-bold text-sm group-hover:border-primary group-hover:text-primary transition-colors">
+              03
+            </div>
+<div>
+<div class="font-headline-sm text-headline-sm font-bold text-white">DESIGN</div>
+<div class="font-label-tech text-[11px] text-primary mb-2 uppercase">[ Precision UX ]</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                Design system architecture, ergonomic interfaces, and rapid interactive prototyping.
+              </p>
+</div>
+</div>
+<!-- Stage 04 -->
+<div class="flex flex-col gap-4 group">
+<div class="w-14 h-14 rounded-xl bg-surface-container border-2 border-primary/80 flex items-center justify-center text-primary font-label-tech font-bold text-sm shadow-[0_0_12px_rgba(123,63,242,0.3)] group-hover:scale-110 transition-transform">
+              04
+            </div>
+<div>
+<div class="font-headline-sm text-headline-sm font-bold text-white">BUILD</div>
+<div class="font-label-tech text-[11px] text-primary mb-2 uppercase">[ Sprints ]</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                6-week production code sprints, clean microservices, and test fixtures.
+              </p>
+</div>
+</div>
+<!-- Stage 05 -->
+<div class="flex flex-col gap-4 group">
+<div class="w-14 h-14 rounded-xl bg-surface-container border border-outline-variant/60 flex items-center justify-center text-on-surface font-label-tech font-bold text-sm group-hover:border-primary group-hover:text-primary transition-colors">
+              05
+            </div>
+<div>
+<div class="font-headline-sm text-headline-sm font-bold text-white">LAUNCH</div>
+<div class="font-label-tech text-[11px] text-primary mb-2 uppercase">[ Day 1 Edge ]</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                Infrastructure hardening, automated CI/CD pipeline, and global CDN rollout.
+              </p>
+</div>
+</div>
+<!-- Stage 06 -->
+<div class="flex flex-col gap-4 group">
+<div class="w-14 h-14 rounded-xl bg-surface-container border-2 border-primary flex items-center justify-center text-white bg-primary-container/40 font-label-tech font-bold text-sm shadow-[0_0_20px_rgba(123,63,242,0.5)] group-hover:scale-110 transition-transform">
+              06
+            </div>
+<div>
+<div class="font-headline-sm text-headline-sm font-bold text-white">SCALE</div>
+<div class="font-label-tech text-[11px] text-primary mb-2 uppercase">[ Expansion ]</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                Operational distribution, telemetry tracking, and institutional capital leverage.
+              </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 8. INSIDE THE STUDIO ('Building from Africa. Thinking globally.') -->
+<!-- ========================================================================= -->
+<section class="py-24 max-w-container-max mx-auto px-gutter-desktop" id="studio">
+<div class="flex flex-col gap-12">
+<!-- Section Header -->
+<div class="max-w-3xl">
+<span class="text-primary font-label-studio text-xs uppercase tracking-widest">Our Organization</span>
+<h2 class="font-headline-xl text-headline-xl text-white font-bold tracking-tight mt-1">
+          Building from Africa. Thinking globally.
+        </h2>
+</div>
+<!-- 3-Column Editorial Layout -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="glass-panel p-8 rounded-xl flex flex-col justify-between">
+<div>
+<div class="font-label-tech text-xs text-primary mb-4">[ 01 / PHILOSOPHY ]</div>
+<h3 class="font-headline-md text-headline-md font-bold text-white mb-3">Our Mission</h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+              To democratize world-class technology creation paired with borderless commercial distribution. We engineer ventures where technical craftsmanship is non-negotiable.
+            </p>
+</div>
+<div class="pt-6 mt-6 border-t border-outline-variant/20 text-xs font-label-tech text-on-surface-variant">
+            Impact: Sustainable Sovereign Infrastructure
+          </div>
+</div>
+<div class="glass-panel p-8 rounded-xl flex flex-col justify-between">
+<div>
+<div class="font-label-tech text-xs text-primary mb-4">[ 02 / HORIZON ]</div>
+<h3 class="font-headline-md text-headline-md font-bold text-white mb-3">Our Vision</h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+              To stand as Africa's most formidable venture-building engine, competing internationally on sheer product quality, execution speed, and technological superiority.
+            </p>
+</div>
+<div class="pt-6 mt-6 border-t border-outline-variant/20 text-xs font-label-tech text-on-surface-variant">
+            Benchmark: Silicon Valley &amp; European Standard
+          </div>
+</div>
+<div class="glass-panel p-8 rounded-xl flex flex-col justify-between neon-border-top">
+<div>
+<div class="font-label-tech text-xs text-primary mb-4">[ 03 / OPERATIONAL ETHOS ]</div>
+<h3 class="font-headline-md text-headline-md font-bold text-white mb-3">Engineering Ethos</h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+              "Zero technical debt tolerance. Radical shipping velocity. Relentless attention to craft." Studio Hub: Lagos, Nigeria — Bound Worldwide.
+            </p>
+</div>
+<div class="pt-6 mt-6 border-t border-outline-variant/20 flex items-center justify-between text-xs font-label-tech">
+<span class="text-white font-semibold">Studio Hub: Lagos</span>
+<span class="text-green-400">ONLINE</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 9. STUDIO INSIGHTS (Editorial Grid) -->
+<!-- ========================================================================= -->
+<section class="py-24 bg-surface-container-lowest border-y border-outline-variant/20" id="insights">
+<div class="max-w-container-max mx-auto px-gutter-desktop flex flex-col gap-12">
+<!-- Section Header -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 pb-6 border-b border-outline-variant/20">
+<div>
+<span class="text-primary font-label-studio text-xs uppercase tracking-widest">Knowledge Base</span>
+<h2 class="font-headline-xl text-headline-xl text-white font-bold tracking-tight mt-1">Studio Insights</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-sm">
+          Technical essays, architectural post-mortems, and venture theses directly from our build leads.
+        </p>
+</div>
+<!-- 3-Column Editorial Card Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Insight 1 -->
+<article class="glass-panel p-6 rounded-xl flex flex-col justify-between group hover:border-primary/50 transition-all">
+<div class="flex flex-col gap-4">
+<div class="flex items-center justify-between font-label-tech text-xs">
+<span class="text-primary bg-primary-container/20 px-2 py-0.5 rounded">AI &amp; Engineering</span>
+<span class="text-on-surface-variant">6 min read</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-white group-hover:text-primary transition-colors leading-snug">
+              Architecting Real-Time Evaluation Engines for Autonomous Code Intelligence
+            </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+              How we eliminated sandbox escape vectors and kept AST execution latency under 150ms while parsing dynamic Python and Rust payloads.
+            </p>
+</div>
+<div class="mt-6 pt-4 border-t border-outline-variant/20 flex items-center gap-2 text-xs font-label-tech text-white group-hover:text-primary transition-colors">
+<span>Read Research Brief</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</div>
+</article>
+<!-- Insight 2 -->
+<article class="glass-panel p-6 rounded-xl flex flex-col justify-between group hover:border-primary/50 transition-all">
+<div class="flex flex-col gap-4">
+<div class="flex items-center justify-between font-label-tech text-xs">
+<span class="text-primary bg-primary-container/20 px-2 py-0.5 rounded">Venture Strategy</span>
+<span class="text-on-surface-variant">8 min read</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-white group-hover:text-primary transition-colors leading-snug">
+              Why Frontier African Software Companies Must Target Global Day-One Markets
+            </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+              A deep-dive into why local unit economics can compress returns unless products are engineered with inherent global appeal and currency hedging.
+            </p>
+</div>
+<div class="mt-6 pt-4 border-t border-outline-variant/20 flex items-center gap-2 text-xs font-label-tech text-white group-hover:text-primary transition-colors">
+<span>Read Research Brief</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</div>
+</article>
+<!-- Insight 3 -->
+<article class="glass-panel p-6 rounded-xl flex flex-col justify-between group hover:border-primary/50 transition-all">
+<div class="flex flex-col gap-4">
+<div class="flex items-center justify-between font-label-tech text-xs">
+<span class="text-primary bg-primary-container/20 px-2 py-0.5 rounded">Product Design</span>
+<span class="text-on-surface-variant">5 min read</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-white group-hover:text-primary transition-colors leading-snug">
+              Designing for High-Stakes Developer Tools: Lessons from Building Signarol
+            </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+              Minimizing cognitive load for engineering candidates while feeding structured telemetry to hiring decision-makers in real-time.
+            </p>
+</div>
+<div class="mt-6 pt-4 border-t border-outline-variant/20 flex items-center gap-2 text-xs font-label-tech text-white group-hover:text-primary transition-colors">
+<span>Read Research Brief</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</div>
+</article>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 10. CONVERSION SECTION ('Have an idea worth building?') -->
+<!-- ========================================================================= -->
+<section class="py-24 max-w-container-max mx-auto px-gutter-desktop" id="contact">
+<div class="relative rounded-2xl p-10 lg:p-16 bg-surface-container border border-primary/40 overflow-hidden purple-bleed neon-border-top">
+<!-- Background Ambient Glow -->
+<div class="absolute -right-24 -bottom-24 w-96 h-96 bg-primary-container/20 rounded-full blur-3xl pointer-events-none"></div>
+<div class="max-w-2xl flex flex-col gap-6 relative z-10">
+<span class="text-primary font-label-studio text-xs uppercase tracking-widest">Co-Building &amp; Ventures</span>
+<h2 class="font-headline-xl text-headline-xl text-white font-bold tracking-tight">
+          Have an idea worth building?
+        </h2>
+<p class="font-body-lg text-body-md text-on-surface-variant leading-relaxed">
+          Tell us what you're working on. Whether you represent an ambitious enterprise or an exceptional founder, we'll figure out the next step together.
+        </p>
+<!-- Inline Contact Form -->
+<form class="flex flex-col sm:flex-row gap-3 pt-4" onsubmit="event.preventDefault(); alert('Transmission received. WEBLOX engineering leads will connect within 24 hours.');">
+<input class="flex-1 bg-surface-container-lowest border border-outline-variant/40 rounded-xl px-4 py-3.5 text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-body-sm" placeholder="Enter your corporate or founder email..." required="" type="email"/>
+<button class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-primary-container to-secondary-container hover:opacity-95 text-white px-8 py-3.5 rounded-xl font-headline-sm text-sm font-semibold tracking-wide shadow-[0_4px_20px_rgba(123,63,242,0.4)] active:scale-95 transition-all" type="submit">
+<span>Let's Build</span>
+<span class="material-symbols-outlined text-base">arrow_forward</span>
+</button>
+</form>
+<!-- Direct Channel Contact -->
+<div class="flex items-center gap-6 pt-4 text-xs font-label-tech text-on-surface-variant">
+<span>Direct Channel: <a class="text-white hover:text-primary transition-colors underline underline-offset-4" href="mailto:studio@weblox.io">studio@weblox.io</a></span>
+<span>•</span>
+<span class="flex items-center gap-1.5 text-green-400">
+<span class="w-2 h-2 rounded-full bg-green-400"></span>
+            Reviewing Q2/Q3 2026 Inbound
+          </span>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 11. SHARED COMPONENT: Comprehensive Dark Desktop Footer -->
+<!-- ========================================================================= -->
+<footer class="bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant/20 w-full">
+<div class="w-full px-gutter-desktop py-space-2xl flex flex-col gap-12 max-w-container-max mx-auto">
+<!-- 4-Column Layout Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10">
+<!-- Col 1: Brand & Tagline (5 Cols) -->
+<div class="lg:col-span-5 flex flex-col gap-4">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 flex items-center justify-center bg-surface-container border border-outline-variant/40 rounded-lg">
+<svg fill="none" height="18" viewbox="0 0 32 32" width="18" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 8L10 24L14 16L18 24L24 8" stroke="#7B3FF2" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+<path d="M19 12L28 24M28 12L21 21" stroke="#F3F3F5" stroke-linecap="round" stroke-width="2.5"></path>
+</svg>
+</div>
+<span class="font-headline-sm-mobile text-headline-sm-mobile tracking-widest text-on-surface dark:text-on-surface font-extrabold uppercase">
+              WEBLOX STUDIOS
+            </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-sm leading-relaxed">
+            We build powerful digital solutions that solve real problems. A frontier venture studio originating from Africa, engineered for the globe.
+          </p>
+<div class="text-xs font-label-tech text-primary pt-2 flex items-center gap-2">
+<span>INNOVATION</span>
+<span>•</span>
+<span>QUALITY</span>
+<span>•</span>
+<span>IMPACT</span>
+</div>
+</div>
+<!-- Col 2: Ventures & Capabilities (2 Cols) -->
+<div class="lg:col-span-2 flex flex-col gap-3 font-label-tech text-label-tech">
+<div class="text-white font-bold uppercase tracking-wider text-xs mb-1">Products</div>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#ventures">Signarol AI</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#ventures">Ventures Pipeline</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#capabilities">Capabilities</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#capabilities">AI &amp; Systems</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#capabilities">Cloud Platforms</a>
+</div>
+<!-- Col 3: Studio & Insights (2 Cols) -->
+<div class="lg:col-span-2 flex flex-col gap-3 font-label-tech text-label-tech">
+<div class="text-white font-bold uppercase tracking-wider text-xs mb-1">Studio</div>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#venture-model">Venture Model</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#studio">Philosophy</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#insights">Insights</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#contact">Contact</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Careers</a>
+</div>
+<!-- Col 4: Operational Status Indicator (3 Cols) -->
+<div class="lg:col-span-3 flex flex-col gap-4">
+<div class="text-white font-bold uppercase tracking-wider font-label-tech text-xs">Operations</div>
+<div class="p-3.5 rounded-xl bg-surface-container border border-outline-variant/30 flex flex-col gap-2 font-label-tech text-xs">
+<div class="flex items-center gap-2 text-green-400 font-semibold">
+<span class="w-2 h-2 rounded-full bg-green-400"></span>
+              All systems operational
+            </div>
+<div class="text-on-surface-variant text-[11px]">
+              Edge Routing: Lagos (LOS-1) • London (LHR) • Frankfurt (FRA)
+            </div>
+<div class="text-primary font-bold text-[11px] mt-1">
+              Global Latency: 14ms
+            </div>
+</div>
+</div>
+</div>
+<!-- Bottom Sub-Bar with Copyright and Legal -->
+<div class="pt-8 border-t border-outline-variant/20 flex flex-col sm:flex-row items-center justify-between gap-4 font-caption text-caption text-on-surface-variant">
+<div>
+          © 2025 WEBLOX Studios. Lagos, Nigeria. Built for the world.
+        </div>
+<div class="flex items-center gap-6 font-label-tech text-xs">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="hover:text-primary transition-colors" href="#">Security Disclosures</a>
+</div>
+</div>
+</div>
+</footer>
+</body></html>
