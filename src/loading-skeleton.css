@@ -98,3 +98,56 @@ html[data-theme="light"] .page-loading-skeleton span {
     animation: none;
   }
 }
+
+.weblox-branded-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: #0e0e11;
+  opacity: 1;
+  transition: opacity 240ms ease;
+}
+
+.weblox-branded-loader::before {
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: #7b3ff222;
+  box-shadow: 0 0 70px #7b3ff244;
+  content: "";
+}
+
+.weblox-branded-loader img {
+  position: relative;
+  width: min(190px, 42vw);
+  height: auto;
+  animation: weblox-loader-pulse 2.4s ease-in-out infinite;
+}
+
+.weblox-branded-loader.is-hidden {
+  pointer-events: none;
+  opacity: 0;
+}
+
+@keyframes weblox-loader-pulse {
+  0%,
+  100% {
+    opacity: 0.78;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .weblox-branded-loader,
+  .weblox-branded-loader img {
+    animation: none;
+    transition: none;
+  }
+}
