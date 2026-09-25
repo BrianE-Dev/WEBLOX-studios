@@ -1,4 +1,4 @@
-const apiBase = import.meta.env.VITE_API_URL || ''
+const apiBase = import.meta.env.API_URL || ''
 const sessionKey = 'weblox-staff-session'
 
 export async function authRequest(path, options = {}) {

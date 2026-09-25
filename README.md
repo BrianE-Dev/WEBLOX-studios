@@ -16,6 +16,6 @@ Authentication sessions are stored in PostgreSQL as token hashes and expire afte
 
 ## Production API
 
-The API can be deployed as a Node web service from this repository's root with build command `npm install` and start command `npm run server`. Configure `DATABASE_URL` with the hosted PostgreSQL connection string, `APP_ORIGIN` with the exact public frontend origin, and `NODE_ENV=production`. The service listens on the platform-provided `PORT` when available. For Render, keep the API and database in the same region and use the database's internal connection URL in the service settings. Set `VITE_API_URL` to the deployed API origin in the frontend host and rebuild the frontend.
+The API can be deployed as a Node web service from this repository's root with build command `npm install` and start command `npm run server`. Configure `DATABASE_URL` with the hosted PostgreSQL connection string, `APP_ORIGIN` with the exact public frontend origin, and `NODE_ENV=production`. The service listens on the platform-provided `PORT` when available. For Render, keep the API and database in the same region and use the database's internal connection URL in the service settings. Set `API_URL` to the deployed API origin in the frontend host and rebuild the frontend. `API_URL` is included in the browser build because it is the public API address; never put credentials or secrets in it.
 
 Existing staff entries that were created in the old browser-local admin page are not automatically imported; add them through the staff administrator page to issue server-backed invitations.
