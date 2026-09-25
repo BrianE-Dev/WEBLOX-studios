@@ -1,2 +1,3 @@
-﻿import './styles.css'
-import './lib/recovered-app.js'
+﻿import "./styles.css";
+import "./loading-skeleton.css";
+import "./lib/recovered-app.js";
