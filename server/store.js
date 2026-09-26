@@ -1,9 +1,21 @@
+async function appendAdminAudit(db, event) {
+  await db.query(
+    `INSERT INTO admin_audit_log
+      (person_type, person_account_id, person_email, person_name, action, role, job_type,
+       performed_by_account_id, performed_by_name, performed_by_email, details)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11::jsonb)`,
+    [event.personType, event.personAccountId || null, event.personEmail, event.personName,
+      event.action, event.role || '', event.jobType || '', event.actor?.id || null,
+      event.actor?.name || 'Unknown administrator', event.actor?.email || '', JSON.stringify(event.details || {})],
+  )
+}
+
 export function createPostgresStore(pool) {
   return {
     async findAccountByEmail(email) {
       const { rows } = await pool.query(
         `SELECT id, email, name, role, account_type AS "accountType", salt, hash, created_at AS "createdAt"
-         FROM accounts WHERE email = $1`,
+         FROM accounts WHERE email = $1 AND active = true`,
         [email.toLowerCase()],
       );
       return rows[0] ?? null;
@@ -80,7 +92,10 @@ export function createPostgresStore(pool) {
 
     async listStaff() {
       const { rows } = await pool.query(
-        `SELECT d.email, d.name, d.role, (a.id IS NOT NULL) AS activated,
+        `SELECT a.id, d.email, d.name, d.role, d.job_type AS "jobType",
+           d.created_at AS "createdAt", d.created_by_name AS "createdByName",
+           d.created_by_email AS "createdByEmail", (a.id IS NOT NULL) AS activated,
+           COALESCE(a.active, false) AS active,
            i.expires_at AS "inviteExpiresAt"
          FROM staff_directory d
          LEFT JOIN accounts a ON a.email = d.email AND a.account_type = 'staff'
@@ -94,10 +109,218 @@ export function createPostgresStore(pool) {
       return rows;
     },
 
-    async createStaffInvitation({ email, name, role, tokenHash, expiresAt }) {
+    async listPeople(accountType) {
+      const { rows } = await pool.query(
+        `SELECT id, email, name, role, job_type AS "jobType", active, created_at AS "createdAt",
+           created_by_name AS "createdByName", created_by_email AS "createdByEmail"
+         FROM accounts WHERE account_type = $1 ORDER BY name, email`, [accountType],
+      );
+      return rows;
+    },
+
+    async updateStaff({ id, oldEmail, email, name, role, jobType, actor }) {
       const client = await pool.connect();
       try {
         await client.query("BEGIN");
+        const before = await client.query("SELECT email, name, role, job_type AS \"jobType\" FROM accounts WHERE id = $1 AND account_type = 'staff' FOR UPDATE", [id]);
+        const { rows } = await client.query(
+          `UPDATE accounts SET email = $2, name = $3, role = $4, job_type = $5
+           WHERE id = $1 AND account_type = 'staff'
+           RETURNING id, email, name, role, active`,
+          [id, email, name, role, jobType],
+        );
+        if (rows[0]) {
+          const previousEmail = before.rows[0]?.email || oldEmail;
+          await client.query("DELETE FROM staff_invitations WHERE email = $1", [previousEmail]);
+          await client.query(
+            `UPDATE staff_directory SET email = $2, name = $3, role = $4, job_type = $5, updated_at = now()
+             WHERE email = $1`, [previousEmail, email, name, role, jobType],
+          );
+          await appendAdminAudit(client, {
+            personType: 'staff', personAccountId: id, personEmail: email, personName: name,
+            action: 'updated', role, jobType, actor,
+            details: { before: before.rows[0] || null, after: { email, name, role, jobType } },
+          })
+        }
+        await client.query("COMMIT");
+        return rows[0] ?? null;
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      } finally { client.release(); }
+    },
+
+    async updatePendingStaff(email, name, role, jobType, actor) {
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
+        const previous = await client.query('SELECT name, role, job_type AS "jobType" FROM staff_directory WHERE email = $1 AND NOT EXISTS (SELECT 1 FROM accounts WHERE accounts.email = $1 AND account_type = \'staff\') FOR UPDATE', [email]);
+        if (!previous.rowCount) { await client.query('ROLLBACK'); return false; }
+        await client.query('UPDATE staff_directory SET name = $2, role = $3, job_type = $4, updated_at = now() WHERE email = $1', [email, name, role, jobType]);
+        await appendAdminAudit(client, { personType: 'staff', personEmail: email, personName: name, action: 'updated', role, jobType, actor, details: { before: previous.rows[0] } });
+        await client.query('COMMIT');
+        return true;
+      } catch (error) { await client.query('ROLLBACK'); throw error; }
+      finally { client.release(); }
+    },
+
+    async removePendingStaff(email, actor) {
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
+        const result = await client.query(`DELETE FROM staff_directory d WHERE d.email = $1
+          AND NOT EXISTS (SELECT 1 FROM accounts WHERE accounts.email = d.email AND account_type = 'staff')
+          RETURNING email, name, role, job_type AS "jobType"`, [email]);
+        if (!result.rows[0]) { await client.query('ROLLBACK'); return false; }
+        await appendAdminAudit(client, { personType: 'staff', personEmail: email, personName: result.rows[0].name, action: 'removed', role: result.rows[0].role, jobType: result.rows[0].jobType, actor });
+        await client.query('COMMIT');
+        return true;
+      } catch (error) { await client.query('ROLLBACK'); throw error; }
+      finally { client.release(); }
+    },
+
+    async setPersonActive(id, accountType, active, actor) {
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
+        const { rows } = await client.query(
+          `UPDATE accounts SET active = $3 WHERE id = $1 AND account_type = $2 AND active <> $3
+           RETURNING id, email, name, role, job_type AS "jobType"`, [id, accountType, active],
+        );
+        if (!rows[0]) { await client.query('ROLLBACK'); return false; }
+        await appendAdminAudit(client, {
+          personType: accountType, personAccountId: id, personEmail: rows[0].email,
+          personName: rows[0].name, action: active ? 'restored' : 'removed',
+          role: rows[0].role, jobType: rows[0].jobType, actor,
+        })
+        await client.query('COMMIT');
+        return true;
+      } catch (error) { await client.query('ROLLBACK'); throw error; }
+      finally { client.release(); }
+    },
+
+    async createIntern({ id, email, name, role, jobType, salt, hash, actor }) {
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
+        await client.query(
+        `INSERT INTO accounts (id, email, name, role, account_type, salt, hash, job_type,
+           created_by_account_id, created_by_name, created_by_email)
+         VALUES ($1, $2, $3, $4, 'intern', $5, $6, $7, $8, $9, $10)`,
+        [id, email, name, role, salt, hash, jobType, actor.id, actor.name, actor.email],
+        );
+        await appendAdminAudit(client, { personType: 'intern', personAccountId: id, personEmail: email, personName: name, action: 'added', role, jobType, actor });
+        await client.query('COMMIT');
+      } catch (error) { await client.query('ROLLBACK'); throw error; }
+      finally { client.release(); }
+    },
+
+    async updateIntern({ id, email, name, role, jobType, actor }) {
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
+        const before = await client.query("SELECT email, name, role, job_type AS \"jobType\" FROM accounts WHERE id = $1 AND account_type = 'intern' FOR UPDATE", [id]);
+        const { rows } = await client.query(
+        `UPDATE accounts SET email = $2, name = $3, role = $4, job_type = $5
+         WHERE id = $1 AND account_type = 'intern'
+         RETURNING id, email, name, role, job_type AS "jobType", active`, [id, email, name, role, jobType],
+        );
+        if (!rows[0]) { await client.query('ROLLBACK'); return null; }
+        await appendAdminAudit(client, {
+        personType: 'intern', personAccountId: id, personEmail: email, personName: name,
+        action: 'updated', role, jobType, actor,
+        details: { before: before.rows[0] || null, after: { email, name, role, jobType } },
+        });
+        await client.query('COMMIT');
+        return rows[0];
+      } catch (error) { await client.query('ROLLBACK'); throw error; }
+      finally { client.release(); }
+    },
+
+    async listAdminAudit() {
+      const { rows } = await pool.query(
+        `SELECT id, person_type AS "personType", person_email AS "personEmail",
+           person_name AS "personName", action, role, job_type AS "jobType",
+           performed_by_name AS "performedByName", performed_by_email AS "performedByEmail",
+           details, created_at AS "createdAt"
+         FROM admin_audit_log ORDER BY created_at DESC LIMIT 500`,
+      );
+      return rows;
+    },
+
+    async recordStaffSignin(accountId) {
+      await pool.query("INSERT INTO staff_signins (account_id) VALUES ($1)", [accountId]);
+    },
+
+    async recordAttendance(accountId, action) {
+      const column = action === "clock_in" ? "clock_in_at" : "clock_out_at";
+      const { rows } = await pool.query(
+        `INSERT INTO staff_attendance (account_id, attendance_date, ${column})
+         VALUES ($1, CURRENT_DATE, now())
+         ON CONFLICT (account_id, attendance_date) DO UPDATE
+           SET ${column} = EXCLUDED.${column}, updated_at = now()
+         RETURNING attendance_date AS date, clock_in_at AS "clockInAt", clock_out_at AS "clockOutAt"`,
+        [accountId],
+      );
+      return rows[0];
+    },
+
+    async getAttendance(accountId) {
+      const { rows } = await pool.query(
+        `SELECT attendance_date AS date, clock_in_at AS "clockInAt", clock_out_at AS "clockOutAt"
+         FROM staff_attendance WHERE account_id = $1 AND attendance_date = CURRENT_DATE`, [accountId],
+      );
+      return rows[0] ?? null;
+    },
+
+    async listStaffActivity() {
+      const { rows } = await pool.query(
+        `SELECT a.name, a.email, 'login' AS "eventType", s.signed_in_at AS "occurredAt",
+           NULL::date AS "attendanceDate", NULL::timestamptz AS "clockInAt", NULL::timestamptz AS "clockOutAt"
+         FROM staff_signins s JOIN accounts a ON a.id = s.account_id WHERE a.account_type = 'staff'
+         UNION ALL
+         SELECT a.name, a.email, 'attendance' AS "eventType", d.updated_at AS "occurredAt",
+           d.attendance_date AS "attendanceDate", d.clock_in_at AS "clockInAt", d.clock_out_at AS "clockOutAt"
+         FROM staff_attendance d JOIN accounts a ON a.id = d.account_id WHERE a.account_type = 'staff'
+         ORDER BY "occurredAt" DESC LIMIT 1000`,
+      );
+      return rows;
+    },
+
+    async saveInternCheckin(accountId, slot, text) {
+      const { rows } = await pool.query(
+        `INSERT INTO intern_checkins (account_id, checkin_date, ${slot})
+         VALUES ($1, CURRENT_DATE, $2)
+         ON CONFLICT (account_id, checkin_date) DO UPDATE
+           SET ${slot} = EXCLUDED.${slot}, updated_at = now()
+         RETURNING checkin_date AS date, morning, evening, updated_at AS "updatedAt"`, [accountId, text],
+      );
+      return rows[0];
+    },
+
+    async listInternCheckins() {
+      const { rows } = await pool.query(
+        `SELECT i.id AS "accountId", i.name, i.email, c.checkin_date AS date,
+           c.morning, c.evening, c.updated_at AS "updatedAt"
+         FROM accounts i LEFT JOIN intern_checkins c ON c.account_id = i.id
+         WHERE i.account_type = 'intern' ORDER BY c.checkin_date DESC NULLS LAST, i.name`,
+      );
+      return rows;
+    },
+
+    async listMyInternCheckins(accountId) {
+      const { rows } = await pool.query(
+        `SELECT c.checkin_date AS date, c.morning, c.evening, c.updated_at AS "updatedAt"
+         FROM intern_checkins c WHERE c.account_id = $1 ORDER BY c.checkin_date DESC`, [accountId],
+      );
+      return rows;
+    },
+
+    async createStaffInvitation({ email, name, role, jobType, tokenHash, expiresAt, actor }) {
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+        const prior = await client.query("SELECT email, name, role, job_type AS \"jobType\" FROM staff_directory WHERE email = $1 FOR UPDATE", [email]);
         const existing = await client.query("SELECT 1 FROM accounts WHERE email = $1", [email]);
         if (existing.rowCount) {
           const error = new Error("A login account already exists for this email.");
@@ -105,10 +328,10 @@ export function createPostgresStore(pool) {
           throw error;
         }
         await client.query(
-          `INSERT INTO staff_directory (email, name, role)
-           VALUES ($1, $2, $3)
-           ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, role = EXCLUDED.role, updated_at = now()`,
-          [email, name, role],
+          `INSERT INTO staff_directory (email, name, role, job_type, created_by_account_id, created_by_name, created_by_email)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)
+           ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, role = EXCLUDED.role, job_type = EXCLUDED.job_type, updated_at = now()`,
+          [email, name, role, jobType, actor.id, actor.name, actor.email],
         );
         await client.query(
           `UPDATE staff_invitations SET used_at = now()
@@ -120,6 +343,11 @@ export function createPostgresStore(pool) {
            VALUES ($1, $2, $3)`,
           [email, tokenHash, expiresAt],
         );
+        await appendAdminAudit(client, {
+          personType: 'staff', personEmail: email, personName: name,
+          action: prior.rowCount ? 'updated' : 'added', role, jobType, actor,
+          details: prior.rowCount ? { previous: prior.rows[0] } : {},
+        })
         await client.query("COMMIT");
       } catch (error) {
         await client.query("ROLLBACK");
@@ -144,8 +372,10 @@ export function createPostgresStore(pool) {
           return false;
         }
         await client.query(
-          `INSERT INTO accounts (id, email, name, role, account_type, salt, hash)
-           SELECT $1, d.email, d.name, d.role, 'staff', $2, $3
+          `INSERT INTO accounts (id, email, name, role, account_type, salt, hash, job_type,
+             created_by_account_id, created_by_name, created_by_email)
+           SELECT $1, d.email, d.name, d.role, 'staff', $2, $3, d.job_type,
+             d.created_by_account_id, d.created_by_name, d.created_by_email
            FROM staff_directory d WHERE d.email = $4`,
           [account.id, account.salt, account.hash, email],
         );
@@ -181,7 +411,7 @@ export function createPostgresStore(pool) {
         `SELECT a.id, a.email, a.name, a.role, a.account_type AS "accountType",
            s.expires_at AS "expiresAt"
          FROM auth_sessions s JOIN accounts a ON a.id = s.account_id
-         WHERE s.token_hash = $1 AND s.expires_at > now()`,
+         WHERE s.token_hash = $1 AND s.expires_at > now() AND a.active = true`,
         [tokenHash],
       );
       return rows[0] ?? null;

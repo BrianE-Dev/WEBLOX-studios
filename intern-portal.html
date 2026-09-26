@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Intern Check-ins | WEBLOX Studios</title><link rel="icon" href="/assets/weblox-app-icon.png"/><link rel="stylesheet" href="/src/styles.css"/>
+  <style>
+    .intern-shell{width:min(760px,calc(100% - 36px));margin:40px auto 80px}.intern-brand{display:flex;align-items:center;gap:12px;margin-bottom:18px;font:700 14px 'Plus Jakarta Sans';letter-spacing:.08em}.intern-brand img{width:46px;height:46px;object-fit:contain}.intern-card{padding:25px;margin:16px 0;background:#1b1b1ed9;border:1px solid #4a445599;border-radius:11px}.intern-card h1,.intern-card h2{margin-top:6px}.intern-form{display:grid;gap:12px}.intern-form label{display:grid;gap:7px;color:#d1bcff;font:600 11px 'JetBrains Mono'}.intern-form input,.intern-form textarea{width:100%;font:14px Inter,Arial,sans-serif}.intern-row{padding:12px 0;border-top:1px solid #4a445544;white-space:pre-wrap}.intern-row small{display:block;margin-bottom:6px;color:#d1bcff}.intern-notice{margin-top:12px;color:#ffaaa2;font-size:12px}.hidden{display:none!important}
+  </style>
+</head>
+<body>
+  <main class="intern-shell">
+    <a class="intern-brand" href="/"><img src="/assets/weblox-logo.png" alt="WEBLOX Studios"/> WEBLOX STUDIOS</a>
+    <section id="loginPanel" class="intern-card"><span class="eyebrow">WEBLOX INTERNSHIP PROGRAM</span><h1>Intern sign in</h1><p>Use the email and temporary password provided by your administrator.</p><form id="loginForm" class="intern-form"><label>Email address<input name="email" type="email" autocomplete="username" required/></label><label>Password<input name="password" type="password" autocomplete="current-password" required/></label><button class="button" type="submit">Sign in</button></form><div id="loginNotice" class="intern-notice" role="status"></div></section>
+    <div id="portal" class="hidden">
+      <header class="intern-card"><span class="eyebrow">WEBLOX INTERNSHIP PROGRAM</span><h1>Daily check-ins</h1><p id="welcome"></p><button id="logoutButton" class="button secondary" type="button">Sign out</button></header>
+      <section class="intern-card"><h2>Morning check-in</h2><form class="intern-form" data-slot="morning"><label>What are you focusing on today?<textarea name="text" rows="4" maxlength="3000" required></textarea></label><button class="button" type="submit">Submit morning check-in</button></form></section>
+      <section class="intern-card"><h2>Evening check-in</h2><form class="intern-form" data-slot="evening"><label>What did you complete, and what needs follow-up?<textarea name="text" rows="4" maxlength="3000" required></textarea></label><button class="button" type="submit">Submit evening check-in</button></form></section>
+      <section class="intern-card"><h2>Previous check-ins</h2><div id="history"></div></section><div id="portalNotice" class="intern-notice" role="status"></div>
+    </div>
+  </main>
+  <script type="module" src="/src/intern-portal.js"></script>
+</body>
+</html>

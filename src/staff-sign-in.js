@@ -18,9 +18,18 @@ function setMode(isActivation) {
   $('password').autocomplete = activating ? 'new-password' : 'current-password'
   $('submitButton').textContent = activating ? 'Activate account →' : 'Sign in →'
   $('password').value = ''
+  $('existingPasswordLink').classList.toggle('hidden', !activating)
 }
 
 setMode(activating)
+$('existingPasswordLink').addEventListener('click', () => {
+  invite = ''
+  history.replaceState({}, '', '/staff-sign-in.html')
+  setMode(false)
+  $('authNotice').textContent = ''
+  $('authNotice').classList.remove('success')
+  $('staffAuthForm').elements.email.focus()
+})
 if (params.has('activated')) {
   $('authNotice').textContent = 'Account activated. Sign in with your new password.'
   $('authNotice').classList.add('success')

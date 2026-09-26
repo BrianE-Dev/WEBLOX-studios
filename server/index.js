@@ -351,7 +351,8 @@ async function handler(req, res) {
     const email = String(body.email || "").trim().toLowerCase();
     const name = String(body.name || "").trim();
     const role = String(body.role || "").trim();
-    if (!validEmail(email) || !name || name.length > 120 || !role || role.length > 80)
+    const jobType = String(body.jobType || "Full-time").trim();
+    if (!validEmail(email) || !name || name.length > 120 || !role || role.length > 80 || !jobType || jobType.length > 80)
       return send(res, 400, { error: "Enter a valid email, full name, and job role." });
     const token = randomBytes(32).toString("base64url");
     try {
@@ -359,6 +360,8 @@ async function handler(req, res) {
         email,
         name,
         role,
+        jobType,
+        actor: current.account,
         tokenHash: createHash("sha256").update(token).digest("hex"),
         expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 48).toISOString(),
       });
@@ -377,6 +380,151 @@ async function handler(req, res) {
     if (!current || !isAdministrator(current.account))
       return send(res, 403, { error: "Administrator access is required." });
     return send(res, 200, { staff: await store.listStaff() });
+  }
+
+  if (url.pathname === "/api/staff/attendance") {
+    const current = await currentSession(req);
+    if (!current || current.account.accountType !== "staff")
+      return send(res, 401, { error: "A staff session is required." });
+    if (req.method === "GET") return send(res, 200, { attendance: await store.getAttendance(current.account.id) });
+    if (req.method === "POST") {
+      const body = await readBody(req);
+      if (!["clock_in", "clock_out"].includes(body.action))
+        return send(res, 400, { error: "Choose clock in or clock out." });
+      return send(res, 200, { attendance: await store.recordAttendance(current.account.id, body.action) });
+    }
+  }
+
+  if (url.pathname === "/api/intern/me/checkins") {
+    const current = await currentSession(req);
+    if (!current || current.account.accountType !== "intern")
+      return send(res, 401, { error: "An intern session is required." });
+    if (req.method === "GET") {
+      return send(res, 200, { checkins: await store.listMyInternCheckins(current.account.id) });
+    }
+    if (req.method === "POST") {
+      const body = await readBody(req);
+      if (!["morning", "evening"].includes(body.slot) || typeof body.text !== "string" || !body.text.trim() || body.text.length > 3000)
+        return send(res, 400, { error: "Enter a check-in update of up to 3,000 characters." });
+      return send(res, 200, { checkin: await store.saveInternCheckin(current.account.id, body.slot, body.text.trim()) });
+    }
+  }
+
+  if (url.pathname === "/api/admin/activity") {
+    const current = await currentSession(req);
+    if (!current || !isAdministrator(current.account))
+      return send(res, 403, { error: "Administrator access is required." });
+    if (req.method === "GET")
+      return send(res, 200, { staffActivity: await store.listStaffActivity(), internCheckins: await store.listInternCheckins(), audit: await store.listAdminAudit() });
+  }
+
+  const staffRecordMatch = url.pathname.match(/^\/api\/admin\/staff\/([^/]+)$/);
+  if (staffRecordMatch && ["PUT", "DELETE"].includes(req.method)) {
+    const current = await currentSession(req);
+    if (!current || !isAdministrator(current.account))
+      return send(res, 403, { error: "Administrator access is required." });
+    const id = decodeURIComponent(staffRecordMatch[1]);
+    if (req.method === "DELETE") {
+      if (!await store.setPersonActive(id, "staff", false, current.account)) return send(res, 404, { error: "Staff account not found." });
+      return send(res, 200, { ok: true });
+    }
+    const body = await readBody(req);
+    const email = String(body.email || "").trim().toLowerCase();
+    const name = String(body.name || "").trim();
+    const role = String(body.role || "").trim();
+    const jobType = String(body.jobType || "Full-time").trim();
+    const oldEmail = String(body.oldEmail || "").trim().toLowerCase();
+    if (!validEmail(email) || !validEmail(oldEmail) || !name || name.length > 120 || !role || role.length > 80 || !jobType || jobType.length > 80)
+      return send(res, 400, { error: "Enter a valid name, email, and role." });
+    try {
+      const staff = await store.updateStaff({ id, oldEmail, email, name, role, jobType, actor: current.account });
+      return staff ? send(res, 200, { staff }) : send(res, 404, { error: "Staff account not found." });
+    } catch (error) {
+      if (error.code === "23505") return send(res, 409, { error: "An account already exists for this email." });
+      throw error;
+    }
+  }
+
+  const pendingStaffMatch = url.pathname.match(/^\/api\/admin\/staff-directory\/([^/]+)$/);
+  if (pendingStaffMatch && ["PUT", "DELETE"].includes(req.method)) {
+    const current = await currentSession(req);
+    if (!current || !isAdministrator(current.account))
+      return send(res, 403, { error: "Administrator access is required." });
+    const email = decodeURIComponent(pendingStaffMatch[1]).trim().toLowerCase();
+    if (req.method === "DELETE") {
+      if (!await store.removePendingStaff(email, current.account)) return send(res, 404, { error: "Pending staff invitation not found." });
+      return send(res, 200, { ok: true });
+    }
+    const body = await readBody(req);
+    const name = String(body.name || "").trim();
+    const role = String(body.role || "").trim();
+    const jobType = String(body.jobType || "Full-time").trim();
+    if (!name || name.length > 120 || !role || role.length > 80 || !jobType || jobType.length > 80)
+      return send(res, 400, { error: "Enter a valid name and role." });
+    if (!await store.updatePendingStaff(email, name, role, jobType, current.account)) return send(res, 404, { error: "Pending staff invitation not found." });
+    return send(res, 200, { ok: true });
+  }
+
+  const restoreMatch = url.pathname.match(/^\/api\/admin\/(staff|interns)\/([^/]+)\/restore$/);
+  if (req.method === "POST" && restoreMatch) {
+    const current = await currentSession(req);
+    if (!current || !isAdministrator(current.account))
+      return send(res, 403, { error: "Administrator access is required." });
+    const type = restoreMatch[1] === "staff" ? "staff" : "intern";
+    if (!await store.setPersonActive(decodeURIComponent(restoreMatch[2]), type, true, current.account))
+      return send(res, 404, { error: "Account not found." });
+    return send(res, 200, { ok: true });
+  }
+
+  if (url.pathname === "/api/admin/interns") {
+    const current = await currentSession(req);
+    if (!current || !isAdministrator(current.account))
+      return send(res, 403, { error: "Administrator access is required." });
+    if (req.method === "GET") return send(res, 200, { interns: await store.listPeople("intern") });
+    if (req.method === "POST") {
+      const body = await readBody(req);
+      const email = String(body.email || "").trim().toLowerCase();
+      const name = String(body.name || "").trim();
+      const role = String(body.role || "Intern").trim();
+      const jobType = String(body.jobType || "Internship").trim();
+      const password = String(body.password || "");
+      if (!validEmail(email) || !name || name.length > 120 || !role || role.length > 80 || !jobType || jobType.length > 80 || password.length < 12)
+        return send(res, 400, { error: "Enter a valid name, email, program, and password of at least 12 characters." });
+      try {
+        const credentials = await passwordRecord(password);
+        await store.createIntern({ id: randomUUID(), email, name, role, jobType, ...credentials, actor: current.account });
+        return send(res, 201, { ok: true });
+      } catch (error) {
+        if (error.code === "23505") return send(res, 409, { error: "An account already exists for this email." });
+        throw error;
+      }
+    }
+  }
+
+  const internRecordMatch = url.pathname.match(/^\/api\/admin\/interns\/([^/]+)$/);
+  if (internRecordMatch && ["PUT", "DELETE"].includes(req.method)) {
+    const current = await currentSession(req);
+    if (!current || !isAdministrator(current.account))
+      return send(res, 403, { error: "Administrator access is required." });
+    const id = decodeURIComponent(internRecordMatch[1]);
+    if (req.method === "DELETE") {
+      if (!await store.setPersonActive(id, "intern", false, current.account)) return send(res, 404, { error: "Intern account not found." });
+      return send(res, 200, { ok: true });
+    }
+    const body = await readBody(req);
+    const email = String(body.email || "").trim().toLowerCase();
+    const name = String(body.name || "").trim();
+    const role = String(body.role || "").trim();
+    const jobType = String(body.jobType || "Internship").trim();
+    if (!validEmail(email) || !name || name.length > 120 || !role || role.length > 80 || !jobType || jobType.length > 80)
+      return send(res, 400, { error: "Enter a valid name, email, and program." });
+    try {
+      const intern = await store.updateIntern({ id, email, name, role, jobType, actor: current.account });
+      return intern ? send(res, 200, { intern }) : send(res, 404, { error: "Intern account not found." });
+    } catch (error) {
+      if (error.code === "23505") return send(res, 409, { error: "An account already exists for this email." });
+      throw error;
+    }
   }
 
   if (url.pathname === "/api/admin/admins") {
@@ -441,6 +589,7 @@ async function handler(req, res) {
     const token = randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + sessionTtl);
     await store.createSession(account.id, createHash("sha256").update(token).digest("hex"), expiresAt.toISOString());
+    if (account.accountType === "staff") await store.recordStaffSignin(account.id);
     return send(
       res,
       200,

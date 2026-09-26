@@ -8,6 +8,29 @@ if (!session?.account || session.account.accountType !== 'staff') {
   throw new Error('A valid staff session is required.')
 }
 const staff = session.account
+
+const attendancePanel = document.createElement('article')
+attendancePanel.className = 'dash-panel'
+attendancePanel.innerHTML = '<span class="eyebrow">DAILY ATTENDANCE</span><h2>Record today’s attendance</h2><p id="attendanceStatus">Loading today’s attendance…</p><button id="clockInButton" class="button" type="button">Clock in</button> <button id="clockOutButton" class="button secondary dash-secondary" type="button">Clock out</button><div id="attendanceNotice" class="dash-notice" role="status"></div>'
+$('overview').prepend(attendancePanel)
+
+function renderAttendance(attendance) {
+  $('attendanceStatus').textContent = attendance
+    ? `Clock in: ${attendance.clockInAt ? new Date(attendance.clockInAt).toLocaleTimeString() : 'not recorded'} · Clock out: ${attendance.clockOutAt ? new Date(attendance.clockOutAt).toLocaleTimeString() : 'not recorded'}`
+    : 'No attendance recorded today.'
+}
+
+const attendanceRequest = async (action) => {
+  const result = await staffRequest('/api/staff/attendance', action
+    ? { method: 'POST', body: JSON.stringify({ action }) }
+    : {})
+  renderAttendance(result.attendance)
+  $('attendanceNotice').textContent = action === 'clock_in' ? 'Clock-in recorded.' : action === 'clock_out' ? 'Clock-out recorded.' : ''
+}
+
+$('clockInButton').addEventListener('click', () => attendanceRequest('clock_in').catch((error) => { $('attendanceNotice').textContent = error.message }))
+$('clockOutButton').addEventListener('click', () => attendanceRequest('clock_out').catch((error) => { $('attendanceNotice').textContent = error.message }))
+attendanceRequest().catch((error) => { $('attendanceStatus').textContent = error.message })
 document.documentElement.dataset.theme = localStorage.getItem('weblox-theme') || 'dark'
 $('staffName').textContent = staff.name.split(' ')[0]
 $('profileName').textContent = staff.name
