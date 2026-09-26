@@ -373,20 +373,21 @@ async function handler(req, res) {
     const resume = body.resume;
     if (!resume || typeof resume !== "object" || typeof resume.data !== "string")
       return send(res, 400, { error: "Please attach your CV or résumé." });
-    const allowedTypes = new Set([
-      "application/pdf",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    ]);
+    const fileTypes = {
+      pdf: "application/pdf",
+      doc: "application/msword",
+      docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    };
+    const extension = String(resume.name || "").split(".").pop().toLowerCase();
     const size = Buffer.from(resume.data, "base64").length;
-    if (!allowedTypes.has(resume.type) || size > 5 * 1024 * 1024)
+    if (!fileTypes[extension] || size > 5 * 1024 * 1024)
       return send(res, 400, { error: "Upload a PDF, DOC, or DOCX file no larger than 5 MB." });
     application.backgroundDetails = String(body.backgroundDetails || "").trim();
     application.portfolioUrl = String(body.portfolioUrl || "").trim();
     application.githubUrl = String(body.githubUrl || "").trim();
     application.linkedinUrl = String(body.linkedinUrl || "").trim();
     application.contribution = String(body.contribution || "").trim();
-    application.resume = { name: String(resume.name || "resume"), type: resume.type, size, data: resume.data };
+    application.resume = { name: String(resume.name || "resume"), type: fileTypes[extension], size, data: resume.data };
     const saved = await store.createInternshipApplication(application);
     return send(res, 201, { application: { id: saved.id, createdAt: saved.createdAt } });
   }
