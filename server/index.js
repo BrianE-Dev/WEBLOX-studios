@@ -92,6 +92,10 @@ function validEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+function isAdministrator(account) {
+  return account?.accountType === "admin" || account?.accountType === "master_admin";
+}
+
 function cleanText(value, maxLength) {
   return String(value ?? "").trim().slice(0, maxLength);
 }
@@ -341,7 +345,7 @@ async function handler(req, res) {
 
   if (req.method === "POST" && url.pathname === "/api/admin/staff/invitations") {
     const current = await currentSession(req);
-    if (!current || current.account.accountType !== "admin")
+    if (!current || !isAdministrator(current.account))
       return send(res, 403, { error: "Administrator access is required." });
     const body = await readBody(req);
     const email = String(body.email || "").trim().toLowerCase();
@@ -370,9 +374,48 @@ async function handler(req, res) {
 
   if (req.method === "GET" && url.pathname === "/api/admin/staff") {
     const current = await currentSession(req);
-    if (!current || current.account.accountType !== "admin")
+    if (!current || !isAdministrator(current.account))
       return send(res, 403, { error: "Administrator access is required." });
     return send(res, 200, { staff: await store.listStaff() });
+  }
+
+  if (url.pathname === "/api/admin/admins") {
+    const current = await currentSession(req);
+    if (!current || current.account.accountType !== "master_admin")
+      return send(res, 403, { error: "Master administrator access is required." });
+    if (req.method === "GET")
+      return send(res, 200, { admins: await store.listAdmins(current.account.id) });
+    if (req.method === "POST") {
+      const body = await readBody(req);
+      const email = String(body.email || "").trim().toLowerCase();
+      const name = String(body.name || "").trim();
+      const password = String(body.password || "");
+      if (!validEmail(email) || !name || name.length > 120 || password.length < 12)
+        return send(res, 400, { error: "Enter a valid name and email, and a password of at least 12 characters." });
+      const credentials = await passwordRecord(password);
+      try {
+        await store.createAdmin({ id: randomUUID(), email, name, ...credentials });
+      } catch (error) {
+        if (error.code === "23505") return send(res, 409, { error: "An account already exists for this email." });
+        throw error;
+      }
+      return send(res, 201, { ok: true });
+    }
+  }
+
+  const removeAdminMatch = url.pathname.match(/^\/api\/admin\/admins\/([^/]+)$/);
+  if (req.method === "DELETE" && removeAdminMatch) {
+    const current = await currentSession(req);
+    if (!current || current.account.accountType !== "master_admin")
+      return send(res, 403, { error: "Master administrator access is required." });
+    let id;
+    try { id = decodeURIComponent(removeAdminMatch[1]); }
+    catch { return send(res, 400, { error: "Invalid administrator ID." }); }
+    const result = await store.removeAdmin(id, current.account.id);
+    if (result === "CURRENT_ACCOUNT") return send(res, 400, { error: "You cannot remove your own administrator account." });
+    if (result === "LAST_ADMIN") return send(res, 400, { error: "The last administrator account cannot be removed." });
+    if (result === "NOT_FOUND") return send(res, 404, { error: "Administrator account not found." });
+    return send(res, 200, { ok: true });
   }
 
   if (req.method === "POST" && url.pathname === "/api/auth/login") {

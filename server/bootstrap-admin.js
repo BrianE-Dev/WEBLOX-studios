@@ -21,11 +21,11 @@ const pool = new pg.Pool({
 });
 try {
   await migrate(pool);
-  const existing = await pool.query("SELECT 1 FROM accounts WHERE account_type = 'admin' LIMIT 1");
+  const existing = await pool.query("SELECT 1 FROM accounts WHERE account_type IN ('admin', 'master_admin') LIMIT 1");
   if (existing.rowCount) throw new Error("An administrator account already exists; bootstrap is disabled.");
   await pool.query(
     `INSERT INTO accounts (id, email, name, role, account_type, salt, hash)
-     VALUES ($1, $2, $3, 'Administrator', 'admin', $4, $5)`,
+     VALUES ($1, $2, $3, 'Master Administrator', 'master_admin', $4, $5)`,
     [randomUUID(), email, name, salt.toString("hex"), hash.toString("hex")],
   );
   console.log(`Administrator account created for ${email}. Save this one-time password now:`);

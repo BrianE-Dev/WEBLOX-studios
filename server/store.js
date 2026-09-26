@@ -9,6 +9,52 @@ export function createPostgresStore(pool) {
       return rows[0] ?? null;
     },
 
+    async listAdmins(currentId) {
+      const { rows } = await pool.query(
+        `SELECT id, email, name, created_at AS "createdAt", (id = $1) AS "isCurrent"
+         FROM accounts WHERE account_type IN ('master_admin', 'admin') ORDER BY created_at, email`,
+        [currentId],
+      );
+      return rows;
+    },
+
+    async createAdmin({ id, email, name, salt, hash }) {
+      await pool.query(
+        `INSERT INTO accounts (id, email, name, role, account_type, salt, hash)
+         VALUES ($1, $2, $3, 'Administrator', 'admin', $4, $5)`,
+        [id, email, name, salt, hash],
+      );
+    },
+
+    async removeAdmin(id, currentId) {
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+        const lock = await client.query(
+          "SELECT id FROM accounts WHERE account_type = 'admin' FOR UPDATE",
+        );
+        if (id === currentId) {
+          await client.query("ROLLBACK");
+          return "CURRENT_ACCOUNT";
+        }
+        if (lock.rowCount <= 1) {
+          await client.query("ROLLBACK");
+          return "LAST_ADMIN";
+        }
+        const removed = await client.query(
+          "DELETE FROM accounts WHERE id = $1 AND account_type = 'admin'",
+          [id],
+        );
+        await client.query("COMMIT");
+        return removed.rowCount ? "REMOVED" : "NOT_FOUND";
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      } finally {
+        client.release();
+      }
+    },
+
     async createEnquiry(enquiry) {
       const { rows } = await pool.query(
         `INSERT INTO enquiries
