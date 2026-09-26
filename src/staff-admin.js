@@ -28,6 +28,8 @@ function showAdmin(account) {
     return false
   }
   saveStaffSession(account)
+  $('adminProfileName').textContent = account.name || 'Administrator'
+  $('adminProfileEmail').textContent = account.email || ''
   $('loginPanel').classList.add('hidden')
   $('adminConsole').classList.remove('hidden')
   $('adminActions').classList.remove('hidden')
@@ -61,7 +63,7 @@ async function refreshStaff() {
         ? `INVITED · EXPIRES ${new Date(person.inviteExpiresAt).toLocaleDateString()}`
         : 'NOT ACTIVATED'
     if (person.activated) state.textContent = person.active ? 'ACTIVE' : 'DISABLED'
-    meta.textContent = [person.role, person.jobType || '—', person.email, `Added ${person.createdAt ? new Date(person.createdAt).toLocaleDateString() : '—'} by ${person.createdByName || 'Unknown'}${person.createdByEmail ? ` (${person.createdByEmail})` : ''}`].join(' · ')
+    meta.textContent = [person.role, person.jobType || '—', person.gender || 'Gender undisclosed', person.email, `Added ${person.createdAt ? new Date(person.createdAt).toLocaleDateString() : '—'} by ${person.createdByName || 'Unknown'}${person.createdByEmail ? ` (${person.createdByEmail})` : ''}`].join(' · ')
     row.append(copy, state)
     const action = document.createElement('button')
     action.type = 'button'
@@ -178,6 +180,23 @@ $('loginForm').addEventListener('submit', async (event) => {
     submit.disabled = false
   }
 })
+
+async function adminAttendance(action) {
+  const result = await fetch('/api/staff/attendance', {
+    method: action ? 'POST' : 'GET', credentials: 'include',
+    headers: { 'content-type': 'application/json' },
+    ...(action ? { body: JSON.stringify({ action }) } : {}),
+  })
+  const data = await result.json().catch(() => ({}))
+  if (!result.ok) throw new Error(data.error || 'Could not update attendance.')
+  const attendance = data.attendance
+  $('adminAttendanceStatus').textContent = attendance
+    ? `In: ${attendance.clockInAt ? new Date(attendance.clockInAt).toLocaleTimeString() : '—'} · Out: ${attendance.clockOutAt ? new Date(attendance.clockOutAt).toLocaleTimeString() : '—'}`
+    : 'No attendance recorded today.'
+  $('adminAttendanceNotice').textContent = action === 'clock_in' ? 'Clock-in recorded.' : action === 'clock_out' ? 'Clock-out recorded.' : ''
+}
+for (const [id, action] of [['adminClockIn', 'clock_in'], ['adminClockOut', 'clock_out']]) $(id).addEventListener('click', () => adminAttendance(action).catch((error) => { $('adminAttendanceNotice').textContent = error.message }))
+adminAttendance().catch((error) => { $('adminAttendanceStatus').textContent = error.message })
 
 $('inviteForm').addEventListener('submit', async (event) => {
   event.preventDefault()

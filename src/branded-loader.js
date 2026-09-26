@@ -1,5 +1,8 @@
 const loaderId = "weblox-branded-loader";
 const authLoaderKey = "weblox-auth-loader";
+const minimumLoaderDuration = 7000;
+let loaderShownAt = 0;
+let pendingDismissTimer;
 
 function ensureLoader() {
   let loader = document.getElementById(loaderId);
@@ -19,6 +22,8 @@ function ensureLoader() {
 
 export function showBrandedLoader() {
   const loader = ensureLoader();
+  loaderShownAt = Date.now();
+  clearTimeout(pendingDismissTimer);
   loader.classList.remove("is-hidden");
   return loader;
 }
@@ -26,6 +31,12 @@ export function showBrandedLoader() {
 export function dismissBrandedLoader() {
   const loader = document.getElementById(loaderId);
   if (!loader) return;
+  const remaining = minimumLoaderDuration - (Date.now() - loaderShownAt);
+  if (remaining > 0) {
+    clearTimeout(pendingDismissTimer);
+    pendingDismissTimer = setTimeout(dismissBrandedLoader, remaining);
+    return;
+  }
   const reducedMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
   ).matches;
@@ -43,8 +54,10 @@ window.webloxShowBrandedLoader = showBrandedLoader;
 window.webloxDismissBrandedLoader = dismissBrandedLoader;
 
 function dismissInitialLoader() {
-  if (document.getElementById(loaderId))
+  if (document.getElementById(loaderId)) {
+    loaderShownAt = Date.now();
     requestAnimationFrame(dismissBrandedLoader);
+  }
 }
 
 if (document.readyState === "loading") {

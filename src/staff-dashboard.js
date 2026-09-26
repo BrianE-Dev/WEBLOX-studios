@@ -9,11 +9,6 @@ if (!session?.account || session.account.accountType !== 'staff') {
 }
 const staff = session.account
 
-const attendancePanel = document.createElement('article')
-attendancePanel.className = 'dash-panel'
-attendancePanel.innerHTML = '<span class="eyebrow">DAILY ATTENDANCE</span><h2>Record today’s attendance</h2><p id="attendanceStatus">Loading today’s attendance…</p><button id="clockInButton" class="button" type="button">Clock in</button> <button id="clockOutButton" class="button secondary dash-secondary" type="button">Clock out</button><div id="attendanceNotice" class="dash-notice" role="status"></div>'
-$('overview').prepend(attendancePanel)
-
 function renderAttendance(attendance) {
   $('attendanceStatus').textContent = attendance
     ? `Clock in: ${attendance.clockInAt ? new Date(attendance.clockInAt).toLocaleTimeString() : 'not recorded'} · Clock out: ${attendance.clockOutAt ? new Date(attendance.clockOutAt).toLocaleTimeString() : 'not recorded'}`
@@ -33,6 +28,8 @@ $('clockOutButton').addEventListener('click', () => attendanceRequest('clock_out
 attendanceRequest().catch((error) => { $('attendanceStatus').textContent = error.message })
 document.documentElement.dataset.theme = localStorage.getItem('weblox-theme') || 'dark'
 $('staffName').textContent = staff.name.split(' ')[0]
+$('sideProfileName').textContent = staff.name || 'Staff member'
+$('sideProfileMeta').textContent = `${staff.role} · ${staff.email}`
 $('profileName').textContent = staff.name
 $('staffRole').textContent = staff.role.toUpperCase()
 $('profileMeta').textContent = `${staff.role} · ${staff.email}`
@@ -63,10 +60,11 @@ function openPortfolioBuilder() {
 }
 
 document.querySelector('[data-open-portfolio]').addEventListener('click', openPortfolioBuilder)
-document.querySelectorAll('[data-tab]').forEach((button) => button.addEventListener('click', () => {
+document.querySelectorAll('[data-tab], [data-side-tab]').forEach((button) => button.addEventListener('click', () => {
   if (button.dataset.tab === 'portfolio') return openPortfolioBuilder()
-  document.querySelectorAll('[data-tab]').forEach((item) => item.classList.toggle('active', item === button))
+  document.querySelectorAll('[data-tab], [data-side-tab]').forEach((item) => item.classList.toggle('active', item.dataset.tab === 'overview' || item.dataset.sideTab === 'overview'))
   $('overview').classList.remove('hidden')
+  $('portfolio').classList.add('hidden')
 }))
 
 async function renderPortfolioSummary() {

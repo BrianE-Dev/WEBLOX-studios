@@ -88,6 +88,43 @@ async function currentSession(req) {
   return account ? { token, tokenHash, account } : null;
 }
 
+function reportDateInZone(date = new Date()) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: process.env.REPORT_TIME_ZONE || 'Africa/Lagos' }).format(date);
+}
+
+function isFridayEveningInZone(date = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: process.env.REPORT_TIME_ZONE || 'Africa/Lagos', weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+  }).formatToParts(date);
+  const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return value.weekday === 'Fri' && (Number(value.hour) > 18 || (Number(value.hour) === 18 && Number(value.minute) >= 30));
+}
+
+async function runScheduledWeeklyReport() {
+  if (!isFridayEveningInZone()) return;
+  const reportDate = reportDateInZone();
+  if (await store.hasScheduledReport(reportDate)) return;
+  const { people, attendance, checkins } = await store.getWeeklyReportData();
+  const lines = [`Weekly attendance and check-in summary for the week ending ${reportDate}.`, ''];
+  for (const person of people) {
+    const personAttendance = attendance.filter((row) => row.accountId === person.id);
+    const personCheckins = checkins.filter((row) => row.accountId === person.id);
+    if (person.accountType === 'staff') {
+      const clockedIn = personAttendance.filter((row) => row.clockInAt).length;
+      lines.push(`${person.name} (${person.role}) — attendance: ${clockedIn} day(s) recorded out of 5; ${personAttendance.filter((row) => row.clockOutAt).length} clock-outs recorded.`);
+    } else {
+      lines.push(`${person.name} (Intern) — check-ins: ${personCheckins.filter((row) => row.morning).length} morning and ${personCheckins.filter((row) => row.evening).length} evening updates recorded.`);
+    }
+  }
+  const result = await store.sendWorkspaceMessage({
+    type: 'weekly_report', subject: `Weekly team report · ${reportDate}`, body: lines.join('\n'),
+    sender: { name: 'WEBLOX Weekly Reports', email: '' }, recipientIds: people.map((person) => person.id), reportDate,
+  });
+  return result;
+}
+
+setInterval(() => runScheduledWeeklyReport().catch((error) => console.error('Scheduled weekly report failed:', error)), 60_000).unref();
+
 function validEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
@@ -211,6 +248,50 @@ async function handler(req, res) {
       const draft = cleanPortfolio(body, current.account);
       return send(res, 200, { portfolio: await store.savePortfolioDraft(current.account.id, draft) });
     }
+  }
+
+  const adminPortfolioRoute = url.pathname.match(/^\/api\/admin\/staff\/([^/]+)\/portfolio$/);
+  if (adminPortfolioRoute) {
+    const current = await currentSession(req);
+    if (!current || !isAdministrator(current.account))
+      return send(res, 403, { error: "Master administrator access is required." });
+    const accountId = decodeURIComponent(adminPortfolioRoute[1]);
+    const staff = await store.findStaffAccount(accountId);
+    if (!staff) return send(res, 404, { error: "Staff account not found." });
+    if (req.method === "GET")
+      return send(res, 200, { portfolio: await store.getPortfolio(accountId) });
+    if (req.method === "PUT") {
+      const body = await readBody(req, 2 * 1024 * 1024);
+      if (!body || typeof body !== "object" || Array.isArray(body))
+        return send(res, 400, { error: "Portfolio data must be a JSON object." });
+      const draft = cleanPortfolio(body, staff);
+      const portfolio = await store.savePortfolioDraft(accountId, draft);
+      await store.recordPortfolioAdminEdit({ accountId, actor: current.account });
+      return send(res, 200, { portfolio });
+    }
+  }
+
+  const adminPortfolioPublishRoute = url.pathname.match(/^\/api\/admin\/staff\/([^/]+)\/portfolio\/(publish|unpublish)$/);
+  if (req.method === "POST" && adminPortfolioPublishRoute) {
+    const current = await currentSession(req);
+    if (!current || !isAdministrator(current.account))
+      return send(res, 403, { error: "Master administrator access is required." });
+    const accountId = decodeURIComponent(adminPortfolioPublishRoute[1]);
+    const staff = await store.findStaffAccount(accountId);
+    if (!staff) return send(res, 404, { error: "Staff account not found." });
+    if (adminPortfolioPublishRoute[2] === "unpublish") {
+      const portfolio = await store.unpublishPortfolio(accountId);
+      if (!portfolio) return send(res, 404, { error: "There is no saved portfolio to unpublish." });
+      return send(res, 200, { portfolio });
+    }
+    const portfolio = await store.getPortfolio(accountId);
+    const draft = portfolio?.draft;
+    if (!draft?.name || !draft?.title || !draft?.biography)
+      return send(res, 400, { error: "Add the staff member's name, professional title, and biography before publishing." });
+    const slugBase = draft.name.normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "staff-portfolio";
+    const published = await store.publishPortfolio(accountId, slugBase);
+    return send(res, 200, { portfolio: published });
   }
 
   if (req.method === "POST" && url.pathname === "/api/portfolios/me/publish") {
@@ -352,6 +433,7 @@ async function handler(req, res) {
     const name = String(body.name || "").trim();
     const role = String(body.role || "").trim();
     const jobType = String(body.jobType || "Full-time").trim();
+    const gender = String(body.gender || "").trim().slice(0, 60);
     if (!validEmail(email) || !name || name.length > 120 || !role || role.length > 80 || !jobType || jobType.length > 80)
       return send(res, 400, { error: "Enter a valid email, full name, and job role." });
     const token = randomBytes(32).toString("base64url");
@@ -361,6 +443,7 @@ async function handler(req, res) {
         name,
         role,
         jobType,
+        gender,
         actor: current.account,
         tokenHash: createHash("sha256").update(token).digest("hex"),
         expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 48).toISOString(),
@@ -384,8 +467,8 @@ async function handler(req, res) {
 
   if (url.pathname === "/api/staff/attendance") {
     const current = await currentSession(req);
-    if (!current || current.account.accountType !== "staff")
-      return send(res, 401, { error: "A staff session is required." });
+    if (!current || !["staff", "admin", "master_admin"].includes(current.account.accountType))
+      return send(res, 401, { error: "A staff or administrator session is required." });
     if (req.method === "GET") return send(res, 200, { attendance: await store.getAttendance(current.account.id) });
     if (req.method === "POST") {
       const body = await readBody(req);
@@ -393,6 +476,46 @@ async function handler(req, res) {
         return send(res, 400, { error: "Choose clock in or clock out." });
       return send(res, 200, { attendance: await store.recordAttendance(current.account.id, body.action) });
     }
+  }
+
+  if (url.pathname === "/api/workspace/inbox" && req.method === "GET") {
+    const current = await currentSession(req);
+    if (!current || !["staff", "intern"].includes(current.account.accountType))
+      return send(res, 401, { error: "A staff or intern session is required." });
+    return send(res, 200, { messages: await store.listInbox(current.account.id) });
+  }
+
+  const inboxReadMatch = url.pathname.match(/^\/api\/workspace\/inbox\/([^/]+)\/read$/);
+  if (req.method === "POST" && inboxReadMatch) {
+    const current = await currentSession(req);
+    if (!current || !["staff", "intern"].includes(current.account.accountType))
+      return send(res, 401, { error: "A staff or intern session is required." });
+    const messageId = decodeURIComponent(inboxReadMatch[1]);
+    if (!await store.markInboxRead(current.account.id, messageId))
+      return send(res, 404, { error: "Inbox message not found." });
+    return send(res, 200, { ok: true });
+  }
+
+  if (url.pathname === "/api/admin/workspace/recipients" && req.method === "GET") {
+    const current = await currentSession(req);
+    if (!current || !isAdministrator(current.account))
+      return send(res, 403, { error: "Administrator access is required." });
+    return send(res, 200, { recipients: await store.listReportRecipients() });
+  }
+
+  if (url.pathname === "/api/admin/workspace/messages" && req.method === "POST") {
+    const current = await currentSession(req);
+    if (!current || !isAdministrator(current.account))
+      return send(res, 403, { error: "Administrator access is required." });
+    const body = await readBody(req, 100_000);
+    const type = body.type === "weekly_report" ? "weekly_report" : "announcement";
+    const subject = cleanText(body.subject, 180);
+    const messageBody = cleanText(body.body, 20_000);
+    const recipientIds = [...new Set(Array.isArray(body.recipientIds) ? body.recipientIds.map((id) => cleanText(id, 120)).filter(Boolean) : [])].slice(0, 1000);
+    if (!subject || !messageBody || !recipientIds.length)
+      return send(res, 400, { error: "Enter a subject and message, and select at least one recipient." });
+    const result = await store.sendWorkspaceMessage({ type, subject, body: messageBody, sender: current.account, recipientIds });
+    return send(res, 201, result);
   }
 
   if (url.pathname === "/api/intern/me/checkins") {
@@ -433,11 +556,12 @@ async function handler(req, res) {
     const name = String(body.name || "").trim();
     const role = String(body.role || "").trim();
     const jobType = String(body.jobType || "Full-time").trim();
+    const gender = String(body.gender || "").trim().slice(0, 60);
     const oldEmail = String(body.oldEmail || "").trim().toLowerCase();
     if (!validEmail(email) || !validEmail(oldEmail) || !name || name.length > 120 || !role || role.length > 80 || !jobType || jobType.length > 80)
       return send(res, 400, { error: "Enter a valid name, email, and role." });
     try {
-      const staff = await store.updateStaff({ id, oldEmail, email, name, role, jobType, actor: current.account });
+      const staff = await store.updateStaff({ id, oldEmail, email, name, role, jobType, gender, actor: current.account });
       return staff ? send(res, 200, { staff }) : send(res, 404, { error: "Staff account not found." });
     } catch (error) {
       if (error.code === "23505") return send(res, 409, { error: "An account already exists for this email." });
@@ -459,9 +583,10 @@ async function handler(req, res) {
     const name = String(body.name || "").trim();
     const role = String(body.role || "").trim();
     const jobType = String(body.jobType || "Full-time").trim();
+    const gender = String(body.gender || "").trim().slice(0, 60);
     if (!name || name.length > 120 || !role || role.length > 80 || !jobType || jobType.length > 80)
       return send(res, 400, { error: "Enter a valid name and role." });
-    if (!await store.updatePendingStaff(email, name, role, jobType, current.account)) return send(res, 404, { error: "Pending staff invitation not found." });
+    if (!await store.updatePendingStaff(email, name, role, jobType, gender, current.account)) return send(res, 404, { error: "Pending staff invitation not found." });
     return send(res, 200, { ok: true });
   }
 
@@ -487,12 +612,13 @@ async function handler(req, res) {
       const name = String(body.name || "").trim();
       const role = String(body.role || "Intern").trim();
       const jobType = String(body.jobType || "Internship").trim();
+      const gender = String(body.gender || "").trim().slice(0, 60);
       const password = String(body.password || "");
       if (!validEmail(email) || !name || name.length > 120 || !role || role.length > 80 || !jobType || jobType.length > 80 || password.length < 12)
         return send(res, 400, { error: "Enter a valid name, email, program, and password of at least 12 characters." });
       try {
         const credentials = await passwordRecord(password);
-        await store.createIntern({ id: randomUUID(), email, name, role, jobType, ...credentials, actor: current.account });
+        await store.createIntern({ id: randomUUID(), email, name, role, jobType, gender, ...credentials, actor: current.account });
         return send(res, 201, { ok: true });
       } catch (error) {
         if (error.code === "23505") return send(res, 409, { error: "An account already exists for this email." });
@@ -516,10 +642,11 @@ async function handler(req, res) {
     const name = String(body.name || "").trim();
     const role = String(body.role || "").trim();
     const jobType = String(body.jobType || "Internship").trim();
+    const gender = String(body.gender || "").trim().slice(0, 60);
     if (!validEmail(email) || !name || name.length > 120 || !role || role.length > 80 || !jobType || jobType.length > 80)
       return send(res, 400, { error: "Enter a valid name, email, and program." });
     try {
-      const intern = await store.updateIntern({ id, email, name, role, jobType, actor: current.account });
+      const intern = await store.updateIntern({ id, email, name, role, jobType, gender, actor: current.account });
       return intern ? send(res, 200, { intern }) : send(res, 404, { error: "Intern account not found." });
     } catch (error) {
       if (error.code === "23505") return send(res, 409, { error: "An account already exists for this email." });
@@ -537,12 +664,13 @@ async function handler(req, res) {
       const body = await readBody(req);
       const email = String(body.email || "").trim().toLowerCase();
       const name = String(body.name || "").trim();
+      const gender = String(body.gender || "").trim().slice(0, 60);
       const password = String(body.password || "");
       if (!validEmail(email) || !name || name.length > 120 || password.length < 12)
         return send(res, 400, { error: "Enter a valid name and email, and a password of at least 12 characters." });
       const credentials = await passwordRecord(password);
       try {
-        await store.createAdmin({ id: randomUUID(), email, name, ...credentials });
+        await store.createAdmin({ id: randomUUID(), email, name, gender, ...credentials });
       } catch (error) {
         if (error.code === "23505") return send(res, 409, { error: "An account already exists for this email." });
         throw error;
