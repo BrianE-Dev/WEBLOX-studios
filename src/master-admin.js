@@ -282,7 +282,7 @@ async function refreshPeopleAndActivity() {
         if (role === null) return
         const jobType = prompt('Job type', person.jobType || 'Full-time')
         if (jobType === null) return
-        const gender = prompt('Gender (Female, Male, Non-binary, self-describe, or blank)', person.gender || '')
+        const gender = prompt('Gender (Male or Female)', person.gender || '')
         if (gender === null) return
         try {
           await adminRequest(`/api/admin/staff/${encodeURIComponent(person.id)}`, {
@@ -345,7 +345,7 @@ async function refreshPeopleAndActivity() {
         if (role === null) return
         const jobType = prompt('Job type', person.jobType || 'Internship')
         if (jobType === null) return
-        const gender = prompt('Gender (Female, Male, Non-binary, self-describe, or blank)', person.gender || '')
+        const gender = prompt('Gender (Male or Female)', person.gender || '')
         if (gender === null) return
         try {
           await adminRequest(`/api/admin/interns/${encodeURIComponent(person.id)}`, {
