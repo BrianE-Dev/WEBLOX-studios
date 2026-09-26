@@ -4,6 +4,10 @@
     {
       "source": "/api/:path*",
       "destination": "https://weblox-api.onrender.com/api/:path*"
+    },
+    {
+      "source": "/internship/:path*",
+      "destination": "/index.html"
     }
   ],
   "headers": [
