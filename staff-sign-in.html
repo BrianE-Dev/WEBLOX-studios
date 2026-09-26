@@ -11,8 +11,8 @@
   <style>
     .staff-auth{width:min(480px,calc(100% - 36px));margin:70px auto}.staff-auth-brand{display:flex;align-items:center;gap:11px;margin-bottom:24px;font:700 15px 'Plus Jakarta Sans';letter-spacing:.08em}.staff-auth-brand img{width:40px;height:40px;object-fit:contain}.staff-auth-card{padding:32px;background:#1b1b1ed9;border:1px solid #4a445599;border-radius:14px;box-shadow:0 24px 70px #0004}.staff-auth-card h1{font-size:34px;margin:9px 0}.staff-auth-card>p{color:var(--muted);font-size:13px;line-height:1.7}.staff-auth-form{display:grid;gap:14px;margin-top:22px}.staff-auth-form label{display:flex;flex-direction:column;gap:7px;color:#d1bcff;font:600 11px 'JetBrains Mono'}.staff-auth-form input{width:100%;font:14px Inter,Arial,sans-serif}.staff-auth-form .button{width:100%}.staff-auth-notice{min-height:20px;margin-top:14px;color:#ffaaa2;font-size:12px}.staff-auth-notice.success{color:#7fe5a2}.staff-auth-links{display:flex;justify-content:space-between;gap:12px;margin-top:20px;font:10px 'JetBrains Mono';color:#d1bcff}.staff-auth-links a:hover{text-decoration:underline}html[data-theme="light"] .staff-auth-card{background:#fff;border-color:#c9c1d1}html[data-theme="light"] .staff-auth-card h1{color:#17131b}@media(max-width:520px){.staff-auth{margin-top:32px}.staff-auth-card{padding:25px 19px}}
   </style>
-</head>
-<body>
+<link rel="stylesheet" href="/src/loading-skeleton.css"/><script type="module" src="/src/branded-loader.js"></script></head>
+<body><div id="weblox-branded-loader" class="weblox-branded-loader" role="status" aria-live="polite" aria-label="Loading WEBLOX"><img src="/assets/weblox-logo.png" alt="WEBLOX Studios" /></div>
   <main class="staff-auth">
     <a href="/" class="staff-auth-brand"><img src="/assets/weblox-logo.png" alt=""/> WEBLOX <span class="eyebrow">STAFF WORKSPACE</span></a>
     <section class="staff-auth-card" aria-labelledby="authTitle">
@@ -21,8 +21,8 @@
       <p id="authDescription">Sign in with your staff email and password.</p>
       <form id="staffAuthForm" class="staff-auth-form">
         <label>Email address<input name="email" type="email" autocomplete="username" required maxlength="254"/></label>
-        <label>Password<input id="password" name="password" type="password" autocomplete="current-password" required minlength="12"/></label>
-        <label id="confirmWrap" class="hidden">Confirm password<input name="confirmPassword" type="password" autocomplete="new-password" minlength="12"/></label>
+        <label>Password<input id="password" name="password" type="password" autocomplete="current-password" required minlength="8"/></label>
+        <label id="confirmWrap" class="hidden">Confirm password<input name="confirmPassword" type="password" autocomplete="new-password" minlength="8"/></label>
         <button id="submitButton" class="button" type="submit">Sign in →</button>
       </form>
       <button id="existingPasswordLink" class="auth-back hidden" type="button">Already created a password? Sign in</button>

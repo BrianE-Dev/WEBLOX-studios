@@ -9,6 +9,16 @@ if (!session?.account || session.account.accountType !== 'staff') {
 }
 const staff = session.account
 
+const attendancePanel = $('attendanceStatus').closest('article')
+if (attendancePanel) {
+  attendancePanel.id = 'staffSidebar'
+  attendancePanel.style.gridColumn = ''
+  document.querySelector('.dash-head').after(attendancePanel)
+  const layout = document.createElement('style')
+  layout.textContent = '.staff-dash{display:grid;grid-template-columns:245px minmax(0,1fr);gap:20px;width:min(1280px,calc(100% - 36px))}.dash-head{grid-column:1/-1}#staffSidebar{grid-column:1;grid-row:2/6;position:sticky;top:20px;align-self:start}.dash-hero,.dash-nav,#overview,#portfolio{grid-column:2}@media(max-width:700px){.staff-dash{grid-template-columns:1fr}#staffSidebar,.dash-hero,.dash-nav,#overview,#portfolio{grid-column:1;grid-row:auto}#staffSidebar{position:static}}'
+  document.head.append(layout)
+}
+
 const inboxPanel = document.createElement('article')
 inboxPanel.className = 'dash-panel'
 inboxPanel.innerHTML = '<span class="eyebrow">WORKSPACE INBOX</span><h2>Reports and announcements</h2><p id="inboxNotice">Loading messages…</p><div id="workspaceInbox"></div>'

@@ -15,6 +15,7 @@ export default defineConfig({
         staffAdmin: 'staff-admin.html',
         staffDashboard: 'staff-dashboard.html',
         staffPortfolio: 'staff-portfolio.html',
+        internPortal: 'intern-portal.html',
         portfolio: 'portfolio.html',
       },
     },

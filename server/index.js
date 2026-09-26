@@ -398,8 +398,8 @@ async function handler(req, res) {
       .toLowerCase();
     const password = String(body.password || "");
     const invite = String(body.invite || "").trim();
-    if (!validEmail(email) || invite.length < 32 || password.length < 12)
-      return send(res, 400, { error: "Enter a valid email, a valid staff invitation, and a password of at least 12 characters." });
+    if (!validEmail(email) || invite.length < 32 || password.length < 8)
+      return send(res, 400, { error: "Enter a valid email, a valid staff invitation, and a password of at least 8 characters." });
     const credentials = await passwordRecord(password);
     const account = {
       id: randomUUID(),
@@ -631,8 +631,8 @@ async function handler(req, res) {
       const jobType = String(body.jobType || "Internship").trim();
       const gender = String(body.gender || "").trim().slice(0, 60);
       const password = String(body.password || "");
-      if (!validEmail(email) || !name || name.length > 120 || !role || role.length > 80 || !jobType || jobType.length > 80 || password.length < 12)
-        return send(res, 400, { error: "Enter a valid name, email, program, and password of at least 12 characters." });
+      if (!validEmail(email) || !name || name.length > 120 || !role || role.length > 80 || !jobType || jobType.length > 80 || password.length < 8)
+        return send(res, 400, { error: "Enter a valid name, email, program, and password of at least 8 characters." });
       try {
         const credentials = await passwordRecord(password);
         await store.createIntern({ id: randomUUID(), email, name, role, jobType, gender, ...credentials, actor: current.account });
@@ -683,8 +683,8 @@ async function handler(req, res) {
       const name = String(body.name || "").trim();
       const gender = String(body.gender || "").trim().slice(0, 60);
       const password = String(body.password || "");
-      if (!validEmail(email) || !name || name.length > 120 || password.length < 12)
-        return send(res, 400, { error: "Enter a valid name and email, and a password of at least 12 characters." });
+      if (!validEmail(email) || !name || name.length > 120 || password.length < 8)
+        return send(res, 400, { error: "Enter a valid name and email, and a password of at least 8 characters." });
       const credentials = await passwordRecord(password);
       try {
         await store.createAdmin({ id: randomUUID(), email, name, gender, ...credentials });
@@ -758,7 +758,7 @@ async function handler(req, res) {
     const body = await readBody(req);
     const oldPassword = String(body.currentPassword || "");
     const newPassword = String(body.newPassword || "");
-    if (newPassword.length < 12) return send(res, 400, { error: "Use a password with at least 12 characters." });
+    if (newPassword.length < 8) return send(res, 400, { error: "Use a password with at least 8 characters." });
     const account = await store.findAccountByEmail(current.account.email);
     const actual = await passwordRecord(oldPassword, Buffer.from(account.salt, "hex"));
     if (!timingSafeEqual(Buffer.from(actual.hash, "hex"), Buffer.from(account.hash, "hex")))

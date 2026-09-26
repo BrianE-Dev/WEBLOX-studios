@@ -70,7 +70,7 @@ function showAdmin(account) {
   $('loginPanel').classList.add('hidden')
   $('adminConsole').classList.remove('hidden')
   $('masterActions').classList.remove('hidden')
-  mountWorkspaceTools(document.querySelector('.master-main'))
+  mountWorkspaceTools(document.querySelector('.master-main') || $('adminConsole'))
   return true
 }
 

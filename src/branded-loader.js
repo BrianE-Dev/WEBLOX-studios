@@ -1,6 +1,6 @@
 const loaderId = "weblox-branded-loader";
 const authLoaderKey = "weblox-auth-loader";
-const minimumLoaderDuration = 7000;
+const minimumLoaderDuration = 3500;
 let loaderShownAt = 0;
 let pendingDismissTimer;
 
