@@ -15,6 +15,42 @@ async function adminRequest(path, options = {}) {
   return data
 }
 
+function mountWorkspaceTools(container) {
+  if (document.getElementById('workspaceMessageComposer')) return
+  const panel = document.createElement('section')
+  panel.id = 'workspaceMessageComposer'; panel.className = 'master-card'
+  panel.innerHTML = '<span class="eyebrow">ANNOUNCEMENTS & REPORTS</span><h2>Compose a message</h2><p>Select the recipients. Unchecked people will not receive this message.</p><form id="workspaceMessageForm" class="master-form"><label>Message type<select name="type"><option value="announcement">Announcement</option><option value="weekly_report">Weekly report</option></select></label><label>Subject<input name="subject" maxlength="180" required></label><label class="wide">Message<textarea name="body" rows="6" maxlength="20000" required></textarea></label><div class="wide"><button id="loadReportPreview" type="button" class="button secondary">Load weekly summary</button> <button class="button" type="submit">Send to selected</button></div><fieldset class="wide" id="workspaceRecipientList"><legend>Recipients</legend><button type="button" data-select-all>Select all</button> <button type="button" data-select-none>Select none</button><div id="workspaceRecipients"></div></fieldset></form><p id="workspaceMessageNotice" class="master-notice" role="status"></p><h3>Sent messages</h3><div id="workspaceSentMessages" class="master-list"></div>'
+  container.append(panel)
+  const message = (text) => { document.getElementById('workspaceMessageNotice').textContent = text }
+  const checkboxList = document.getElementById('workspaceRecipients')
+  async function loadRecipients() {
+    const data = await adminRequest('/api/admin/workspace/recipients')
+    checkboxList.replaceChildren()
+    for (const person of data.recipients) {
+      const label = document.createElement('label'); label.style.display = 'block'
+      const input = document.createElement('input'); input.type = 'checkbox'; input.value = person.id; input.checked = true
+      label.append(input, document.createTextNode(` ${person.name} · ${person.accountType} · ${person.email}`)); checkboxList.append(label)
+    }
+    const history = document.getElementById('workspaceSentMessages'); history.replaceChildren()
+    for (const item of data.sentMessages) addRow(history, `${item.type === 'announcement' ? 'ANNOUNCEMENT' : 'WEEKLY REPORT'} · ${item.subject}`, `Sent by ${item.senderName}${item.senderEmail ? ` (${item.senderEmail})` : ''} · ${new Date(item.createdAt).toLocaleString()} · ${item.recipientCount} recipients`)
+    if (!data.sentMessages.length) history.textContent = 'No messages have been sent.'
+  }
+  panel.querySelector('[data-select-all]').addEventListener('click', () => checkboxList.querySelectorAll('input').forEach((item) => { item.checked = true }))
+  panel.querySelector('[data-select-none]').addEventListener('click', () => checkboxList.querySelectorAll('input').forEach((item) => { item.checked = false }))
+  document.getElementById('loadReportPreview').addEventListener('click', async () => {
+    try { const report = await adminRequest('/api/admin/workspace/report-preview'); panel.querySelector('[name="type"]').value = 'weekly_report'; panel.querySelector('[name="subject"]').value = report.subject; panel.querySelector('[name="body"]').value = report.body; message(report.alreadySent ? 'The scheduled report for this date was already sent; this manual send will create an additional copy.' : 'Weekly report loaded.') }
+    catch (error) { message(error.message) }
+  })
+  document.getElementById('workspaceMessageForm').addEventListener('submit', async (event) => {
+    event.preventDefault()
+    const form = event.currentTarget
+    const recipientIds = [...checkboxList.querySelectorAll('input:checked')].map((input) => input.value)
+    try { const payload = Object.fromEntries(new FormData(form)); const result = await adminRequest('/api/admin/workspace/messages', { method: 'POST', body: JSON.stringify({ ...payload, recipientIds }) }); message(`Sent to ${result.recipientCount} recipients.`); await loadRecipients() }
+    catch (error) { message(error.message || 'Could not send the message.') }
+  })
+  loadRecipients().catch((error) => message(error.message))
+}
+
 function message(id, text, success = false) {
   const element = $(id)
   element.textContent = text
@@ -34,6 +70,7 @@ function showAdmin(account) {
   $('loginPanel').classList.add('hidden')
   $('adminConsole').classList.remove('hidden')
   $('masterActions').classList.remove('hidden')
+  mountWorkspaceTools(document.querySelector('.master-main'))
   return true
 }
 

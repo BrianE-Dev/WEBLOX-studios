@@ -19,7 +19,33 @@ function showPortal(account) {
   $('loginPanel').classList.add('hidden')
   $('portal').classList.remove('hidden')
   $('welcome').textContent = `${account.name} · ${account.role}`
+  mountInbox()
   return true
+}
+
+function mountInbox() {
+  if ($('workspaceInbox')) return
+  const panel = document.createElement('section'); panel.className = 'intern-card'
+  panel.innerHTML = '<span class="eyebrow">WORKSPACE INBOX</span><h2>Reports and announcements</h2><p id="inboxNotice">Loading messages…</p><div id="workspaceInbox"></div>'
+  $('portal').prepend(panel)
+  loadInbox().catch((error) => { $('inboxNotice').textContent = error.message })
+}
+
+async function loadInbox() {
+  const data = await checkinRequest('/api/workspace/inbox')
+  const list = $('workspaceInbox'); list.replaceChildren()
+  const unread = data.messages.filter((item) => !item.readAt).length
+  $('inboxNotice').textContent = unread ? `${unread} unread message(s)` : 'You’re up to date.'
+  for (const item of data.messages) {
+    const row = document.createElement('article'); row.className = 'intern-row'
+    const title = document.createElement('b'); title.textContent = item.subject
+    const meta = document.createElement('small'); meta.textContent = `${item.type === 'announcement' ? 'Announcement' : 'Weekly report'} · ${item.senderName} · ${new Date(item.createdAt).toLocaleString()}`
+    const body = document.createElement('p'); body.style.whiteSpace = 'pre-wrap'; body.textContent = item.body
+    row.append(title, meta, body)
+    if (!item.readAt) { const button = document.createElement('button'); button.className = 'button secondary'; button.textContent = 'Mark as read'; button.addEventListener('click', async () => { await checkinRequest(`/api/workspace/inbox/${encodeURIComponent(item.id)}/read`, { method: 'POST' }); await loadInbox() }); row.append(button) }
+    list.append(row)
+  }
+  if (!data.messages.length) list.textContent = 'Reports and announcements will appear here.'
 }
 
 async function loadCheckins() {

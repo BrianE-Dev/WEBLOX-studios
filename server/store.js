@@ -161,6 +161,16 @@ export function createPostgresStore(pool) {
       return rows;
     },
 
+    async listSentWorkspaceMessages() {
+      const { rows } = await pool.query(
+        `SELECT m.id, m.message_type AS type, m.subject, m.body, m.sender_name AS "senderName",
+           m.sender_email AS "senderEmail", m.created_at AS "createdAt", COUNT(r.account_id)::int AS "recipientCount"
+         FROM workspace_messages m LEFT JOIN workspace_message_recipients r ON r.message_id = m.id
+         GROUP BY m.id ORDER BY m.created_at DESC LIMIT 200`,
+      );
+      return rows;
+    },
+
     async markInboxRead(accountId, messageId) {
       const { rowCount } = await pool.query(
         `UPDATE workspace_message_recipients SET read_at = COALESCE(read_at, now())
@@ -172,8 +182,8 @@ export function createPostgresStore(pool) {
     async getWeeklyReportData() {
       const [{ rows: people }, { rows: attendance }, { rows: checkins }] = await Promise.all([
         pool.query(`SELECT id, name, email, role, account_type AS "accountType" FROM accounts WHERE active = true AND account_type IN ('staff', 'intern') ORDER BY account_type, name`),
-        pool.query(`SELECT a.id AS "accountId", a.name, a.email, d.attendance_date AS date, d.clock_in_at AS "clockInAt", d.clock_out_at AS "clockOutAt" FROM staff_attendance d JOIN accounts a ON a.id = d.account_id WHERE d.attendance_date >= CURRENT_DATE - INTERVAL '6 days' AND a.active = true ORDER BY a.name, d.attendance_date`),
-        pool.query(`SELECT a.id AS "accountId", a.name, a.email, c.checkin_date AS date, c.morning, c.evening FROM intern_checkins c JOIN accounts a ON a.id = c.account_id WHERE c.checkin_date >= CURRENT_DATE - INTERVAL '6 days' AND a.active = true ORDER BY a.name, c.checkin_date`),
+        pool.query(`SELECT a.id AS "accountId", a.name, a.email, d.attendance_date AS date, d.clock_in_at AS "clockInAt", d.clock_out_at AS "clockOutAt" FROM staff_attendance d JOIN accounts a ON a.id = d.account_id WHERE d.attendance_date >= date_trunc('week', CURRENT_DATE)::date - INTERVAL '3 days' AND d.attendance_date < date_trunc('week', CURRENT_DATE)::date + INTERVAL '4 days' AND a.active = true ORDER BY a.name, d.attendance_date`),
+        pool.query(`SELECT a.id AS "accountId", a.name, a.email, c.checkin_date AS date, c.morning, c.evening FROM intern_checkins c JOIN accounts a ON a.id = c.account_id WHERE c.checkin_date >= date_trunc('week', CURRENT_DATE)::date - INTERVAL '3 days' AND c.checkin_date < date_trunc('week', CURRENT_DATE)::date + INTERVAL '4 days' AND a.active = true ORDER BY a.name, c.checkin_date`),
       ]);
       return { people, attendance, checkins };
     },
@@ -181,6 +191,14 @@ export function createPostgresStore(pool) {
     async hasScheduledReport(reportDate) {
       const { rowCount } = await pool.query('SELECT 1 FROM scheduled_report_runs WHERE report_date = $1', [reportDate]);
       return rowCount > 0;
+    },
+
+    async findScheduledReport(reportDate) {
+      const { rows } = await pool.query(
+        `SELECT m.id, m.subject FROM scheduled_report_runs r
+         LEFT JOIN workspace_messages m ON m.id = r.message_id WHERE r.report_date = $1`, [reportDate],
+      );
+      return rows[0] ?? null;
     },
 
     async attachScheduledReport(reportDate, messageId) {

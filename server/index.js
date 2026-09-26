@@ -500,7 +500,24 @@ async function handler(req, res) {
     const current = await currentSession(req);
     if (!current || !isAdministrator(current.account))
       return send(res, 403, { error: "Administrator access is required." });
-    return send(res, 200, { recipients: await store.listReportRecipients() });
+    return send(res, 200, { recipients: await store.listReportRecipients(), sentMessages: await store.listSentWorkspaceMessages() });
+  }
+
+  if (url.pathname === "/api/admin/workspace/report-preview" && req.method === "GET") {
+    const current = await currentSession(req);
+    if (!current || !isAdministrator(current.account)) return send(res, 403, { error: "Administrator access is required." });
+    const { people, attendance, checkins } = await store.getWeeklyReportData();
+    const lines = [`Weekly attendance and check-in summary · ${reportDateInZone()}`, ''];
+    for (const person of people) {
+      const attended = attendance.filter((row) => row.accountId === person.id);
+      const updates = checkins.filter((row) => row.accountId === person.id);
+      lines.push(person.accountType === 'staff'
+        ? `${person.name} (${person.role}) — ${attended.filter((row) => row.clockInAt).length} attendance days; ${attended.filter((row) => row.clockOutAt).length} clock-outs.`
+        : `${person.name} (Intern) — ${updates.filter((row) => row.morning).length} morning and ${updates.filter((row) => row.evening).length} evening check-ins.`);
+    }
+    const reportDate = reportDateInZone();
+    const sent = await store.findScheduledReport(reportDate);
+    return send(res, 200, { subject: `Weekly team report · ${reportDate}`, body: lines.join('\n'), alreadySent: Boolean(sent?.id) });
   }
 
   if (url.pathname === "/api/admin/workspace/messages" && req.method === "POST") {

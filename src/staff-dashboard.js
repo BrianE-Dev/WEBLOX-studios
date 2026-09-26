@@ -9,6 +9,30 @@ if (!session?.account || session.account.accountType !== 'staff') {
 }
 const staff = session.account
 
+const inboxPanel = document.createElement('article')
+inboxPanel.className = 'dash-panel'
+inboxPanel.innerHTML = '<span class="eyebrow">WORKSPACE INBOX</span><h2>Reports and announcements</h2><p id="inboxNotice">Loading messages…</p><div id="workspaceInbox"></div>'
+document.getElementById('overview').prepend(inboxPanel)
+
+async function loadWorkspaceInbox() {
+  const response = await fetch('/api/workspace/inbox', { credentials: 'include' })
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(data.error || 'Could not load inbox.')
+  const list = document.getElementById('workspaceInbox'); list.replaceChildren()
+  document.getElementById('inboxNotice').textContent = data.messages.filter((item) => !item.readAt).length ? `${data.messages.filter((item) => !item.readAt).length} unread message(s)` : 'You’re up to date.'
+  for (const item of data.messages) {
+    const article = document.createElement('article'); article.className = 'dash-muted'; article.style.marginTop = '10px'
+    const title = document.createElement('b'); title.textContent = item.subject
+    const meta = document.createElement('p'); meta.textContent = `${item.type === 'announcement' ? 'Announcement' : 'Weekly report'} · ${item.senderName} · ${new Date(item.createdAt).toLocaleString()}`
+    const body = document.createElement('p'); body.style.whiteSpace = 'pre-wrap'; body.textContent = item.body
+    article.append(title, meta, body)
+    if (!item.readAt) { const button = document.createElement('button'); button.className = 'button secondary'; button.textContent = 'Mark as read'; button.addEventListener('click', async () => { await fetch(`/api/workspace/inbox/${encodeURIComponent(item.id)}/read`, { method: 'POST', credentials: 'include' }); await loadWorkspaceInbox() }); article.append(button) }
+    list.append(article)
+  }
+  if (!data.messages.length) list.textContent = 'Reports and announcements will appear here.'
+}
+loadWorkspaceInbox().catch((error) => { document.getElementById('inboxNotice').textContent = error.message })
+
 function renderAttendance(attendance) {
   $('attendanceStatus').textContent = attendance
     ? `Clock in: ${attendance.clockInAt ? new Date(attendance.clockInAt).toLocaleTimeString() : 'not recorded'} · Clock out: ${attendance.clockOutAt ? new Date(attendance.clockOutAt).toLocaleTimeString() : 'not recorded'}`
