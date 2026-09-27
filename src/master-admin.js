@@ -15,11 +15,71 @@ async function adminRequest(path, options = {}) {
   return data
 }
 
+function setupMasterPages() {
+  const links = [...document.querySelectorAll('[data-master-page]')]
+  const views = [...document.querySelectorAll('[data-master-view]')]
+  const show = (page) => {
+    views.forEach((view) => view.classList.toggle('hidden', view.dataset.masterView !== page))
+    links.forEach((link) => link.classList.toggle('active', link.dataset.masterPage === page))
+  }
+  links.forEach((link) => link.addEventListener('click', (event) => { event.preventDefault(); show(link.dataset.masterPage) }))
+  show('overview')
+}
+
+async function refreshMasterApplicants() {
+  const { applications } = await adminRequest('/api/admin/internship-applications')
+  const list = $('masterApplicantList'); list.replaceChildren()
+  if (!applications.length) { list.textContent = 'No internship applications have been received yet.'; return }
+  for (const app of applications) {
+    const row = document.createElement('article'); row.className = 'master-row'; const copy = document.createElement('div')
+    const name = document.createElement('b'); name.textContent = app.fullName
+    const meta = document.createElement('small'); meta.textContent = `${app.email} · ${app.phone} · ${app.track} · ${new Date(app.createdAt).toLocaleString()}`; copy.append(name, meta)
+    for (const [label, value] of [['Background', app.background], ['Background details', app.backgroundDetails], ['Skills', app.skills], ['Motivation', app.motivation], ['Availability', `${app.startDate} · ${app.duration} · ${app.availability}`], ['Contribution', app.contribution]]) if (value) { const detail = document.createElement('small'); detail.textContent = `${label}: ${value}`; copy.append(detail) }
+    for (const [label, value] of [['Portfolio', app.portfolioUrl], ['GitHub', app.githubUrl], ['LinkedIn', app.linkedinUrl]]) if (value && /^https?:\/\//i.test(value)) { const a = document.createElement('a'); a.href = value; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = label; copy.append(a, document.createTextNode(' ')) }
+    if (app.resume?.name) { const button = document.createElement('button'); button.type = 'button'; button.className = 'button secondary'; button.textContent = `Download CV · ${app.resume.name}`; button.addEventListener('click', async () => { try { const response = await fetch(`/api/admin/internship-applications/${app.id}/resume`, { credentials: 'include' }); if (!response.ok) throw new Error('Could not download applicant CV.'); const url = URL.createObjectURL(await response.blob()); const a = document.createElement('a'); a.href = url; a.download = app.resume.name; a.click(); URL.revokeObjectURL(url) } catch (error) { alert(error.message) } }); copy.append(button) }
+    row.append(copy); list.append(row)
+  }
+}
+
+async function loadMasterPortfolio() {
+  const form = $('masterPortfolioForm'); const { portfolio } = await adminRequest('/api/admin/portfolio/me')
+  const draft = portfolio?.draft || {}; for (const field of form.elements) if (field.name) field.value = field.name === 'skills' ? (draft.skills || []).join(', ') : field.name === 'linkedin' ? draft.socialLinks?.linkedin || '' : field.name === 'website' ? draft.socialLinks?.website || '' : draft[field.name] || ''
+  renderMasterProjects(draft.projects || [])
+  $('masterPortfolioStatus').textContent = portfolio?.status === 'published' ? 'Published' : portfolio?.updatedAt ? `Draft saved ${new Date(portfolio.updatedAt).toLocaleString()}` : 'No saved draft yet.'
+  if (portfolio?.status === 'published' && portfolio.slug) { $('masterPortfolioLink').href = `/portfolio.html?slug=${encodeURIComponent(portfolio.slug)}`; $('masterPortfolioLink').classList.remove('hidden') }
+}
+
+async function saveMasterPortfolio(publish = false) {
+  const form = $('masterPortfolioForm'); const values = Object.fromEntries(new FormData(form)); values.skills = String(values.skills || '').split(',').map((item) => item.trim()).filter(Boolean); values.socialLinks = { linkedin: values.linkedin, website: values.website }; delete values.linkedin; delete values.website
+  values.projects = [...document.querySelectorAll('[data-master-project]')].map((card) => Object.fromEntries([...card.querySelectorAll('[data-project-field]')].map((field) => [field.dataset.projectField, field.dataset.projectField === 'technologies' ? field.value.split(',').map((item) => item.trim()).filter(Boolean) : field.value.trim()]))).filter((project) => project.title || project.description)
+  const saved = await adminRequest('/api/admin/portfolio/me', { method: 'PUT', body: JSON.stringify(values) }); let portfolio = saved.portfolio
+  if (publish) portfolio = (await adminRequest('/api/admin/portfolio/me/publish', { method: 'POST', body: '{}' })).portfolio
+  $('masterPortfolioStatus').textContent = portfolio.status === 'published' ? 'Published' : 'Draft saved.'
+  if (portfolio.status === 'published' && portfolio.slug) { $('masterPortfolioLink').href = `/portfolio.html?slug=${encodeURIComponent(portfolio.slug)}`; $('masterPortfolioLink').classList.remove('hidden') }
+  $('masterPortfolioNotice').textContent = publish ? 'Portfolio published.' : 'Draft saved.'
+}
+
+function renderMasterProjects(projects = []) {
+  const root = $('masterProjects'); root.replaceChildren()
+  const add = (project = {}) => {
+    const card = document.createElement('fieldset'); card.dataset.masterProject = ''; card.className = 'master-card'
+    const legend = document.createElement('legend'); legend.textContent = 'Project'; card.append(legend)
+    for (const [key, label, type] of [['title', 'Project title', 'text'], ['description', 'Description', 'textarea'], ['technologies', 'Technologies, separated by commas', 'text'], ['imageUrl', 'Cover image URL', 'url'], ['liveUrl', 'Live project URL', 'url'], ['sourceUrl', 'Source code URL', 'url']]) {
+      const fieldLabel = document.createElement('label'); fieldLabel.textContent = label
+      const field = type === 'textarea' ? document.createElement('textarea') : document.createElement('input'); if (type !== 'textarea') field.type = type
+      field.dataset.projectField = key; field.value = key === 'technologies' ? (project[key] || []).join(', ') : project[key] || ''; fieldLabel.append(field); card.append(fieldLabel)
+    }
+    const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'button secondary'; remove.textContent = 'Remove project'; remove.addEventListener('click', () => card.remove()); card.append(remove); root.append(card)
+  }
+  projects.forEach(add)
+  $('masterAddProject').onclick = () => add()
+}
+
 function mountWorkspaceTools(container) {
   if (document.getElementById('workspaceMessageComposer')) return
   const panel = document.createElement('section')
   panel.id = 'workspaceMessageComposer'; panel.className = 'master-card'
-  panel.innerHTML = '<span class="eyebrow">ANNOUNCEMENTS & REPORTS</span><h2>Compose a message</h2><p>Select the recipients. Unchecked people will not receive this message.</p><form id="workspaceMessageForm" class="master-form"><label>Message type<select name="type"><option value="announcement">Announcement</option><option value="weekly_report">Weekly report</option></select></label><label>Subject<input name="subject" maxlength="180" required></label><label class="wide">Message<textarea name="body" rows="6" maxlength="20000" required></textarea></label><div class="wide"><button id="loadReportPreview" type="button" class="button secondary">Load weekly summary</button> <button class="button" type="submit">Send to selected</button></div><fieldset class="wide" id="workspaceRecipientList"><legend>Recipients</legend><button type="button" data-select-all>Select all</button> <button type="button" data-select-none>Select none</button><div id="workspaceRecipients"></div></fieldset></form><p id="workspaceMessageNotice" class="master-notice" role="status"></p><h3>Sent messages</h3><div id="workspaceSentMessages" class="master-list"></div>'
+  panel.innerHTML = '<span class="eyebrow">ANNOUNCEMENTS & REPORTS</span><h2>Compose a message</h2><p>Select the recipients. Unchecked people will not receive this message.</p><form id="workspaceMessageForm" class="master-form"><label>Message type<select name="type"><option value="announcement">Announcement</option><option value="weekly_report">Weekly report</option></select></label><label>Subject<input name="subject" maxlength="180" required></label><label class="wide">Message<textarea name="body" rows="6" maxlength="20000" required></textarea></label><div class="wide"><button id="loadReportPreview" type="button" class="button secondary">Load weekly summary</button> <button class="button" type="submit">Send to selected</button></div><fieldset class="wide" id="workspaceRecipientList"><legend>Recipients</legend><button type="button" data-select-all>Select all</button> <button type="button" data-select-none>Select none</button><div id="workspaceRecipients"></div></fieldset></form><p id="workspaceMessageNotice" class="master-notice" role="status"></p>'
   container.append(panel)
   const message = (text) => { document.getElementById('workspaceMessageNotice').textContent = text }
   const checkboxList = document.getElementById('workspaceRecipients')
@@ -31,7 +91,7 @@ function mountWorkspaceTools(container) {
       const input = document.createElement('input'); input.type = 'checkbox'; input.value = person.id; input.checked = true
       label.append(input, document.createTextNode(` ${person.name} · ${person.accountType} · ${person.email}`)); checkboxList.append(label)
     }
-    const history = document.getElementById('workspaceSentMessages'); history.replaceChildren()
+    const history = document.getElementById('masterWorkspaceHistory'); history.replaceChildren()
     for (const item of data.sentMessages) addRow(history, `${item.type === 'announcement' ? 'ANNOUNCEMENT' : 'WEEKLY REPORT'} · ${item.subject}`, `Sent by ${item.senderName}${item.senderEmail ? ` (${item.senderEmail})` : ''} · ${new Date(item.createdAt).toLocaleString()} · ${item.recipientCount} recipients`)
     if (!data.sentMessages.length) history.textContent = 'No messages have been sent.'
   }
@@ -70,7 +130,8 @@ function showAdmin(account) {
   $('loginPanel').classList.add('hidden')
   $('adminConsole').classList.remove('hidden')
   $('masterActions').classList.remove('hidden')
-  mountWorkspaceTools(document.querySelector('.master-main') || $('adminConsole'))
+  setupMasterPages()
+  mountWorkspaceTools($('masterWorkspaceHistory').parentElement)
   return true
 }
 
@@ -264,12 +325,8 @@ async function refreshPeopleAndActivity() {
     adminRequest('/api/admin/staff'), adminRequest('/api/admin/interns'), adminRequest('/api/admin/activity'),
   ])
   const staffList = $('staffList')
-  const portfolioStaffSelect = $('portfolioStaffSelect')
-  const selectedPortfolioStaff = portfolioStaffSelect.value
-  portfolioStaffSelect.replaceChildren(new Option('Choose an active staff member', ''))
   staffList.replaceChildren()
   for (const person of staff) {
-    if (person.activated && person.active) portfolioStaffSelect.add(new Option(`${person.name || person.email} · ${person.role}`, person.id))
     const status = person.activated ? (person.active ? 'ACTIVE' : 'DISABLED') : 'INVITATION PENDING'
     const actions = []
     if (person.activated) {
@@ -328,7 +385,6 @@ async function refreshPeopleAndActivity() {
     }
     addRow(staffList, person.name || person.email, `${person.email} · ${person.role} · ${person.jobType || '—'} · ${person.gender || 'Gender undisclosed'} · Added ${person.createdAt ? new Date(person.createdAt).toLocaleDateString() : '—'} by ${person.createdByName || 'Unknown'}${person.createdByEmail ? ` (${person.createdByEmail})` : ''} · ${status}`, actions)
   }
-  if ([...portfolioStaffSelect.options].some((option) => option.value === selectedPortfolioStaff)) portfolioStaffSelect.value = selectedPortfolioStaff
   if (!staff.length) staffList.textContent = 'No staff have been onboarded yet.'
 
   const internList = $('internList')
@@ -409,14 +465,14 @@ async function startSession(account) {
   $('masterProfileName').textContent = account.name || 'Administrator'
   $('masterProfileEmail').textContent = account.email || ''
   message('loginNotice', '')
-  await Promise.all([refreshAdmins(), refreshPeopleAndActivity()])
+  await Promise.all([refreshAdmins(), refreshPeopleAndActivity(), refreshMasterApplicants(), loadMasterPortfolio()])
   clearInterval(refreshTimer)
   refreshTimer = setInterval(() => Promise.all([refreshAdmins(), refreshPeopleAndActivity()]).catch(() => {}), 30_000)
 }
 
 $('refreshButton').addEventListener('click', async () => {
   try {
-    await Promise.all([refreshAdmins(), refreshPeopleAndActivity()])
+    await Promise.all([refreshAdmins(), refreshPeopleAndActivity(), refreshMasterApplicants()])
     message('internNotice', 'Staff, intern, and audit records refreshed.', true)
   } catch (error) { message('internNotice', error.message || 'Could not refresh the dashboards.') }
 })
@@ -490,6 +546,7 @@ $('internForm').addEventListener('submit', async (event) => {
   finally { submit.disabled = false }
 })
 
+if ($('portfolioSelectForm')) {
 $('portfolioSelectForm').addEventListener('submit', async (event) => {
   event.preventDefault()
   const staffId = $('portfolioStaffSelect').value
@@ -549,6 +606,12 @@ $('adminCopyLink').addEventListener('click', async () => {
   try { await navigator.clipboard.writeText($('adminPublicLink').value); $('portfolioBuilderNotice').textContent = 'Public link copied.' }
   catch { $('portfolioBuilderNotice').textContent = 'Could not copy the link.' }
 })
+}
+
+$('masterPortfolioForm').addEventListener('submit', async (event) => { event.preventDefault(); try { await saveMasterPortfolio() } catch (error) { $('masterPortfolioNotice').textContent = error.message } })
+$('masterPortfolioPublish').addEventListener('click', async () => { try { await saveMasterPortfolio(true) } catch (error) { $('masterPortfolioNotice').textContent = error.message } })
+$('masterChangePasswordButton').addEventListener('click', () => $('masterPasswordPanel').classList.toggle('hidden'))
+$('masterPasswordForm').addEventListener('submit', async (event) => { event.preventDefault(); const form = event.currentTarget; try { await authRequest('/password', { method: 'POST', body: JSON.stringify({ currentPassword: form.elements.currentPassword.value, newPassword: form.elements.newPassword.value }) }); form.reset(); $('masterPasswordNotice').textContent = 'Password updated.' } catch (error) { $('masterPasswordNotice').textContent = error.message } })
 
 $('logoutButton').addEventListener('click', async () => {
   await authRequest('/logout', { method: 'POST' }).catch(() => {})

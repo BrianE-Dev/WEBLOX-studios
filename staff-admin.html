@@ -1,66 +1,161 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0e0e11" />
-  <title>Staff Access | WEBLOX Studios</title>
-  <link rel="icon" href="/assets/weblox-app-icon.png" />
-  <link rel="stylesheet" href="/src/styles.css" />
-  <style>
-    .admin-shell{width:min(980px,calc(100% - 36px));margin:42px auto 80px}.admin-head{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:24px}.admin-title{font-size:clamp(30px,5vw,42px);margin:7px 0}.admin-card{padding:25px;margin:15px 0;background:#1b1b1ed9;border:1px solid #4a445599;border-radius:11px}.admin-card h2{font-size:20px;margin:5px 0 8px}.admin-card>p{color:var(--muted);font-size:12px;line-height:1.7}.admin-form{display:grid;grid-template-columns:1fr 1fr;gap:13px}.admin-form label{display:flex;flex-direction:column;gap:7px;color:#d1bcff;font:600 11px 'JetBrains Mono'}.admin-form input,.admin-form select{font:14px Inter,Arial,sans-serif}.admin-form .wide{grid-column:1/-1}.admin-form .button{justify-self:start}.admin-notice{min-height:20px;margin-top:12px;color:#ffaaa2;font-size:12px}.admin-notice.success{color:#7fe5a2}.admin-invite-result{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:15px}.admin-invite-result input{min-width:0;font:12px 'JetBrains Mono'}.admin-list{margin-top:14px}.admin-person{display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid #4a445544}.admin-person>div{flex:1;min-width:0}.admin-person b,.admin-person small{display:block}.admin-person small{margin-top:4px;color:var(--muted);font-size:11px;overflow-wrap:anywhere}.admin-state{padding:5px 8px;border:1px solid #7fe5a244;border-radius:5px;color:#7fe5a2;font:9px 'JetBrains Mono';white-space:nowrap}.admin-state.pending{border-color:#f1b45a55;color:#f1c77e}.admin-actions{display:flex;gap:9px;align-items:center}.hidden{display:none!important}html[data-theme="light"] .admin-card{background:white;border-color:#c9c1d1}html[data-theme="light"] .admin-card h2,html[data-theme="light"] .admin-title{color:#17131b}@media(max-width:620px){.admin-shell{margin-top:25px}.admin-card{padding:19px}.admin-form{grid-template-columns:1fr}.admin-form .wide{grid-column:auto}.admin-invite-result{grid-template-columns:1fr}.admin-head{align-items:flex-start;flex-direction:column}}
-  </style>
-  <style>
-    .admin-shell{width:min(1280px,calc(100% - 36px))}.admin-layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:22px;align-items:start}.admin-sidebar{position:sticky;top:20px;padding:22px;background:#1b1b1ed9;border:1px solid #4a445599;border-radius:11px}.admin-sidebar nav{display:grid;gap:8px;margin:22px 0}.admin-sidebar nav a{padding:10px;color:#d1bcff;text-decoration:none;border-radius:6px;background:#ffffff08}.admin-sidebar nav a:hover{background:#ffffff14}.admin-profile{overflow-wrap:anywhere}.admin-profile strong,.admin-profile small{display:block}.admin-profile small{margin-top:5px;color:var(--muted)}.admin-clock{display:flex;gap:8px;flex-wrap:wrap}.admin-clock .button{padding:9px}.admin-main{min-width:0}.admin-sidebar .admin-notice{font-size:11px}@media(max-width:800px){.admin-layout{grid-template-columns:1fr}.admin-sidebar{position:static}.admin-sidebar nav{grid-template-columns:repeat(2,minmax(0,1fr))}}
-  </style>
-<link rel="stylesheet" href="/src/loading-skeleton.css"/><script type="module" src="/src/branded-loader.js"></script></head>
-<body><div id="weblox-branded-loader" class="weblox-branded-loader" role="status" aria-live="polite" aria-label="Loading WEBLOX"><img src="/assets/weblox-logo.png" alt="WEBLOX Studios" /></div>
-  <main class="admin-shell">
-    <header class="admin-head">
-      <img src="/assets/weblox-logo.png" alt="WEBLOX Studios" style="width:46px;height:46px;object-fit:contain"/>
-      <div><span class="eyebrow">WEBLOX · STAFF ACCESS</span><h1 class="admin-title">Staff administrator</h1><p>Invite staff and manage account access.</p></div>
-      <div id="adminActions" class="admin-actions hidden"><button id="changePasswordButton" class="button secondary" type="button">Change password</button><button id="logoutButton" class="button secondary" type="button">Sign out</button></div>
-    </header>
-    <section id="loginPanel" class="admin-card">
-      <h2>Administrator sign in</h2><p>Use the administrator account created by the local bootstrap command.</p>
-      <form id="loginForm" class="admin-form">
-        <label class="wide">Email address<input name="email" type="email" autocomplete="username" required/></label>
-        <label class="wide">Password<input name="password" type="password" autocomplete="current-password" required/></label>
-        <button class="button wide" type="submit">Sign in →</button>
-      </form>
-      <div id="loginNotice" class="admin-notice" role="status" aria-live="polite"></div>
-    </section>
-    <div id="adminConsole" class="admin-layout hidden">
-      <aside class="admin-sidebar">
-        <div class="admin-profile"><span class="eyebrow">SIGNED IN AS</span><strong id="adminProfileName">Administrator</strong><small id="adminProfileEmail"></small></div>
-        <nav aria-label="Staff admin navigation">
-          <a href="#inviteForm">Invite staff</a><a href="#staffList">Staff directory</a><a href="#internForm">Onboard intern</a><a href="#staffActivityList">Team activity</a><a href="#workspaceMessageComposer">Announcements &amp; reports</a>
-        </nav>
-        <section aria-label="Attendance"><span class="eyebrow">TODAY'S ATTENDANCE</span><p id="adminAttendanceStatus" class="admin-notice">Loading attendance…</p><div class="admin-clock"><button id="adminClockIn" class="button" type="button">Clock in</button><button id="adminClockOut" class="button secondary" type="button">Clock out</button></div><p id="adminAttendanceNotice" class="admin-notice" role="status"></p></section>
-      </aside>
-      <div class="admin-main">
-      <section class="admin-card">
-        <span class="eyebrow">NEW STAFF MEMBER</span><h2>Send an account invitation</h2>
-        <p>Invitations expire after 48 hours and can only activate one account. Copy the link and send it to the staff member through your usual private channel.</p>
-        <form id="inviteForm" class="admin-form">
-          <label>Full name<input name="name" maxlength="120" required autocomplete="name"/></label>
-          <label>Work email<input name="email" type="email" maxlength="254" required autocomplete="email"/></label>
-          <label>Job role<select name="role" required><option value="">Select a role</option><option>Studio Manager</option><option>Software Engineer</option><option>Cyber Security Engineer</option><option>Product Designer</option><option>Digital Marketer</option><option>Business Operations</option><option>People &amp; Culture</option><option>Finance</option><option>Other</option></select></label>
-          <label>Gender<select name="gender"><option value="">Select gender</option><option>Male</option><option>Female</option></select></label>
-          <label>Job type<select name="jobType" required><option>Full-time</option><option>Part-time</option><option>Contract</option><option>Internship</option></select></label>
-          <button class="button" type="submit">Create invitation →</button>
-        </form>
-        <div id="inviteNotice" class="admin-notice" role="status" aria-live="polite"></div>
-        <div id="inviteResult" class="admin-invite-result hidden"><input id="inviteUrl" readonly aria-label="Staff invitation link"/><button id="copyInvite" class="button secondary" type="button">Copy link</button></div>
-      </section>
-      <section class="admin-card"><span class="eyebrow">STAFF DIRECTORY</span><h2>Accounts and invitations</h2><div id="staffList" class="admin-list" aria-live="polite"></div></section>
-      <section class="admin-card"><span class="eyebrow">INTERNSHIP PROGRAM</span><h2>Onboard an intern</h2><p>Create an intern account and share the temporary password privately.</p><form id="internForm" class="admin-form"><label>Full name<input name="name" maxlength="120" required/></label><label>Email address<input name="email" type="email" maxlength="254" required/></label><label>Role or program<input name="role" maxlength="80" value="Intern" required/></label><label>Gender<select name="gender"><option value="">Select gender</option><option>Male</option><option>Female</option></select></label><label>Job type<select name="jobType" required><option>Internship</option><option>Part-time</option><option>Full-time</option><option>Contract</option></select></label><label class="wide">Temporary password<input name="password" type="password" minlength="8" autocomplete="new-password" required/></label><button class="button" type="submit">Onboard intern</button></form><div id="internNotice" class="admin-notice" role="status"></div><div id="internList" class="admin-list"></div></section>
-      <section class="admin-card"><span class="eyebrow">TEAM ACTIVITY</span><h2>Staff sign-ins and attendance</h2><div id="staffActivityList" class="admin-list" aria-live="polite"></div></section>
-      <section class="admin-card"><span class="eyebrow">INTERN PROGRAM</span><h2>Intern check-ins</h2><div id="internCheckinList" class="admin-list" aria-live="polite"></div></section>
-      <section id="passwordPanel" class="admin-card hidden"><h2>Change administrator password</h2><form id="passwordForm" class="admin-form"><label>Current password<input name="currentPassword" type="password" autocomplete="current-password" required/></label><label>New password<input name="newPassword" type="password" minlength="8" autocomplete="new-password" required/></label><button class="button" type="submit">Update password</button></form><div id="passwordNotice" class="admin-notice" role="status"></div></section>
-      </div>
-    </div>
-  </main>
-  <script type="module" src="/src/staff-admin.js"></script>
+<head>  <meta charset="UTF-8" />  <meta name="viewport" content="width=device-width, initial-scale=1.0" />  <meta name="theme-color" content="#0e0e11" />  <title>Staff Access | WEBLOX Studios</title>  <link rel="icon" href="/assets/weblox-app-icon.png" />  <link rel="stylesheet" href="/src/styles.css" />  <style>    .admin-shell{width:min(980px,calc(100% - 36px));margin:42px auto 80px}.admin-head{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:24px}.admin-title{font-size:clamp(30px,5vw,42px);margin:7px 0}.admin-card{padding:25px;margin:15px 0;background:#1b1b1ed9;border:1px solid #4a445599;border-radius:11px}.admin-card h2{font-size:20px;margin:5px 0 8px}.admin-card>p{color:var(--muted);font-size:12px;line-height:1.7}.admin-form{display:grid;grid-template-columns:1fr 1fr;gap:13px}.admin-form label{display:flex;flex-direction:column;gap:7px;color:#d1bcff;font:600 11px 'JetBrains Mono'}.admin-form input,.admin-form select{font:14px Inter,Arial,sans-serif}.admin-form .wide{grid-column:1/-1}.admin-form .button{justify-self:start}.admin-notice{min-height:20px;margin-top:12px;color:#ffaaa2;font-size:12px}.admin-notice.success{color:#7fe5a2}.admin-invite-result{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:15px}.admin-invite-result input{min-width:0;font:12px 'JetBrains Mono'}.admin-list{margin-top:14px}.admin-person{display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid #4a445544}.admin-person>div{flex:1;min-width:0}.admin-person b,.admin-person small{display:block}.admin-person small{margin-top:4px;color:var(--muted);font-size:11px;overflow-wrap:anywhere}.admin-state{padding:5px 8px;border:1px solid #7fe5a244;border-radius:5px;color:#7fe5a2;font:9px 'JetBrains Mono';white-space:nowrap}.admin-state.pending{border-color:#f1b45a55;color:#f1c77e}.admin-actions{display:flex;gap:9px;align-items:center}.hidden{display:none!important}html[data-theme="light"] .admin-card{background:white;border-color:#c9c1d1}html[data-theme="light"] .admin-card h2,html[data-theme="light"] .admin-title{color:#17131b}@media(max-width:620px){.admin-shell{margin-top:25px}.admin-card{padding:19px}.admin-form{grid-template-columns:1fr}.admin-form .wide{grid-column:auto}.admin-invite-result{grid-template-columns:1fr}.admin-head{align-items:flex-start;flex-direction:column}}  </style>  <style>    .admin-shell{width:min(1280px,calc(100% - 36px))}.admin-layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:22px;align-items:start}.admin-sidebar{position:sticky;top:20px;padding:22px;background:#1b1b1ed9;border:1px solid #4a445599;border-radius:11px}.admin-sidebar nav{display:grid;gap:8px;margin:22px 0}.admin-sidebar nav a{padding:10px;color:#d1bcff;text-decoration:none;border-radius:6px;background:#ffffff08}.admin-sidebar nav a:hover{background:#ffffff14}.admin-profile{overflow-wrap:anywhere}.admin-profile strong,.admin-profile small{display:block}.admin-profile small{margin-top:5px;color:var(--muted)}.admin-clock{display:flex;gap:8px;flex-wrap:wrap}.admin-clock .button{padding:9px}.admin-main{min-width:0}.admin-sidebar .admin-notice{font-size:11px}@media(max-width:800px){.admin-layout{grid-template-columns:1fr}.admin-sidebar{position:static}.admin-sidebar nav{grid-template-columns:repeat(2,minmax(0,1fr))}}  </style>
+<link rel="stylesheet" href="/src/loading-skeleton.css"/>
+<script type="module" src="/src/branded-loader.js">
+</script>
+</head>
+<body>
+<div id="weblox-branded-loader" class="weblox-branded-loader" role="status" aria-live="polite" aria-label="Loading WEBLOX">
+<img src="/assets/weblox-logo.png" alt="WEBLOX Studios" />
+</div>  <main class="admin-shell">    <header class="admin-head">      <img src="/assets/weblox-logo.png" alt="WEBLOX Studios" style="width:46px;height:46px;object-fit:contain"/>      <div>
+<span class="eyebrow">WEBLOX · STAFF ACCESS</span>
+<h1 class="admin-title">Staff administrator</h1>
+<p>Invite staff and manage account access.</p>
+</div>      <div id="adminActions" class="admin-actions hidden">
+
+<button id="logoutButton" class="button secondary" type="button">Sign out</button>
+</div>    </header>    <section id="loginPanel" class="admin-card">      <h2>Administrator sign in</h2>
+<p>Use the administrator account created by the local bootstrap command.</p>      <form id="loginForm" class="admin-form">        <label class="wide">Email address<input name="email" type="email" autocomplete="username" required/>
+</label>        <label class="wide">Password<input name="password" type="password" autocomplete="current-password" required/>
+</label>        <button class="button wide" type="submit">Sign in ?</button>      </form>      <div id="loginNotice" class="admin-notice" role="status" aria-live="polite">
+</div>    </section>    <div id="adminConsole" class="admin-layout hidden">      <aside class="admin-sidebar">        <div class="admin-profile">
+<span class="eyebrow">SIGNED IN AS</span>
+<strong id="adminProfileName">Administrator</strong>
+<small id="adminProfileEmail">
+</small>
+</div>        <nav aria-label="Staff admin navigation">          <a href="#overview" data-admin-page="overview">Overview</a>
+<a href="#people" data-admin-page="people">People</a>
+<a href="#applicants" data-admin-page="applicants">Applicants</a>
+<a href="#history" data-admin-page="history">History</a>
+<a href="#settings" data-admin-page="settings">Settings</a>        </nav>        <section aria-label="Attendance">
+<span class="eyebrow">TODAY'S ATTENDANCE</span>
+<p id="adminAttendanceStatus" class="admin-notice">Loading attendance·</p>
+<div class="admin-clock">
+<button id="adminClockIn" class="button" type="button">Clock in</button>
+<button id="adminClockOut" class="button secondary" type="button">Clock out</button>
+</div>
+<p id="adminAttendanceNotice" class="admin-notice" role="status">
+</p>
+</section>      </aside>      <div class="admin-main">
+<section class="admin-page-section" data-admin-view="overview">
+<section class="admin-card">
+<span class="eyebrow">OVERVIEW</span>
+<h2>Workspace overview</h2>
+<p>Use the sidebar to review applicants, manage people, view message history, and update your account settings.</p>
+</section>
+</section>
+<section class="admin-page-section hidden" data-admin-view="people">
+<section class="admin-card">        <span class="eyebrow">NEW STAFF MEMBER</span>
+<h2>Send an account invitation</h2>        <p>Invitations expire after 48 hours and can only activate one account. Copy the link and send it to the staff member through your usual private channel.</p>        <form id="inviteForm" class="admin-form">          <label>Full name<input name="name" maxlength="120" required autocomplete="name"/>
+</label>          <label>Work email<input name="email" type="email" maxlength="254" required autocomplete="email"/>
+</label>          <label>Job role<select name="role" required>
+<option value="">Select a role</option>
+<option>Studio Manager</option>
+<option>Software Engineer</option>
+<option>Cyber Security Engineer</option>
+<option>Product Designer</option>
+<option>Digital Marketer</option>
+<option>Business Operations</option>
+<option>People &amp; Culture</option>
+<option>Finance</option>
+<option>Other</option>
+</select>
+</label>          <label>Gender<select name="gender">
+<option value="">Select gender</option>
+<option>Male</option>
+<option>Female</option>
+</select>
+</label>          <label>Job type<select name="jobType" required>
+<option>Full-time</option>
+<option>Part-time</option>
+<option>Contract</option>
+<option>Internship</option>
+</select>
+</label>          <button class="button" type="submit">Create invitation ?</button>        </form>        <div id="inviteNotice" class="admin-notice" role="status" aria-live="polite">
+</div>        <div id="inviteResult" class="admin-invite-result hidden">
+<input id="inviteUrl" readonly aria-label="Staff invitation link"/>
+<button id="copyInvite" class="button secondary" type="button">Copy link</button>
+</div>      </section>      <section class="admin-card">
+<span class="eyebrow">STAFF DIRECTORY</span>
+<h2>Accounts and invitations</h2>
+<div id="staffList" class="admin-list" aria-live="polite">
+</div>
+</section>      <section class="admin-card">
+<span class="eyebrow">INTERNSHIP PROGRAM</span>
+<h2>Onboard an intern</h2>
+<p>Create an intern account and share the temporary password privately.</p>
+<form id="internForm" class="admin-form">
+<label>Full name<input name="name" maxlength="120" required/>
+</label>
+<label>Email address<input name="email" type="email" maxlength="254" required/>
+</label>
+<label>Role or program<input name="role" maxlength="80" value="Intern" required/>
+</label>
+<label>Gender<select name="gender">
+<option value="">Select gender</option>
+<option>Male</option>
+<option>Female</option>
+</select>
+</label>
+<label>Job type<select name="jobType" required>
+<option>Internship</option>
+<option>Part-time</option>
+<option>Full-time</option>
+<option>Contract</option>
+</select>
+</label>
+<label class="wide">Temporary password<input name="password" type="password" minlength="8" autocomplete="new-password" required/>
+</label>
+<button class="button" type="submit">Onboard intern</button>
+</form>
+<div id="internNotice" class="admin-notice" role="status">
+</div>
+<div id="internList" class="admin-list">
+</div>
+</section>      </section>
+<section class="admin-page-section hidden" data-admin-view="applicants">
+<section class="admin-card">
+<span class="eyebrow">INTERNSHIP APPLICATIONS</span>
+<h2>Applicant submissions</h2>
+<div id="applicantList" class="admin-list" aria-live="polite">
+</div>
+</section>
+</section>
+<section class="admin-page-section hidden" data-admin-view="history">
+<section class="admin-card">
+<span class="eyebrow">MESSAGE HISTORY</span>
+<h2>Sent announcements and reports</h2>
+<div id="workspaceHistory" class="admin-list">
+</div>
+</section>
+<section class="admin-card">
+<span class="eyebrow">TEAM ACTIVITY</span>
+<h2>Staff sign-ins and attendance</h2>
+<div id="staffActivityList" class="admin-list" aria-live="polite">
+</div>
+</section>      <section class="admin-card">
+<span class="eyebrow">INTERN PROGRAM</span>
+<h2>Intern check-ins</h2>
+<div id="internCheckinList" class="admin-list" aria-live="polite">
+</div>
+</section>      </section>
+<section class="admin-page-section hidden" data-admin-view="settings">
+<section id="passwordPanel" class="admin-card">
+<span class="eyebrow">ACCOUNT SETTINGS</span>
+<h2>Change administrator password</h2>
+<form id="passwordForm" class="admin-form">
+<label>Current password<input name="currentPassword" type="password" required/>
+</label>
+<label>New password<input name="newPassword" type="password" minlength="8" required/>
+</label>
+<button class="button" type="submit">Update password</button>
+</form>
+<div id="passwordNotice" class="admin-notice">
+</div>
+</section>
+</section>
+</div></div></main>  <script type="module" src="/src/staff-admin.js">
+</script>
 </body>
 </html>

@@ -90,6 +90,22 @@ export function createPostgresStore(pool) {
       return rows[0];
     },
 
+    async listInternshipApplications() {
+      const { rows } = await pool.query(
+        `SELECT id, payload, created_at AS "createdAt"
+         FROM internship_applications ORDER BY created_at DESC`,
+      );
+      return rows.map((row) => {
+        const { resume, ...application } = row.payload;
+        return { id: row.id, createdAt: row.createdAt, ...application, resume: resume ? { name: resume.name, type: resume.type, size: resume.size } : null };
+      });
+    },
+
+    async getInternshipApplicationResume(id) {
+      const { rows } = await pool.query('SELECT payload->\'resume\' AS resume FROM internship_applications WHERE id = $1', [id]);
+      return rows[0]?.resume ?? null;
+    },
+
     async listStaff() {
       const { rows } = await pool.query(
         `SELECT a.id, d.email, d.name, d.role, d.gender, d.job_type AS "jobType",

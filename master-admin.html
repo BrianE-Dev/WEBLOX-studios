@@ -1,44 +1,199 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0e0e11" />
-  <title>Master Admin | WEBLOX Studios</title>
-  <link rel="icon" href="/assets/weblox-app-icon.png" />
-  <link rel="stylesheet" href="/src/styles.css" />
-  <style>
-    .master-shell{width:min(980px,calc(100% - 36px));margin:42px auto 80px}.master-head{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:24px}.master-brand{display:flex;align-items:center;gap:14px}.master-brand>img{width:50px;height:50px;object-fit:contain}.master-title{font-size:clamp(30px,5vw,42px);margin:7px 0}.master-card{padding:25px;margin:15px 0;background:#1b1b1ed9;border:1px solid #4a445599;border-radius:11px}.master-card h2{font-size:20px;margin:5px 0 8px}.master-card>p{color:var(--muted);font-size:12px;line-height:1.7}.master-form{display:grid;grid-template-columns:1fr 1fr;gap:13px}.master-form label{display:flex;flex-direction:column;gap:7px;color:#d1bcff;font:600 11px 'JetBrains Mono'}.master-form input,.master-form select{font:14px Inter,Arial,sans-serif}.master-form .wide{grid-column:1/-1}.master-form .button{justify-self:start}.master-notice{min-height:20px;margin-top:12px;color:#ffaaa2;font-size:12px}.master-notice.success{color:#7fe5a2}.master-list{margin-top:14px}.master-row{display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid #4a445544}.master-row>div{flex:1;min-width:0}.master-row b,.master-row small{display:block}.master-row small{margin-top:4px;color:var(--muted);font-size:11px;overflow-wrap:anywhere}.master-state{padding:5px 8px;border:1px solid #7fe5a244;border-radius:5px;color:#7fe5a2;font:9px 'JetBrains Mono';white-space:nowrap}.master-actions{display:flex;gap:9px;align-items:center}.remove-admin{border:1px solid #ffaaa266;border-radius:6px;background:transparent;color:#ffaaa2;padding:7px 10px;cursor:pointer}.hidden{display:none!important}html[data-theme="light"] .master-card{background:white;border-color:#c9c1d1}html[data-theme="light"] .master-card h2,html[data-theme="light"] .master-title{color:#17131b}@media(max-width:620px){.master-shell{margin-top:25px}.master-card{padding:19px}.master-form{grid-template-columns:1fr}.master-form .wide{grid-column:auto}.master-head{align-items:flex-start;flex-direction:column}.master-row{align-items:flex-start;flex-wrap:wrap}.master-state{margin-left:auto}}
-  </style>
-  <style>
-    .master-shell{width:min(1280px,calc(100% - 36px))}#adminConsole{display:grid;grid-template-columns:245px minmax(0,1fr);gap:0 20px}#adminConsole>.master-card:first-child{grid-column:1;grid-row:1/20;position:sticky;top:20px;align-self:start}#adminConsole>.master-card:not(:first-child),#adminConsole>#workspaceMessageComposer{grid-column:2}@media(max-width:800px){#adminConsole{grid-template-columns:1fr}#adminConsole>.master-card:first-child,#adminConsole>.master-card:not(:first-child),#adminConsole>#workspaceMessageComposer{grid-column:1;grid-row:auto}#adminConsole>.master-card:first-child{position:static}}
-  </style>
-<link rel="stylesheet" href="/src/loading-skeleton.css"/><script type="module" src="/src/branded-loader.js"></script></head>
-<body><div id="weblox-branded-loader" class="weblox-branded-loader" role="status" aria-live="polite" aria-label="Loading WEBLOX"><img src="/assets/weblox-logo.png" alt="WEBLOX Studios" /></div>
-  <main class="master-shell">
-    <header class="master-head">
-      <div class="master-brand"><img src="/assets/weblox-logo.png" alt="WEBLOX Studios"/><div><span class="eyebrow">WEBLOX · ADMINISTRATION</span><h1 class="master-title">Master admin</h1><p>Manage staff, interns, and administrator accounts.</p></div></div>
-      <div id="masterActions" class="master-actions hidden"><span id="signedInAs" class="eyebrow"></span><button id="refreshButton" class="button secondary" type="button">Refresh</button><button id="logoutButton" class="button secondary" type="button">Sign out</button></div>
-    </header>
-    <section id="loginPanel" class="master-card">
-      <h2>Administrator sign in</h2><p>Sign in with your backend administrator email and password.</p>
-      <form id="loginForm" class="master-form"><label class="wide">Email address<input name="email" type="email" autocomplete="username" required/></label><label class="wide">Password<input name="password" type="password" autocomplete="current-password" required/></label><button class="button wide" type="submit">Sign in →</button></form>
-      <div id="loginNotice" class="master-notice" role="status" aria-live="polite"></div>
-    </section>
-    <div id="adminConsole" class="hidden"><section class="master-card"><span class="eyebrow">ADMIN PROFILE</span><h2 id="masterProfileName">Administrator</h2><p id="masterProfileEmail"></p><p id="masterAttendanceStatus">Loading attendance…</p><button id="masterClockIn" class="button" type="button">Clock in</button> <button id="masterClockOut" class="button secondary" type="button">Clock out</button><p id="masterAttendanceNotice" class="master-notice" role="status"></p></section>
-      <section class="master-card"><span class="eyebrow">ALL STAFF</span><h2>Staff accounts</h2><p>Review onboarded team members and update their directory details.</p><div id="staffList" class="master-list" aria-live="polite"></div></section>
-      <section class="master-card"><span class="eyebrow">INTERNSHIP PROGRAM</span><h2>Onboard an intern</h2><p>Create an intern workspace account for a future program participant. Share the temporary password privately. Intern check-ins are submitted at <a href="/intern-portal.html">the intern portal</a>.</p>
-        <form id="internForm" class="master-form"><label>Full name<input name="name" maxlength="120" required/></label><label>Email address<input name="email" type="email" maxlength="254" required/></label><label>Program or track<input name="role" maxlength="80" value="Intern" required/></label><label>Gender<select name="gender"><option value="">Select gender</option><option>Male</option><option>Female</option></select></label><label>Job type<select name="jobType" required><option>Internship</option><option>Part-time</option><option>Full-time</option><option>Contract</option></select></label><label class="wide">Temporary password<input name="password" type="password" minlength="8" autocomplete="new-password" required/></label><button class="button" type="submit">Onboard intern →</button></form><div id="internNotice" class="master-notice" role="status" aria-live="polite"></div><div id="internList" class="master-list" aria-live="polite"></div>
-      </section>
-      <section class="master-card"><span class="eyebrow">STAFF SIGN-INS & ATTENDANCE</span><h2>Daily team activity</h2><div id="staffActivity" class="master-list" aria-live="polite"></div></section>
-      <section class="master-card"><span class="eyebrow">INTERN CHECK-INS</span><h2>Morning and evening updates</h2><div id="internCheckins" class="master-list" aria-live="polite"></div></section>
-      <section class="master-card"><span class="eyebrow">ADMIN CHANGE HISTORY</span><h2>People changes by administrator</h2><div id="auditList" class="master-list" aria-live="polite"></div></section>
-      <section class="master-card"><span class="eyebrow">STAFF ADMINISTRATORS</span><h2>Add an administrator account</h2><p>Create a backend account directly. The password is stored as a salted hash. Share the login details securely with the administrator.</p>
-        <form id="adminForm" class="master-form"><label>Full name<input name="name" maxlength="120" autocomplete="name" required/></label><label>Email address<input name="email" type="email" maxlength="254" autocomplete="email" required/></label><label class="wide">Temporary password<input name="password" type="password" minlength="8" autocomplete="new-password" required/><small>At least 8 characters. The new administrator can sign in immediately.</small></label><button class="button" type="submit">Add administrator →</button></form><div id="adminNotice" class="master-notice" role="status" aria-live="polite"></div>
-      </section>
-      <section class="master-card"><h2>Current administrators</h2><div id="adminList" class="master-list" aria-live="polite"></div></section>
-    </div>
-  </main>
-  <script type="module" src="/src/master-admin.js"></script>
+<head>  <meta charset="UTF-8" />  <meta name="viewport" content="width=device-width, initial-scale=1.0" />  <meta name="theme-color" content="#0e0e11" />  <title>Master Admin | WEBLOX Studios</title>  <link rel="icon" href="/assets/weblox-app-icon.png" />  <link rel="stylesheet" href="/src/styles.css" />  <style>    .master-shell{width:min(980px,calc(100% - 36px));margin:42px auto 80px}.master-head{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:24px}.master-brand{display:flex;align-items:center;gap:14px}.master-brand>img{width:50px;height:50px;object-fit:contain}.master-title{font-size:clamp(30px,5vw,42px);margin:7px 0}.master-card{padding:25px;margin:15px 0;background:#1b1b1ed9;border:1px solid #4a445599;border-radius:11px}.master-card h2{font-size:20px;margin:5px 0 8px}.master-card>p{color:var(--muted);font-size:12px;line-height:1.7}.master-form{display:grid;grid-template-columns:1fr 1fr;gap:13px}.master-form label{display:flex;flex-direction:column;gap:7px;color:#d1bcff;font:600 11px 'JetBrains Mono'}.master-form input,.master-form select{font:14px Inter,Arial,sans-serif}.master-form .wide{grid-column:1/-1}.master-form .button{justify-self:start}.master-notice{min-height:20px;margin-top:12px;color:#ffaaa2;font-size:12px}.master-notice.success{color:#7fe5a2}.master-list{margin-top:14px}.master-row{display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid #4a445544}.master-row>div{flex:1;min-width:0}.master-row b,.master-row small{display:block}.master-row small{margin-top:4px;color:var(--muted);font-size:11px;overflow-wrap:anywhere}.master-state{padding:5px 8px;border:1px solid #7fe5a244;border-radius:5px;color:#7fe5a2;font:9px 'JetBrains Mono';white-space:nowrap}.master-actions{display:flex;gap:9px;align-items:center}.remove-admin{border:1px solid #ffaaa266;border-radius:6px;background:transparent;color:#ffaaa2;padding:7px 10px;cursor:pointer}.hidden{display:none!important}html[data-theme="light"] .master-card{background:white;border-color:#c9c1d1}html[data-theme="light"] .master-card h2,html[data-theme="light"] .master-title{color:#17131b}@media(max-width:620px){.master-shell{margin-top:25px}.master-card{padding:19px}.master-form{grid-template-columns:1fr}.master-form .wide{grid-column:auto}.master-head{align-items:flex-start;flex-direction:column}.master-row{align-items:flex-start;flex-wrap:wrap}.master-state{margin-left:auto}}  </style>  <style>    .master-shell{width:min(1280px,calc(100% - 36px))}#adminConsole{display:grid;grid-template-columns:245px minmax(0,1fr);gap:0 20px;align-items:start}#masterSidebar{grid-column:1;position:sticky;top:20px}#masterPages{grid-column:2;min-width:0}#masterSidebar nav{display:grid;gap:8px;margin:20px 0}#masterSidebar nav a{padding:10px;color:#d1bcff;border-radius:6px;background:#ffffff08}#masterSidebar nav a.active,#masterSidebar nav a:hover{background:#ffffff14}#masterPages .master-card{margin-top:0}@media(max-width:800px){#adminConsole{grid-template-columns:1fr}#masterSidebar,#masterPages{grid-column:1}#masterSidebar{position:static}#masterSidebar nav{grid-template-columns:repeat(2,minmax(0,1fr))}}  </style>
+<link rel="stylesheet" href="/src/loading-skeleton.css"/>
+<script type="module" src="/src/branded-loader.js">
+</script>
+</head>
+<body>
+<div id="weblox-branded-loader" class="weblox-branded-loader" role="status" aria-live="polite" aria-label="Loading WEBLOX">
+<img src="/assets/weblox-logo.png" alt="WEBLOX Studios" />
+</div>  <main class="master-shell">    <header class="master-head">      <div class="master-brand">
+<img src="/assets/weblox-logo.png" alt="WEBLOX Studios"/>
+<div>
+<span class="eyebrow">WEBLOX · ADMINISTRATION</span>
+<h1 class="master-title">Master admin</h1>
+<p>Manage staff, interns, and administrator accounts.</p>
+</div>
+</div>      <div id="masterActions" class="master-actions hidden">
+<span id="signedInAs" class="eyebrow">
+</span>
+<button id="refreshButton" class="button secondary" type="button">Refresh</button>
+<button id="logoutButton" class="button secondary" type="button">Sign out</button>
+</div>    </header>    <section id="loginPanel" class="master-card">      <h2>Administrator sign in</h2>
+<p>Sign in with your backend administrator email and password.</p>      <form id="loginForm" class="master-form">
+<label class="wide">Email address<input name="email" type="email" autocomplete="username" required/>
+</label>
+<label class="wide">Password<input name="password" type="password" autocomplete="current-password" required/>
+</label>
+<button class="button wide" type="submit">Sign in ?</button>
+</form>      <div id="loginNotice" class="master-notice" role="status" aria-live="polite">
+</div>    </section>    <div id="adminConsole" class="hidden">
+<aside id="masterSidebar" class="master-card">
+<span class="eyebrow">ADMIN PROFILE</span>
+<h2 id="masterProfileName">Administrator</h2>
+<p id="masterProfileEmail">
+</p>
+<nav aria-label="Master admin navigation">
+<a href="#overview" data-master-page="overview">Overview</a>
+<a href="#people" data-master-page="people">People</a>
+<a href="#applicants" data-master-page="applicants">Applicants</a>
+<a href="#history" data-master-page="history">History</a>
+<a href="#settings" data-master-page="settings">Settings</a>
+<a href="#portfolio" data-master-page="portfolio">My portfolio</a>
+</nav>
+<p id="masterAttendanceStatus">Loading attendance·</p>
+<button id="masterClockIn" class="button" type="button">Clock in</button> <button id="masterClockOut" class="button secondary" type="button">Clock out</button>
+<p id="masterAttendanceNotice" class="master-notice" role="status">
+</p>
+</aside>
+<div id="masterPages">
+<div class="master-page" data-master-view="overview">
+<section class="master-card">
+<span class="eyebrow">OVERVIEW</span>
+<h2>Master admin overview</h2>
+<p>Review internship applicants, manage people, and check sent reports from the sidebar.</p>
+</section>
+</div>
+<div class="master-page" data-master-view="people">      <section class="master-card">
+<span class="eyebrow">ALL STAFF</span>
+<h2>Staff accounts</h2>
+<p>Review onboarded team members and update their directory details.</p>
+<div id="staffList" class="master-list" aria-live="polite">
+</div>
+</section>      <section class="master-card">
+<span class="eyebrow">INTERNSHIP PROGRAM</span>
+<h2>Onboard an intern</h2>
+<p>Create an intern workspace account for a future program participant. Share the temporary password privately. Intern check-ins are submitted at <a href="/intern-portal.html">the intern portal</a>.</p>        <form id="internForm" class="master-form">
+<label>Full name<input name="name" maxlength="120" required/>
+</label>
+<label>Email address<input name="email" type="email" maxlength="254" required/>
+</label>
+<label>Program or track<input name="role" maxlength="80" value="Intern" required/>
+</label>
+<label>Gender<select name="gender">
+<option value="">Select gender</option>
+<option>Male</option>
+<option>Female</option>
+</select>
+</label>
+<label>Job type<select name="jobType" required>
+<option>Internship</option>
+<option>Part-time</option>
+<option>Full-time</option>
+<option>Contract</option>
+</select>
+</label>
+<label class="wide">Temporary password<input name="password" type="password" minlength="8" autocomplete="new-password" required/>
+</label>
+<button class="button" type="submit">Onboard intern ?</button>
+</form>
+<div id="internNotice" class="master-notice" role="status" aria-live="polite">
+</div>
+<div id="internList" class="master-list" aria-live="polite">
+</div>      </section>      <section class="master-card">
+<span class="eyebrow">STAFF SIGN-INS & ATTENDANCE</span>
+<h2>Daily team activity</h2>
+<div id="staffActivity" class="master-list" aria-live="polite">
+</div>
+</section>      <section class="master-card">
+<span class="eyebrow">INTERN CHECK-INS</span>
+<h2>Morning and evening updates</h2>
+<div id="internCheckins" class="master-list" aria-live="polite">
+</div>
+</section>      <section class="master-card">
+<span class="eyebrow">ADMIN CHANGE HISTORY</span>
+<h2>People changes by administrator</h2>
+<div id="auditList" class="master-list" aria-live="polite">
+</div>
+</section>      <section class="master-card">
+<span class="eyebrow">STAFF ADMINISTRATORS</span>
+<h2>Add an administrator account</h2>
+<p>Create a backend account directly. The password is stored as a salted hash. Share the login details securely with the administrator.</p>        <form id="adminForm" class="master-form">
+<label>Full name<input name="name" maxlength="120" autocomplete="name" required/>
+</label>
+<label>Email address<input name="email" type="email" maxlength="254" autocomplete="email" required/>
+</label>
+<label class="wide">Temporary password<input name="password" type="password" minlength="8" autocomplete="new-password" required/>
+<small>At least 8 characters. The new administrator can sign in immediately.</small>
+</label>
+<button class="button" type="submit">Add administrator ?</button>
+</form>
+<div id="adminNotice" class="master-notice" role="status" aria-live="polite">
+</div>      </section>      <section class="master-card">
+<h2>Current administrators</h2>
+<div id="adminList" class="master-list" aria-live="polite">
+</div>
+</section>
+</div>
+<div class="master-page hidden" data-master-view="applicants">
+<section class="master-card">
+<h2>Internship applicants</h2>
+<div id="masterApplicantList" class="master-list">
+</div>
+</section>
+</div>
+<div class="master-page hidden" data-master-view="history">
+<section class="master-card">
+<h2>Sent announcements and reports</h2>
+<div id="masterWorkspaceHistory" class="master-list">
+</div>
+</section>
+</div>
+<div class="master-page hidden" data-master-view="settings">
+<section class="master-card">
+<h2>Master admin settings</h2>
+<button id="masterChangePasswordButton" class="button secondary" type="button">Change password</button>
+<div id="masterPasswordPanel" class="hidden">
+<form id="masterPasswordForm" class="master-form">
+<label>Current password<input name="currentPassword" type="password" required/>
+</label>
+<label>New password<input name="newPassword" type="password" minlength="8" required/>
+</label>
+<button class="button" type="submit">Update password</button>
+</form>
+<div id="masterPasswordNotice" class="master-notice">
+</div>
+</div>
+</section>
+</div>
+<div class="master-page hidden" data-master-view="portfolio">
+<section class="master-card">
+<h2>My portfolio</h2>
+<p>Build and publish a portfolio for your administrator account.</p>
+<form id="masterPortfolioForm" class="master-form">
+<label>Name<input name="name" required/>
+</label>
+<label>Professional title<input name="title" required/>
+</label>
+<label>Location<input name="location"/>
+</label>
+<label>Contact email<input name="contactEmail" type="email"/>
+</label>
+<label class="wide">About<textarea name="biography" rows="5">
+</textarea>
+</label>
+<label class="wide">Skills, separated by commas<input name="skills"/>
+</label>
+<label>LinkedIn URL<input name="linkedin" type="url"/>
+</label>
+<label>Website URL<input name="website" type="url"/>
+</label>
+<div id="masterProjects" class="wide"></div>
+<div class="wide"><button id="masterAddProject" class="button secondary" type="button">Add project</button></div>
+<div class="wide">
+<button class="button" type="submit">Save draft</button> <button id="masterPortfolioPublish" class="button secondary" type="button">Publish</button>
+</div>
+</form>
+<p id="masterPortfolioNotice" class="master-notice" role="status">
+</p>
+<p id="masterPortfolioStatus">
+</p>
+<a id="masterPortfolioLink" class="hidden" target="_blank" rel="noopener noreferrer">Open published portfolio</a>
+</section>
+</div>
+</div>
+</div>  </main>  <script type="module" src="/src/master-admin.js">
+</script>
 </body>
 </html>

@@ -18,18 +18,48 @@ function mountWorkspaceComposer() {
   if (document.getElementById('workspaceMessageComposer')) return
   const panel = document.createElement('section'); panel.id = 'workspaceMessageComposer'; panel.className = 'admin-card'
   panel.innerHTML = '<span class="eyebrow">ANNOUNCEMENTS & REPORTS</span><h2>Compose a message</h2><p>Choose recipients individually; unchecked people will not receive it.</p><form id="workspaceMessageForm" class="admin-form"><label>Type<select name="type"><option value="announcement">Announcement</option><option value="weekly_report">Weekly report</option></select></label><label>Subject<input name="subject" maxlength="180" required></label><label class="wide">Message<textarea name="body" rows="6" maxlength="20000" required></textarea></label><button id="loadReportPreview" class="button secondary" type="button">Load weekly summary</button><button class="button" type="submit">Send to selected</button><fieldset class="wide" id="workspaceRecipientList"><legend>Recipients</legend><button type="button" data-select-all>Select all</button> <button type="button" data-select-none>Select none</button><div id="workspaceRecipients"></div></fieldset></form><p id="workspaceMessageNotice" class="admin-notice" role="status"></p>'
-  ;(document.querySelector('.admin-main') || $('adminConsole')).append(panel)
+  ;(document.querySelector('[data-admin-view="history"]') || document.querySelector('.admin-main') || $('adminConsole')).append(panel)
   const list = document.getElementById('workspaceRecipients')
   async function loadRecipients() {
-    const { recipients } = await adminRequest('/api/admin/workspace/recipients')
+    const { recipients, sentMessages } = await adminRequest('/api/admin/workspace/recipients')
     list.replaceChildren()
     for (const person of recipients) { const label = document.createElement('label'); label.style.display = 'block'; const box = document.createElement('input'); box.type = 'checkbox'; box.value = person.id; box.checked = true; label.append(box, document.createTextNode(` ${person.name} · ${person.accountType} · ${person.email}`)); list.append(label) }
   }
+  const history = document.getElementById('workspaceHistory'); history.replaceChildren(); for (const item of sentMessages) { const row = document.createElement('article'); row.className = 'admin-person'; const title = document.createElement('b'); title.textContent = `${item.type === 'announcement' ? 'Announcement' : 'Weekly report'} · ${item.subject}`; const meta = document.createElement('small'); meta.textContent = `Sent by ${item.senderName} · ${new Date(item.createdAt).toLocaleString()} · ${item.recipientCount} recipients`; row.append(title, meta); history.append(row) } if (!sentMessages.length) history.textContent = 'No announcements or reports have been sent.'
   panel.querySelector('[data-select-all]').addEventListener('click', () => list.querySelectorAll('input').forEach((box) => { box.checked = true }))
   panel.querySelector('[data-select-none]').addEventListener('click', () => list.querySelectorAll('input').forEach((box) => { box.checked = false }))
   document.getElementById('loadReportPreview').addEventListener('click', async () => { try { const report = await adminRequest('/api/admin/workspace/report-preview'); panel.querySelector('[name="type"]').value = 'weekly_report'; panel.querySelector('[name="subject"]').value = report.subject; panel.querySelector('[name="body"]').value = report.body; document.getElementById('workspaceMessageNotice').textContent = report.alreadySent ? 'The scheduled report was already sent; this manual send will create another copy.' : 'Weekly report loaded.' } catch (error) { document.getElementById('workspaceMessageNotice').textContent = error.message } })
   document.getElementById('workspaceMessageForm').addEventListener('submit', async (event) => { event.preventDefault(); const form = event.currentTarget; try { const payload = Object.fromEntries(new FormData(form)); const recipientIds = [...list.querySelectorAll('input:checked')].map((box) => box.value); const result = await adminRequest('/api/admin/workspace/messages', { method: 'POST', body: JSON.stringify({ ...payload, recipientIds }) }); document.getElementById('workspaceMessageNotice').textContent = `Sent to ${result.recipientCount} recipients.`; await loadRecipients() } catch (error) { document.getElementById('workspaceMessageNotice').textContent = error.message } })
   loadRecipients().catch((error) => { document.getElementById('workspaceMessageNotice').textContent = error.message })
+}
+
+function setupAdminPages() {
+  const links = [...document.querySelectorAll('[data-admin-page]')]
+  const views = [...document.querySelectorAll('[data-admin-view]')]
+  const show = (page) => {
+    views.forEach((view) => view.classList.toggle('hidden', view.dataset.adminView !== page))
+    links.forEach((link) => link.classList.toggle('active', link.dataset.adminPage === page))
+  }
+  links.forEach((link) => link.addEventListener('click', (event) => { event.preventDefault(); show(link.dataset.adminPage) }))
+  show('overview')
+}
+
+async function refreshApplicants() {
+  const { applications } = await adminRequest('/api/admin/internship-applications')
+  const list = $('applicantList')
+  list.replaceChildren()
+  if (!applications.length) { list.textContent = 'No internship applications have been received yet.'; return }
+  for (const application of applications) {
+    const card = document.createElement('article'); card.className = 'admin-person applicant-card'
+    const details = document.createElement('div'); details.className = 'applicant-details'
+    const name = document.createElement('b'); name.textContent = application.fullName
+    const meta = document.createElement('small'); meta.textContent = `${application.email} · ${application.phone} · ${application.track} · Received ${new Date(application.createdAt).toLocaleString()}`
+    details.append(name, meta)
+    for (const [label, value] of [['Background', application.background], ['Skills', application.skills], ['Motivation', application.motivation], ['Availability', `${application.startDate} · ${application.duration} · ${application.availability}`], ['Additional background', application.backgroundDetails], ['Contribution', application.contribution]]) if (value) { const p = document.createElement('p'); p.textContent = `${label}: ${value}`; details.append(p) }
+    for (const [label, value] of [['Portfolio', application.portfolioUrl], ['GitHub', application.githubUrl], ['LinkedIn', application.linkedinUrl]]) if (value && /^https?:\/\//i.test(value)) { const link = document.createElement('a'); link.href = value; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.textContent = label; details.append(link, document.createTextNode(' ')) }
+    if (application.resume?.name) { const download = document.createElement('button'); download.type = 'button'; download.className = 'button secondary'; download.textContent = `Download CV · ${application.resume.name}`; download.addEventListener('click', async () => { try { const response = await fetch(`/api/admin/internship-applications/${application.id}/resume`, { credentials: 'include' }); if (!response.ok) throw new Error('Could not download applicant CV.'); const blob = await response.blob(); const url = URL.createObjectURL(blob); const anchor = document.createElement('a'); anchor.href = url; anchor.download = application.resume.name; anchor.click(); URL.revokeObjectURL(url) } catch (error) { alert(error.message) } }); details.append(download) }
+    card.append(details); list.append(card)
+  }
 }
 
 function message(id, text, success = false) {
@@ -51,6 +81,7 @@ function showAdmin(account) {
   $('loginPanel').classList.add('hidden')
   $('adminConsole').classList.remove('hidden')
   $('adminActions').classList.remove('hidden')
+  setupAdminPages()
   mountWorkspaceComposer()
   return true
 }
@@ -147,7 +178,7 @@ async function startSession(account) {
     throw new Error('This login is not an administrator account.')
   }
   message('loginNotice', '')
-  await Promise.all([refreshStaff(), refreshActivity(), refreshInterns()])
+  await Promise.all([refreshStaff(), refreshActivity(), refreshInterns(), refreshApplicants()])
 }
 
 async function refreshInterns() {
@@ -271,7 +302,6 @@ $('copyInvite').addEventListener('click', async () => {
   }
 })
 
-$('changePasswordButton').addEventListener('click', () => $('passwordPanel').classList.toggle('hidden'))
 $('passwordForm').addEventListener('submit', async (event) => {
   event.preventDefault()
   const form = event.currentTarget

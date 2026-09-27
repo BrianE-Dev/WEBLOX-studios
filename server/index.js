@@ -504,6 +504,54 @@ async function handler(req, res) {
     return send(res, 200, { recipients: await store.listReportRecipients(), sentMessages: await store.listSentWorkspaceMessages() });
   }
 
+  if (url.pathname === "/api/admin/internship-applications" && req.method === "GET") {
+    const current = await currentSession(req);
+    if (!current || !isAdministrator(current.account))
+      return send(res, 403, { error: "Administrator access is required." });
+    return send(res, 200, { applications: await store.listInternshipApplications() });
+  }
+
+  const applicantResumeMatch = url.pathname.match(/^\/api\/admin\/internship-applications\/(\d+)\/resume$/);
+  if (req.method === "GET" && applicantResumeMatch) {
+    const current = await currentSession(req);
+    if (!current || !isAdministrator(current.account))
+      return send(res, 403, { error: "Administrator access is required." });
+    const resume = await store.getInternshipApplicationResume(applicantResumeMatch[1]);
+    if (!resume?.data) return send(res, 404, { error: "Applicant CV not found." });
+    res.writeHead(200, { "content-type": resume.type, "content-disposition": `attachment; filename*=UTF-8''${encodeURIComponent(resume.name || 'applicant-cv')}`, "cache-control": "private, no-store" });
+    return res.end(Buffer.from(resume.data, "base64"));
+  }
+
+  if (url.pathname === "/api/admin/portfolio/me") {
+    const current = await currentSession(req);
+    if (!current || current.account.accountType !== "master_admin")
+      return send(res, 403, { error: "Master administrator access is required." });
+    if (req.method === "GET") return send(res, 200, { portfolio: await store.getPortfolio(current.account.id) });
+    if (req.method === "PUT") {
+      const body = await readBody(req, 2 * 1024 * 1024);
+      if (!body || typeof body !== "object" || Array.isArray(body)) return send(res, 400, { error: "Portfolio data must be a JSON object." });
+      return send(res, 200, { portfolio: await store.savePortfolioDraft(current.account.id, cleanPortfolio(body, current.account)) });
+    }
+  }
+
+  if (url.pathname === "/api/admin/portfolio/me/publish" && req.method === "POST") {
+    const current = await currentSession(req);
+    if (!current || current.account.accountType !== "master_admin") return send(res, 403, { error: "Master administrator access is required." });
+    const portfolio = await store.getPortfolio(current.account.id);
+    if (!portfolio?.draft) return send(res, 400, { error: "Save your portfolio before publishing." });
+    const slugBase = (current.account.name || "master-admin").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "master-admin";
+    return send(res, 200, { portfolio: await store.publishPortfolio(current.account.id, slugBase) });
+  }
+
+  if (url.pathname === "/api/admin/portfolio/me/unpublish" && req.method === "POST") {
+    const current = await currentSession(req);
+    if (!current || current.account.accountType !== "master_admin") return send(res, 403, { error: "Master administrator access is required." });
+    const portfolio = await store.unpublishPortfolio(current.account.id);
+    if (!portfolio) return send(res, 404, { error: "There is no saved portfolio to unpublish." });
+    return send(res, 200, { portfolio });
+  }
+
+
   if (url.pathname === "/api/admin/workspace/report-preview" && req.method === "GET") {
     const current = await currentSession(req);
     if (!current || !isAdministrator(current.account)) return send(res, 403, { error: "Administrator access is required." });
