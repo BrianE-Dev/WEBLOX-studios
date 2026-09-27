@@ -37,7 +37,7 @@ The frontend is built with Vite and React dependencies. Most current pages are s
 | `src/main.jsx` | Main public app bootstrapping. |
 | `src/App.jsx` | React component placeholder; currently returns `null`. |
 | `src/lib/recovered-app.js` | Current public-site app implementation loaded by the main entry. |
-| `src/portfolio.js` | Public portfolio rendering. |
+| `src/portfolio.jsx` | React public portfolio renderer; reads only published portfolio snapshots. |
 | `src/staff-sign-in.js` | Staff sign-in and invitation activation behavior. |
 | `src/staff-dashboard.jsx` | React staff dashboard, including session, attendance, inbox, and portfolio summary. |
 | `src/staff-dashboard.css` | Staff dashboard and portfolio presentation styles. |
