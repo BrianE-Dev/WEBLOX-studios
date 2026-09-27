@@ -2,6 +2,7 @@ import "dotenv/config";
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import pg from "pg";
+import { Resvg } from "@resvg/resvg-js";
 import {
   randomBytes,
   scrypt as scryptCallback,
@@ -12,7 +13,7 @@ import {
 import { promisify } from "node:util";
 import { createPostgresStore } from "./store.js";
 import { migrate } from "./migrate.js";
-import { createCertificatePdf, createCertificateSvg } from "./certificates.js";
+import { createCertificatePdfFromArtwork, createCertificateSvg } from "./certificates.js";
 
 const scrypt = promisify(scryptCallback);
 const { Pool } = pg;
@@ -346,7 +347,21 @@ async function handler(req, res) {
     const current = await currentSession(req);
     if (!current || (current.account.id !== certificate.internAccountId && !isAdministrator(current.account)))
       return send(res, 403, { error: "Only this intern and administrators can download the certificate." });
-    return sendCertificatePdf(res, certificate);
+    const logo = await readFile(new URL("../public/assets/weblox-logo-light.png", import.meta.url));
+    let artwork = certificate.imageSvg.replace(/xlink:href="(?:https?:\/\/[^\"]*)?\/assets\/weblox-logo-light\.png"/g, `xlink:href="data:image/png;base64,${logo.toString("base64")}"`);
+    for (const field of ["signature1Url", "signature2Url"]) {
+      const imageUrl = certificate.certificateData?.[field];
+      const imageMatch = typeof imageUrl === "string" && imageUrl.match(/\/api\/media\/([0-9a-f-]{36})$/i);
+      if (!imageMatch) continue;
+      const signature = await store.findDashboardImage(imageMatch[1]);
+      if (signature?.contentType === "image/png") {
+        const dataUri = `data:image/png;base64,${signature.content.toString("base64")}`;
+        artwork = artwork.replaceAll(`xlink:href="${imageUrl}"`, `xlink:href="${dataUri}"`)
+          .replaceAll(`xlink:href="${allowedOrigin.replace(/\/$/, "")}${imageUrl}"`, `xlink:href="${dataUri}"`);
+      }
+    }
+    const rendered = new Resvg(artwork, { fitTo: { mode: "width", value: 3600 } }).render().asPng();
+    return sendCertificatePdf(res, { ...certificate, pdf: createCertificatePdfFromArtwork(rendered) });
   }
 
   if (url.pathname === "/api/admin/certificates" && ["GET", "POST"].includes(req.method)) {
@@ -412,8 +427,9 @@ async function handler(req, res) {
       signature1Url: signature1?.url || "",
       signature2Url: signature2?.url || "",
     };
-    const pdf = createCertificatePdf(certificateData, imageAssets);
     const imageSvg = createCertificateSvg({ certificateData }, allowedOrigin.replace(/\/$/, ""), imageAssets);
+    const certificatePng = new Resvg(imageSvg, { fitTo: { mode: "width", value: 3600 } }).render().asPng();
+    const pdf = createCertificatePdfFromArtwork(certificatePng);
     const saved = await store.issueInternshipCertificate({
       id, credentialId, internAccountId: intern.id, issuedByAccountId: current.account.id,
       certificateData, pdf, imageSvg,
