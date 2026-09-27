@@ -44,7 +44,8 @@ The frontend is built with Vite and React dependencies. Most current pages are s
 | `src/staff-portfolio.js` | Portfolio editor, autosave, preview, and publish controls. |
 | `src/staff-admin.js` | Staff admin sign-in, invitation, directory, activity, and message tools. |
 | `src/master-admin.js` | Master admin sign-in and organization administration. |
-| `src/intern-portal.js` | Intern check-ins and inbox interactions. |
+| `src/intern-portal.jsx` | React intern sign-in, check-ins, history, and inbox. |
+| `src/intern-portal.css` | Intern portal styles. |
 | `src/lib/staffAuth.js` | Shared browser-side auth/session request helpers. |
 | `src/lib/internshipApi.js` | Public internship API client helpers. |
 | `src/branded-loader.js` | Branded page loader; minimum display duration is 7,000 ms. |
