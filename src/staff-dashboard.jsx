@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import { authRequest, clearStaffSession, staffRequest } from './lib/staffAuth.js'
+import ThemeSettings, { useThemePreference } from './components/ThemeSettings.jsx'
 
 export default function StaffDashboard() {
   const [staff, setStaff] = useState(null)
-  const [page, setPage] = useState(() => ['overview', 'inbox'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'overview')
-  const [theme, setTheme] = useState(() => localStorage.getItem('weblox-theme') || 'dark')
+  const [page, setPage] = useState(() => ['overview', 'inbox', 'settings'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'overview')
+  const [theme, setTheme] = useThemePreference()
   const [attendance, setAttendance] = useState(null)
   const [attendanceLoaded, setAttendanceLoaded] = useState(false)
   const [attendanceNotice, setAttendanceNotice] = useState('')
@@ -14,11 +15,6 @@ export default function StaffDashboard() {
   const [portfolio, setPortfolio] = useState(null)
   const [portfolioLoaded, setPortfolioLoaded] = useState(false)
   const [portfolioError, setPortfolioError] = useState('')
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme
-    localStorage.setItem('weblox-theme', theme)
-  }, [theme])
 
   useEffect(() => {
     let current = true
@@ -60,7 +56,7 @@ export default function StaffDashboard() {
       location.assign('/staff-portfolio.html')
       return
     }
-    const selected = ['overview', 'inbox'].includes(nextPage) ? nextPage : 'overview'
+    const selected = ['overview', 'inbox', 'settings'].includes(nextPage) ? nextPage : 'overview'
     setPage(selected)
     if (location.hash !== `#${selected}`) history.replaceState(null, '', `#${selected}`)
     if (selected === 'inbox') loadInbox()
@@ -107,7 +103,6 @@ export default function StaffDashboard() {
       <header className="dash-head">
         <a href="/" className="dash-brand"><img src="/assets/weblox-logo.png" alt="" /> WEBLOX <span className="eyebrow">STAFF WORKSPACE</span></a>
         <div className="dash-actions">
-          <button className="theme-toggle" type="button" aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`} title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`} onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}><span aria-hidden="true">{theme === 'light' ? '☀' : '◐'}</span></button>
           <button className="button secondary dash-secondary" type="button" onClick={signOut}>Sign out</button>
         </div>
       </header>
@@ -122,6 +117,7 @@ export default function StaffDashboard() {
           <button className={page === 'overview' ? 'active' : ''} aria-current={page === 'overview' ? 'page' : undefined} type="button" onClick={() => showPage('overview')}>Overview</button>
           <button className={page === 'inbox' ? 'active' : ''} aria-current={page === 'inbox' ? 'page' : undefined} type="button" onClick={() => showPage('inbox')}>Inbox <span className={`inbox-unread${unreadCount ? '' : ' hidden'}`} aria-label={`${unreadCount} unread messages`}>{unreadCount > 99 ? '99+' : unreadCount}</span></button>
           <button type="button" onClick={() => showPage('portfolio')}>Portfolio builder</button>
+          <button className={page === 'settings' ? 'active' : ''} aria-current={page === 'settings' ? 'page' : undefined} type="button" onClick={() => showPage('settings')}>Settings</button>
         </nav>
         <section className="dash-attendance" aria-label="Attendance">
           <span className="eyebrow">TODAY’S ATTENDANCE</span>
@@ -158,6 +154,8 @@ export default function StaffDashboard() {
           {inbox.map((message) => <article className="dash-muted inbox-message" key={message.id}><b>{message.subject}</b><p>{message.type === 'announcement' ? 'Announcement' : 'Weekly report'} · {message.senderName} · {new Date(message.createdAt).toLocaleString()}</p><p className="inbox-message-body">{message.body}</p>{!message.readAt && <button className="button secondary dash-secondary" type="button" onClick={() => markAsRead(message.id)}>Mark as read</button>}</article>)}
         </section>
       )}
+
+      {page === 'settings' && <section id="settings" className="dash-panel" aria-label="Settings"><span className="eyebrow">PREFERENCES</span><h2>Appearance</h2><p className="theme-settings-copy">Choose how your staff workspace looks. This preference is saved for your next visit.</p><ThemeSettings theme={theme} onChange={setTheme} /></section>}
     </main>
   )
 }

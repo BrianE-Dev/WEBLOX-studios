@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { authRequest, clearStaffSession, staffRequest } from './lib/staffAuth.js'
+import ThemeSettings, { useThemePreference } from './components/ThemeSettings.jsx'
 
 export default function InternPortal() {
   const [intern, setIntern] = useState(null)
@@ -11,6 +12,8 @@ export default function InternPortal() {
   const [portalNotice, setPortalNotice] = useState('')
   const [portalError, setPortalError] = useState('')
   const [busySlot, setBusySlot] = useState('')
+  const [page, setPage] = useState('dashboard')
+  const [theme, setTheme] = useThemePreference()
 
   const loadCheckins = useCallback(async () => {
     const { checkins: entries } = await staffRequest('/api/intern/me/checkins')
@@ -110,7 +113,9 @@ export default function InternPortal() {
         </section>
       ) : (
         <>
-          <header className="intern-card"><span className="eyebrow">WEBLOX INTERNSHIP PROGRAM</span><h1>Daily check-ins</h1><p>{intern.name} · {intern.role}</p><button className="button secondary" type="button" onClick={signOut}>Sign out</button></header>
+          <header className="intern-card intern-head"><div><span className="eyebrow">WEBLOX INTERNSHIP PROGRAM</span><h1>Daily check-ins</h1><p>{intern.name} · {intern.role}</p></div><button className="button secondary" type="button" onClick={signOut}>Sign out</button></header>
+          <nav className="intern-nav" aria-label="Intern dashboard navigation"><button className={page === 'dashboard' ? 'active' : ''} type="button" aria-current={page === 'dashboard' ? 'page' : undefined} onClick={() => setPage('dashboard')}>Dashboard</button><button className={page === 'settings' ? 'active' : ''} type="button" aria-current={page === 'settings' ? 'page' : undefined} onClick={() => setPage('settings')}>Settings</button></nav>
+          {page === 'dashboard' && <>
           <section className="intern-card"><span className="eyebrow">WORKSPACE INBOX</span><h2>Reports and announcements</h2><p>{inbox.filter((item) => !item.readAt).length ? `${inbox.filter((item) => !item.readAt).length} unread message(s)` : 'You’re up to date.'}</p>
             {inbox.length === 0 ? <div className="intern-empty">Reports and announcements will appear here.</div> : inbox.map((item) => <article className="intern-row" key={item.id}><b>{item.subject}</b><small>{item.type === 'announcement' ? 'Announcement' : 'Weekly report'} · {item.senderName} · {new Date(item.createdAt).toLocaleString()}</small><p>{item.body}</p>{!item.readAt && <button className="button secondary" type="button" onClick={() => markRead(item.id)}>Mark as read</button>}</article>)}
           </section>
@@ -122,6 +127,8 @@ export default function InternPortal() {
           </section>
           {portalError && <div className="intern-notice" role="alert">{portalError}</div>}
           {portalNotice && <div className="intern-notice success" role="status">{portalNotice}</div>}
+          </>}
+          {page === 'settings' && <section className="intern-card"><span className="eyebrow">PREFERENCES</span><h2>Appearance</h2><p className="theme-settings-copy">Choose how your intern workspace looks. This preference is saved for your next visit.</p><ThemeSettings theme={theme} onChange={setTheme} /></section>}
         </>
       )}
     </main>

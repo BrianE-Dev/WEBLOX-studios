@@ -17,6 +17,7 @@ import './staff-admin.css'
 import './staff-dashboard.css'
 import './staff-portfolio.css'
 import './staff-sign-in.css'
+import './theme-settings.css'
 
 const migratedPaths = new Set([
   '/sign-in', '/sign-in.html', '/staff-sign-in', '/staff-sign-in.html',

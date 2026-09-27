@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { authRequest, clearStaffSession, saveStaffSession } from './lib/staffAuth.js'
+import ThemeSettings, { useThemePreference } from './components/ThemeSettings.jsx'
 
 async function adminRequest(path, options = {}) {
   const response = await fetch(path, { ...options, credentials: 'include', headers: { 'content-type': 'application/json', ...options.headers } })
@@ -32,8 +33,7 @@ export default function StaffAdmin() {
   const [messageNotice, setMessageNotice] = useState('')
   const [recipientIds, setRecipientIds] = useState([])
   const [messageBusy, setMessageBusy] = useState(false)
-
-  useEffect(() => { document.documentElement.dataset.theme = localStorage.getItem('weblox-theme') || 'dark' }, [])
+  const [theme, setTheme] = useThemePreference()
 
   const refreshStaff = useCallback(async () => {
     const result = await adminRequest('/api/admin/staff')
@@ -267,7 +267,7 @@ export default function StaffAdmin() {
             <section className="admin-card"><span className="eyebrow">INTERN PROGRAM</span><h2>Intern check-ins</h2><div className="admin-list">{activity.internCheckins.length ? activity.internCheckins.map((item, index) => <article className="admin-person" key={`${item.email}-${item.date}-${index}`}><div><b>{item.name}</b><small>{item.email} · {item.date || 'No check-ins'} · Morning: {item.morning || '—'} · Evening: {item.evening || '—'}</small></div></article>) : <p>No onboarded interns or check-ins yet.</p>}</div></section>
           </section>}
 
-          {activePage === 'settings' && <section className="admin-page-section"><section className="admin-card"><span className="eyebrow">ACCOUNT SETTINGS</span><h2>Change administrator password</h2><form className="admin-form" onSubmit={changePassword}><label>Current password<input name="currentPassword" type="password" required /></label><label>New password<input name="newPassword" type="password" minLength="8" required /></label><button className="button" type="submit">Update password</button></form><p className={`admin-notice${passwordNotice.success ? ' success' : ''}`} role="status">{passwordNotice.text}</p></section></section>}
+          {activePage === 'settings' && <section className="admin-page-section"><section className="admin-card"><span className="eyebrow">APPEARANCE</span><h2>Color theme</h2><p className="theme-settings-copy">Choose how the dashboard looks. Your preference is saved for your next visit.</p><ThemeSettings theme={theme} onChange={setTheme} /></section><section className="admin-card"><span className="eyebrow">ACCOUNT SETTINGS</span><h2>Change administrator password</h2><form className="admin-form" onSubmit={changePassword}><label>Current password<input name="currentPassword" type="password" required /></label><label>New password<input name="newPassword" type="password" minLength="8" required /></label><button className="button" type="submit">Update password</button></form><p className={`admin-notice${passwordNotice.success ? ' success' : ''}`} role="status">{passwordNotice.text}</p></section></section>}
         </div>
       </div>}
     </main>
