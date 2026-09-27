@@ -35,8 +35,10 @@ The frontend is built with Vite and React dependencies. Most current pages are s
 | `master-admin.html` | Master administrator console for admins and organization-wide administration. |
 | `intern-portal.html` | Intern check-ins and workspace inbox. |
 | `src/main.jsx` | Main public React app bootstrap. |
-| `src/App.jsx` | JSX application shell that mounts the public route tree. |
-| `src/lib/recovered-app.js` | Generated React route bundle mounted by the public app shell. |
+| `src/App.jsx` | Routes `/` to the maintainable React homepage and mounts the generated app for remaining public routes. |
+| `src/components/home/HomePage.jsx` | Public homepage sections, navigation, theme control, and project enquiry form. |
+| `src/components/home/HomePage.css` | Homepage header and enquiry form styles. |
+| `src/lib/recovered-app.js` | Generated React route bundle for the public routes outside the rebuilt homepage. |
 | `src/portfolio.jsx` | React public portfolio renderer; reads only published portfolio snapshots. |
 | `src/sign-in.jsx` | React public workspace audience chooser. |
 | `src/sign-in.css` | Public sign-in chooser styles. |
