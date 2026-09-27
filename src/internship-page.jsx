@@ -23,10 +23,10 @@ function CertificateSample() {
         <img className="certificate-watermark" src="/assets/weblox-logo-light.png" alt="" />
         <div className="certificate-wordmark"><img src="/assets/weblox-logo-light.png" alt="WEBLOX Studios" /><span>WEBLOX STUDIOS <small>VENTURE FOUNDRY</small></span></div>
         <span className="certificate-overline">A PRACTICAL VENTURE CONTRIBUTION</span><h3>CERTIFICATE OF INTERNSHIP</h3><span className="certificate-presented">THIS IS PROUDLY PRESENTED TO</span>
-        <strong className="certificate-sample-name">Chukwuemeka Nkama</strong>
+        <strong className="certificate-sample-name">Clarissa Adamu</strong>
         <p>For outstanding dedication and successful completion of the WEBLOX Internship Program, contributing practical work to WEBLOX Studio ventures.</p>
         <div className="certificate-sample-details"><span>PROGRAM TRACK<b>Software Engineering</b></span><span>CONTRIBUTION<b>Signarol AI Pipeline</b></span><span>ISSUED<b>Sample preview</b></span><span>CREDENTIAL ID<b>WEBLOX-INT-SAMPLE</b></span></div>
-        <div className="certificate-signatures"><span><i />Dr. Tayo Adeyemi<small>Program Director</small></span><span className="certificate-seal">WEBLOX<br />VERIFIED</span><span><i />Anise Mensah<small>Engineering Mentor</small></span></div>
+        <div className="certificate-signatures"><span><i />Chukwuemeka Nkama<small>Founder &amp; Team Lead</small></span><span className="certificate-seal">WEBLOX<br />VERIFIED</span><span><i />Marcaulay Abraham<small>Internship Program Coordinator</small></span></div>
       </article></div>
       <aside className="certificate-details"><span className="eyebrow">DIGITAL CREDENTIAL</span><h3>Credential ready for verification</h3><p>Each issued certificate includes a unique credential ID, a shareable certificate image, and a downloadable PDF.</p><div><small>CREDENTIAL ID</small><code>WEBLOX-INT-SAMPLE</code></div><div><small>ISSUED BY</small><b>WEBLOX Studios</b></div><span className="certificate-sample-label">SAMPLE PREVIEW</span><p className="certificate-detail-note">Official certificates are issued by the WEBLOX master administrator after reviewing an intern’s contribution.</p></aside>
     </div>

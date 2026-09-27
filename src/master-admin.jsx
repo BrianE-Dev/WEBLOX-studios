@@ -365,8 +365,8 @@ export default function MasterAdmin() {
               <label>Program or track<input name="track" maxLength="120" placeholder="Software Engineering" required /></label>
               <label>Internship start date<input name="startDate" type="date" /></label>
               <label>Completion date<input name="completionDate" type="date" /></label>
-              <label>Signatory name<input name="signatoryName" maxLength="120" defaultValue={account.name} /></label>
-              <label>Signatory title<input name="signatoryTitle" maxLength="120" defaultValue="Internship Program Director" /></label>
+              <label>Signatory name<input name="signatoryName" maxLength="120" defaultValue="Chukwuemeka Nkama" /></label>
+              <label>Signatory title<input name="signatoryTitle" maxLength="120" defaultValue="Founder & Team Lead" /></label>
               <label className="wide">Certificate statement<textarea name="description" rows="3" maxLength="500" defaultValue="For outstanding dedication, practical contribution, and successful completion of the WEBLOX Internship Program." /></label>
               <button className="button" type="submit" disabled={certificateBusy || !interns.length}>{certificateBusy ? 'Issuing certificate…' : 'Issue certificate'}</button>
             </form><Notice success={certificateNotice.startsWith('Certificate issued')}>{certificateNotice}</Notice>

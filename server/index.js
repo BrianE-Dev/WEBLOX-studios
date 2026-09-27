@@ -383,8 +383,8 @@ async function handler(req, res) {
       description: cleanText(body.description, 500) || "For outstanding dedication, practical contribution, and successful completion of the WEBLOX Internship Program.",
       credentialId,
       issuedAt: new Date().toISOString().slice(0, 10),
-      signatoryName: cleanText(body.signatoryName, 120) || current.account.name || "WEBLOX Studios",
-      signatoryTitle: cleanText(body.signatoryTitle, 120) || "Internship Program",
+      signatoryName: cleanText(body.signatoryName, 120) || "Chukwuemeka Nkama",
+      signatoryTitle: cleanText(body.signatoryTitle, 120) || "Founder & Team Lead",
     };
     const pdf = createCertificatePdf(certificateData);
     const imageSvg = createCertificateSvg({ certificateData }, allowedOrigin.replace(/\/$/, ""));
