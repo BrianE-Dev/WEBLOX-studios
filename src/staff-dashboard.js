@@ -14,22 +14,23 @@ if (attendancePanel) {
   attendancePanel.id = 'staffSidebar'
   attendancePanel.style.gridColumn = ''
   document.querySelector('.dash-head').after(attendancePanel)
+  const nav = document.querySelector('.dash-nav')
+  attendancePanel.prepend(nav)
   const layout = document.createElement('style')
-  layout.textContent = '.staff-dash{display:grid;grid-template-columns:245px minmax(0,1fr);gap:20px;width:min(1280px,calc(100% - 36px))}.dash-head{grid-column:1/-1}#staffSidebar{grid-column:1;grid-row:2/6;position:sticky;top:20px;align-self:start}.dash-hero,.dash-nav,#overview,#portfolio{grid-column:2}@media(max-width:700px){.staff-dash{grid-template-columns:1fr}#staffSidebar,.dash-hero,.dash-nav,#overview,#portfolio{grid-column:1;grid-row:auto}#staffSidebar{position:static}}'
+  layout.textContent = '.staff-dash{display:grid;grid-template-columns:245px minmax(0,1fr);gap:20px;width:min(1280px,calc(100% - 36px))}.dash-head{grid-column:1/-1}#staffSidebar{grid-column:1;grid-row:2/6;position:sticky;top:20px;align-self:start}.dash-hero,#overview,#inbox,#portfolio{grid-column:2}.dash-nav{display:grid;gap:7px;margin:0 0 20px;border:0;overflow:visible}.dash-nav button{display:flex;align-items:center;justify-content:space-between;width:100%;border:0;border-radius:7px;padding:11px 12px;text-align:left;background:#ffffff08;color:var(--muted)}.dash-nav button.active{background:#a259ff20;color:#d1bcff;border:1px solid #a259ff44}.inbox-unread{min-width:20px;padding:3px 6px;border-radius:20px;background:#a259ff;color:#fff;font:600 10px Inter,Arial,sans-serif;text-align:center}.dash-panel{min-width:0}@media(max-width:700px){.staff-dash{grid-template-columns:1fr}#staffSidebar,.dash-hero,#overview,#inbox,#portfolio{grid-column:1;grid-row:auto}#staffSidebar{position:static}}'
   document.head.append(layout)
 }
-
-const inboxPanel = document.createElement('article')
-inboxPanel.className = 'dash-panel'
-inboxPanel.innerHTML = '<span class="eyebrow">WORKSPACE INBOX</span><h2>Reports and announcements</h2><p id="inboxNotice">Loading messages…</p><div id="workspaceInbox"></div>'
-document.getElementById('overview').prepend(inboxPanel)
 
 async function loadWorkspaceInbox() {
   const response = await fetch('/api/workspace/inbox', { credentials: 'include' })
   const data = await response.json().catch(() => ({}))
   if (!response.ok) throw new Error(data.error || 'Could not load inbox.')
   const list = document.getElementById('workspaceInbox'); list.replaceChildren()
-  document.getElementById('inboxNotice').textContent = data.messages.filter((item) => !item.readAt).length ? `${data.messages.filter((item) => !item.readAt).length} unread message(s)` : 'You’re up to date.'
+  const unreadCount = data.messages.filter((item) => !item.readAt).length
+  document.getElementById('inboxNotice').textContent = unreadCount ? `${unreadCount} unread message(s)` : 'You’re up to date.'
+  const unreadBadge = $('inboxUnread')
+  unreadBadge.textContent = unreadCount > 99 ? '99+' : String(unreadCount)
+  unreadBadge.classList.toggle('hidden', unreadCount === 0)
   for (const item of data.messages) {
     const article = document.createElement('article'); article.className = 'dash-muted'; article.style.marginTop = '10px'
     const title = document.createElement('b'); title.textContent = item.subject
@@ -94,12 +95,19 @@ function openPortfolioBuilder() {
 }
 
 document.querySelector('[data-open-portfolio]').addEventListener('click', openPortfolioBuilder)
-document.querySelectorAll('[data-tab], [data-side-tab]').forEach((button) => button.addEventListener('click', () => {
-  if (button.dataset.tab === 'portfolio') return openPortfolioBuilder()
-  document.querySelectorAll('[data-tab], [data-side-tab]').forEach((item) => item.classList.toggle('active', item.dataset.tab === 'overview' || item.dataset.sideTab === 'overview'))
-  $('overview').classList.remove('hidden')
+function showStaffPage(page) {
+  if (page === 'portfolio') return openPortfolioBuilder()
+  if (!['overview', 'inbox'].includes(page)) page = 'overview'
+  $('overview').classList.toggle('hidden', page !== 'overview')
+  $('inbox').classList.toggle('hidden', page !== 'inbox')
   $('portfolio').classList.add('hidden')
-}))
+  document.querySelectorAll('[data-tab]').forEach((button) => button.classList.toggle('active', button.dataset.tab === page))
+  if (location.hash !== `#${page}`) history.replaceState(null, '', `#${page}`)
+  if (page === 'inbox') loadWorkspaceInbox().catch((error) => { $('inboxNotice').textContent = error.message })
+}
+
+document.querySelectorAll('[data-tab]').forEach((button) => button.addEventListener('click', () => showStaffPage(button.dataset.tab)))
+showStaffPage(location.hash.slice(1) || 'overview')
 
 async function renderPortfolioSummary() {
   const box = $('portfolioSummary')

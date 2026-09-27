@@ -1,4 +1,5 @@
 import { authRequest, clearStaffSession } from './lib/staffAuth.js'
+import { createWorkspaceRecipientPicker } from './lib/workspaceRecipients.js'
 
 const $ = (id) => document.getElementById(id)
 document.documentElement.dataset.theme = localStorage.getItem('weblox-theme') || 'dark'
@@ -85,24 +86,17 @@ function mountWorkspaceTools(container) {
   if (document.getElementById('workspaceMessageComposer')) return
   const panel = document.createElement('section')
   panel.id = 'workspaceMessageComposer'; panel.className = 'master-card'
-  panel.innerHTML = '<span class="eyebrow">ANNOUNCEMENTS & REPORTS</span><h2>Compose a message</h2><p>Select the recipients. Unchecked people will not receive this message.</p><form id="workspaceMessageForm" class="master-form"><label>Message type<select name="type"><option value="announcement">Announcement</option><option value="weekly_report">Weekly report</option></select></label><label>Subject<input name="subject" maxlength="180" required></label><label class="wide">Message<textarea name="body" rows="6" maxlength="20000" required></textarea></label><div class="wide"><button id="loadReportPreview" type="button" class="button secondary">Load weekly summary</button> <button class="button" type="submit">Send to selected</button></div><fieldset class="wide" id="workspaceRecipientList"><legend>Recipients</legend><button type="button" data-select-all>Select all</button> <button type="button" data-select-none>Select none</button><div id="workspaceRecipients"></div></fieldset></form><p id="workspaceMessageNotice" class="master-notice" role="status"></p>'
+  panel.innerHTML = '<span class="eyebrow">ANNOUNCEMENTS & REPORTS</span><h2>Compose a message</h2><p>Choose everyone, a whole group, or any combination of individual staff and interns.</p><form id="workspaceMessageForm" class="master-form"><label>Message type<select name="type"><option value="announcement">Announcement</option><option value="weekly_report">Weekly report</option></select></label><label>Subject<input name="subject" maxlength="180" required></label><label class="wide">Message<textarea name="body" rows="6" maxlength="20000" required></textarea></label><div class="wide"><button id="loadReportPreview" type="button" class="button secondary">Load weekly summary</button> <button class="button" type="submit">Send to selected</button></div><fieldset class="wide" id="workspaceRecipientList"><legend>Recipients</legend><div id="workspaceRecipients"></div></fieldset></form><p id="workspaceMessageNotice" class="master-notice" role="status"></p>'
   container.append(panel)
   const message = (text) => { document.getElementById('workspaceMessageNotice').textContent = text }
-  const checkboxList = document.getElementById('workspaceRecipients')
+  const picker = createWorkspaceRecipientPicker(document.getElementById('workspaceRecipients'))
   async function loadRecipients() {
     const data = await adminRequest('/api/admin/workspace/recipients')
-    checkboxList.replaceChildren()
-    for (const person of data.recipients) {
-      const label = document.createElement('label'); label.style.display = 'block'
-      const input = document.createElement('input'); input.type = 'checkbox'; input.value = person.id; input.checked = true
-      label.append(input, document.createTextNode(` ${person.name} · ${person.accountType} · ${person.email}`)); checkboxList.append(label)
-    }
+    picker.render(data.recipients)
     const history = document.getElementById('masterWorkspaceHistory'); history.replaceChildren()
     for (const item of data.sentMessages) addRow(history, `${item.type === 'announcement' ? 'ANNOUNCEMENT' : 'WEEKLY REPORT'} · ${item.subject}`, `Sent by ${item.senderName}${item.senderEmail ? ` (${item.senderEmail})` : ''} · ${new Date(item.createdAt).toLocaleString()} · ${item.recipientCount} recipients`)
     if (!data.sentMessages.length) history.textContent = 'No messages have been sent.'
   }
-  panel.querySelector('[data-select-all]').addEventListener('click', () => checkboxList.querySelectorAll('input').forEach((item) => { item.checked = true }))
-  panel.querySelector('[data-select-none]').addEventListener('click', () => checkboxList.querySelectorAll('input').forEach((item) => { item.checked = false }))
   document.getElementById('loadReportPreview').addEventListener('click', async () => {
     try { const report = await adminRequest('/api/admin/workspace/report-preview'); panel.querySelector('[name="type"]').value = 'weekly_report'; panel.querySelector('[name="subject"]').value = report.subject; panel.querySelector('[name="body"]').value = report.body; message(report.alreadySent ? 'The scheduled report for this date was already sent; this manual send will create an additional copy.' : 'Weekly report loaded.') }
     catch (error) { message(error.message) }
@@ -110,7 +104,7 @@ function mountWorkspaceTools(container) {
   document.getElementById('workspaceMessageForm').addEventListener('submit', async (event) => {
     event.preventDefault()
     const form = event.currentTarget
-    const recipientIds = [...checkboxList.querySelectorAll('input:checked')].map((input) => input.value)
+    const recipientIds = picker.getSelectedRecipientIds()
     try { const payload = Object.fromEntries(new FormData(form)); const result = await adminRequest('/api/admin/workspace/messages', { method: 'POST', body: JSON.stringify({ ...payload, recipientIds }) }); message(`Sent to ${result.recipientCount} recipients.`); await loadRecipients() }
     catch (error) { message(error.message || 'Could not send the message.') }
   })
