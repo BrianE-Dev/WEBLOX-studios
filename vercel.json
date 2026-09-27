@@ -90,6 +90,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/internship",
+      "destination": "/index.html"
+    },
+    {
       "source": "/internship/:path*",
       "destination": "/index.html"
     },

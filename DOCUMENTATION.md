@@ -53,12 +53,15 @@ The frontend is a single Vite and React application. `index.html` is the only HT
 | `src/master-admin.css` | Master admin pages, navigation, forms, and recipient picker styles. |
 | `src/intern-portal.jsx` | React intern sign-in, check-ins, history, and inbox. |
 | `src/intern-portal.css` | Intern portal styles. |
+| `src/internship-page.jsx` | React internship landing page, program overview, and sample certificate showcase. |
+| `src/internship-page.css` | Internship landing page and certificate sample styles. |
 | `src/lib/staffAuth.js` | Shared browser-side auth/session request helpers. |
 | `src/lib/internshipApi.js` | Public internship API client helpers. |
 | `src/branded-loader.js` | Branded page loader; minimum display duration is 7,000 ms. |
 | `src/styles.css`, `src/portfolio.css` | Shared and portfolio styles. |
 | `server/index.js` | HTTP API routes, auth, input checks, scheduled report trigger. |
 | `server/store.js` | PostgreSQL data access. |
+| `server/certificates.js` | Branded internship credential image and PDF generation. |
 | `server/migrate.js` | Applies ordered, versioned SQL migrations. |
 | `server/migrations/*.sql` | Database schema and incremental changes, including the dashboard image library. |
 | `server/bootstrap-admin.js` | One-time first master administrator setup. |
@@ -181,6 +184,8 @@ The site has one root HTML entry point, `index.html`, which loads `src/main.jsx`
 - Upload JPEG, PNG, WebP, GIF, or PDF files up to 5 MB each. The library limits each account to 200 files and 50 MB total. Files are stored in PostgreSQL and served through `/api/media/:id`.
 - Copy an image's or resume PDF's generated URL into a portfolio profile or project field, or reuse it elsewhere. Deleting a library file also makes its URL unavailable.
 - Each dashboard's Settings page offers light and dark theme controls. The selection is stored in browser local storage and shared by dashboard and portfolio presentation styling.
+- The public `/internship` page includes a clearly labeled sample certificate preview with WEBLOX logo watermarking; it does not claim accreditation.
+- Master administrators can issue internship certificates to onboarded interns at any time. Each certificate is stored with its data, branded PDF, shareable SVG image URL, and unique credential ID. The admin certificate library and intern dashboard both show those details; the intern can download the PDF.
 
 ### 7.7 Administration
 
@@ -202,6 +207,8 @@ All API routes are under `/api`. Authenticated routes use the `weblox_session` H
 | `POST` | `/api/internship-applications` | Submit a public internship application. |
 | `GET` | `/api/portfolios/public/:slug` | Fetch a published staff portfolio. |
 | `GET` | `/api/media/:id` | Fetch a stored image from an account image library. |
+| `GET` | `/api/certificates/:id/image` | Fetch a shareable SVG image of an issued certificate. |
+| `GET` | `/api/certificates/:id/pdf` | Download a certificate PDF as its owner or an administrator. |
 | `POST` | `/api/auth/activate` | Activate a staff invitation and set credentials. |
 | `POST` | `/api/auth/login` | Authenticate and create a session cookie. |
 | `GET` | `/api/auth/session` | Return the current authenticated account. |
@@ -217,6 +224,7 @@ All API routes are under `/api`. Authenticated routes use the `weblox_session` H
 | `POST` | `/api/portfolios/me/unpublish` | Unpublish the portfolio. |
 | `GET`, `POST` | `/api/media/library` | List the current account's images or upload an image. |
 | `DELETE` | `/api/media/library/:id` | Delete an image owned by the current account. |
+| `GET` | `/api/intern/me/certificates` | List the signed-in intern's issued certificates. |
 | `GET`, `POST` | `/api/staff/attendance` | Read today's attendance or clock in/out. |
 | `GET`, `POST` | `/api/intern/me/checkins` | Read or submit an intern check-in. |
 | `GET` | `/api/workspace/inbox` | Read the current account's announcements/reports. |
@@ -229,6 +237,7 @@ All API routes are under `/api`. Authenticated routes use the `weblox_session` H
 | `POST` | `/api/admin/staff/invitations` | Create a staff invitation. |
 | `GET` | `/api/admin/staff` | List staff and invitation records. |
 | `GET`, `POST` | `/api/admin/interns` | List interns or onboard one. |
+| `GET`, `POST` | `/api/admin/certificates` | Master admin lists issued certificates or issues one to an intern. |
 | `GET` | `/api/admin/activity` | Read staff activity and intern check-ins. |
 | `GET` | `/api/admin/workspace/recipients` | List selectable recipients; master admin also gets sent-message history. |
 | `GET` | `/api/admin/workspace/report-preview` | Generate the current weekly report preview. |
@@ -254,6 +263,7 @@ The migration set covers:
 - Staff attendance and intern check-ins.
 - Workspace announcements, report recipients/read state, and scheduled report deduplication.
 - Account-owned image library metadata and stored image data.
+- Internship certificate records, generated PDFs, and shareable certificate images.
 
 Data access and transaction logic live in `server/store.js`. Back up PostgreSQL before production schema maintenance. Existing browser-local staff entries from older versions are not automatically imported; use the admin onboarding flow to create server-backed records.
 

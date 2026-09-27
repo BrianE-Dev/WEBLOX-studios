@@ -5,7 +5,7 @@ import ImageLibrary from './components/ImageLibrary.jsx'
 import ThemeAwareLogo from './components/ThemeAwareLogo.jsx'
 import { absoluteImageUrl, uploadDashboardImage } from './lib/imageLibrary.js'
 
-const pages = ['overview', 'people', 'applicants', 'history', 'images', 'settings', 'portfolio']
+const pages = ['overview', 'people', 'applicants', 'history', 'certificates', 'images', 'settings', 'portfolio']
 const fmt = (value) => value ? new Date(value).toLocaleString() : '—'
 const date = (value) => value ? new Date(value).toLocaleDateString() : '—'
 const splitList = (value) => String(value || '').split(',').map((item) => item.trim()).filter(Boolean)
@@ -53,6 +53,9 @@ export default function MasterAdmin() {
   const [portfolioBusy, setPortfolioBusy] = useState(false)
   const [portfolioPhotoUrl, setPortfolioPhotoUrl] = useState('')
   const [photoBusy, setPhotoBusy] = useState(false)
+  const [certificates, setCertificates] = useState([])
+  const [certificateNotice, setCertificateNotice] = useState('')
+  const [certificateBusy, setCertificateBusy] = useState(false)
 
   useEffect(() => { document.documentElement.dataset.theme = localStorage.getItem('weblox-theme') || 'dark' }, [])
 
@@ -60,6 +63,7 @@ export default function MasterAdmin() {
   const refreshInterns = useCallback(async () => setInterns((await adminRequest('/api/admin/interns')).interns), [])
   const refreshAdmins = useCallback(async () => setAdmins((await adminRequest('/api/admin/admins')).admins), [])
   const refreshApplicants = useCallback(async () => setApplications((await adminRequest('/api/admin/internship-applications')).applications), [])
+  const refreshCertificates = useCallback(async () => setCertificates((await adminRequest('/api/admin/certificates')).certificates), [])
   const refreshActivity = useCallback(async () => {
     const data = await adminRequest('/api/admin/activity')
     setActivity({ staffActivity: data.staffActivity || [], internCheckins: data.internCheckins || [], audit: data.audit || [] })
@@ -88,10 +92,10 @@ export default function MasterAdmin() {
   }, [])
 
   const loadAll = useCallback(async () => {
-    const results = await Promise.allSettled([refreshStaff(), refreshInterns(), refreshAdmins(), refreshApplicants(), refreshActivity(), refreshWorkspace(), loadMasterPortfolio()])
+    const results = await Promise.allSettled([refreshStaff(), refreshInterns(), refreshAdmins(), refreshApplicants(), refreshActivity(), refreshWorkspace(), loadMasterPortfolio(), refreshCertificates()])
     const error = results.find((result) => result.status === 'rejected')
     if (error) setNotice({ text: error.reason?.message || 'Some administrator data could not be loaded.', success: false })
-  }, [refreshStaff, refreshInterns, refreshAdmins, refreshApplicants, refreshActivity, refreshWorkspace, loadMasterPortfolio])
+  }, [refreshStaff, refreshInterns, refreshAdmins, refreshApplicants, refreshActivity, refreshWorkspace, loadMasterPortfolio, refreshCertificates])
 
   useEffect(() => {
     let active = true
@@ -269,6 +273,35 @@ export default function MasterAdmin() {
     }
   }
 
+  const issueCertificate = async (event) => {
+    event.preventDefault()
+    setCertificateBusy(true)
+    setCertificateNotice('')
+    try {
+      const form = event.currentTarget
+      const { certificate } = await adminRequest('/api/admin/certificates', {
+        method: 'POST', body: JSON.stringify(Object.fromEntries(new FormData(form))),
+      })
+      form.reset()
+      setCertificateNotice(`Certificate issued. Credential ID: ${certificate.credentialId}`)
+      await refreshCertificates()
+    } catch (error) {
+      setCertificateNotice(error.message || 'Could not issue the certificate.')
+    } finally {
+      setCertificateBusy(false)
+    }
+  }
+
+  const copyCertificateUrl = async (certificate) => {
+    const url = new URL(certificate.imageUrl, location.origin).href
+    try {
+      await navigator.clipboard.writeText(url)
+      setCertificateNotice(`Certificate image URL copied: ${url}`)
+    } catch {
+      setCertificateNotice(`Copy failed. Certificate image URL: ${url}`)
+    }
+  }
+
   const savePortfolio = async (publish = false) => {
     setPortfolioBusy(true); setPortfolioNotice('')
     const form = document.getElementById('masterPortfolioForm')
@@ -304,7 +337,7 @@ export default function MasterAdmin() {
   return <main className="master-shell">
     <header className="master-head"><div className="master-brand"><ThemeAwareLogo /><div><span className="eyebrow">WEBLOX · ADMINISTRATION</span><h1 className="master-title">Master admin</h1><p>Manage staff, interns, and administrator accounts.</p></div></div>{account && <div className="master-actions"><span className="eyebrow">{account.email}</span><button className="button secondary" type="button" onClick={loadAll}>Refresh</button><button className="button secondary" type="button" onClick={signOut}>Sign out</button></div>}</header>
     {!account ? <section className="master-card"><h2>Administrator sign in</h2><p>Sign in with your backend administrator email and password.</p><form className="master-form" onSubmit={signIn}><label className="wide">Email address<input name="email" type="email" autoComplete="username" required /></label><label className="wide">Password<input name="password" type="password" autoComplete="current-password" required /></label><button className="button wide" type="submit" disabled={loginBusy}>{loginBusy ? 'Signing in…' : 'Sign in'}</button></form><Notice>{loginNotice}</Notice></section> : <div id="masterConsole">
-      <aside className="master-card master-sidebar"><span className="eyebrow">ADMIN PROFILE</span><h2>{account.name || 'Administrator'}</h2><p>{account.email}</p><nav aria-label="Master admin navigation">{[['overview', 'Overview'], ['people', 'People'], ['applicants', 'Applicants'], ['history', 'History'], ['images', 'Image library'], ['settings', 'Settings'], ['portfolio', 'My portfolio']].map(([key, label]) => <a key={key} href={`#${key}`} className={page === key ? 'active' : ''} aria-current={page === key ? 'page' : undefined} onClick={(event) => { event.preventDefault(); showPage(key) }}>{label}</a>)}</nav><section><span className="eyebrow">TODAY’S ATTENDANCE</span><p className="master-attendance-status">{attendance ? `In: ${attendance.clockInAt ? new Date(attendance.clockInAt).toLocaleTimeString() : '—'} · Out: ${attendance.clockOutAt ? new Date(attendance.clockOutAt).toLocaleTimeString() : '—'}` : attendanceNotice || 'Loading attendance…'}</p><div className="master-attendance"><button className="button" type="button" onClick={() => updateAttendance('clock_in')}>Clock in</button><button className="button secondary" type="button" onClick={() => updateAttendance('clock_out')}>Clock out</button></div><Notice>{attendanceNotice}</Notice></section></aside>
+      <aside className="master-card master-sidebar"><span className="eyebrow">ADMIN PROFILE</span><h2>{account.name || 'Administrator'}</h2><p>{account.email}</p><nav aria-label="Master admin navigation">{[['overview', 'Overview'], ['people', 'People'], ['applicants', 'Applicants'], ['history', 'History'], ['certificates', 'Certificates'], ['images', 'Image library'], ['settings', 'Settings'], ['portfolio', 'My portfolio']].map(([key, label]) => <a key={key} href={`#${key}`} className={page === key ? 'active' : ''} aria-current={page === key ? 'page' : undefined} onClick={(event) => { event.preventDefault(); showPage(key) }}>{label}</a>)}</nav><section><span className="eyebrow">TODAY’S ATTENDANCE</span><p className="master-attendance-status">{attendance ? `In: ${attendance.clockInAt ? new Date(attendance.clockInAt).toLocaleTimeString() : '—'} · Out: ${attendance.clockOutAt ? new Date(attendance.clockOutAt).toLocaleTimeString() : '—'}` : attendanceNotice || 'Loading attendance…'}</p><div className="master-attendance"><button className="button" type="button" onClick={() => updateAttendance('clock_in')}>Clock in</button><button className="button secondary" type="button" onClick={() => updateAttendance('clock_out')}>Clock out</button></div><Notice>{attendanceNotice}</Notice></section></aside>
       <div className="master-pages">
         {page === 'overview' && <section className="master-card"><span className="eyebrow">OVERVIEW</span><h2>Master admin overview</h2><p>Review internship applicants, manage people, check sent reports, and build your portfolio.</p><div className="master-summary-grid"><article><b>{staff.filter((person) => person.activated && person.active).length}</b><span>Active staff</span></article><article><b>{interns.filter((person) => person.active).length}</b><span>Active interns</span></article><article><b>{applications.length}</b><span>Applications</span></article><article><b>{admins.length}</b><span>Administrators</span></article></div>{notice.text && <Notice success={notice.success}>{notice.text}</Notice>}</section>}
 
@@ -324,6 +357,22 @@ export default function MasterAdmin() {
           <section className="master-card"><span className="eyebrow">ADMIN CHANGE HISTORY</span><h2>People changes by administrator</h2><div className="master-list">{activity.audit.length ? activity.audit.map((event, index) => <article className="master-row" key={`${event.id || event.createdAt}-${index}`}><div><b>{event.action.toUpperCase()} · {event.personName} ({event.personType})</b><small>{event.personEmail} · {event.role} · {event.jobType || '—'} · {fmt(event.createdAt)} · By {event.performedByName} ({event.performedByEmail || 'no email'}){event.details?.before && event.details?.after ? ` · Change: ${JSON.stringify(event.details.before)} → ${JSON.stringify(event.details.after)}` : ''}</small></div></article>) : <p>No onboarding changes have been recorded yet.</p>}</div></section>
         </>}
 
+        {page === 'certificates' && <>
+          <section className="master-card"><span className="eyebrow">INTERNSHIP CREDENTIALS</span><h2>Issue a certificate</h2><p>Select an onboarded intern and enter the details to create a branded certificate PDF and shareable certificate image.</p>
+            <form className="master-form certificate-issue-form" onSubmit={issueCertificate}>
+              <label className="wide">Intern<select name="internAccountId" required defaultValue="" onChange={(event) => { const selected = interns.find((person) => person.id === event.target.value); const form = event.currentTarget.form; if (selected && form) { form.elements.name.value = selected.name || ''; form.elements.track.value = selected.role || 'Internship' } }}><option value="" disabled>Select an intern</option>{interns.map((person) => <option key={person.id} value={person.id}>{person.name} · {person.email}{person.active ? '' : ' · disabled account'}</option>)}</select></label>
+              <label>Certificate name<input name="name" maxLength="120" placeholder="Intern's name as it should appear" required /></label>
+              <label>Program or track<input name="track" maxLength="120" placeholder="Software Engineering" required /></label>
+              <label>Internship start date<input name="startDate" type="date" /></label>
+              <label>Completion date<input name="completionDate" type="date" /></label>
+              <label>Signatory name<input name="signatoryName" maxLength="120" defaultValue={account.name} /></label>
+              <label>Signatory title<input name="signatoryTitle" maxLength="120" defaultValue="Internship Program Director" /></label>
+              <label className="wide">Certificate statement<textarea name="description" rows="3" maxLength="500" defaultValue="For outstanding dedication, practical contribution, and successful completion of the WEBLOX Internship Program." /></label>
+              <button className="button" type="submit" disabled={certificateBusy || !interns.length}>{certificateBusy ? 'Issuing certificate…' : 'Issue certificate'}</button>
+            </form><Notice success={certificateNotice.startsWith('Certificate issued')}>{certificateNotice}</Notice>
+          </section>
+          <section className="master-card"><span className="eyebrow">CERTIFICATE LIBRARY</span><h2>Issued certificates</h2><div className="master-certificate-grid">{certificates.length ? certificates.map((certificate) => <article className="master-certificate-card" key={certificate.id}><img src={certificate.imageUrl} alt={`Certificate issued to ${certificate.certificateData.name}`} /><div><b>{certificate.certificateData.name}</b><small>{certificate.internEmail} · {certificate.certificateData.track}</small><code>{certificate.credentialId}</code><label>Certificate image URL<input readOnly value={new URL(certificate.imageUrl, location.origin).href} onFocus={(event) => event.currentTarget.select()} /></label><div className="master-certificate-actions"><button className="button secondary" type="button" onClick={() => copyCertificateUrl(certificate)}>Copy image URL</button><a className="button" href={certificate.pdfUrl}>Download PDF</a></div></div></article>) : <p>No certificates have been issued yet.</p>}</div></section>
+        </>}
         {page === 'images' && <section className="master-card master-image-library"><ImageLibrary /></section>}
         {page === 'settings' && <><section className="master-card"><span className="eyebrow">APPEARANCE</span><h2>Color theme</h2><p className="theme-settings-copy">Choose how the dashboard looks. Your preference is saved for your next visit.</p><ThemeSettings theme={theme} onChange={setTheme} /></section><section className="master-card"><span className="eyebrow">ACCOUNT SETTINGS</span><h2>Master admin settings</h2><button className="button secondary" type="button" onClick={() => setPasswordOpen((open) => !open)}>Change password</button>{passwordOpen && <><form className="master-form" onSubmit={updatePassword}><label>Current password<input name="currentPassword" type="password" required /></label><label>New password<input name="newPassword" type="password" minLength="8" required /></label><button className="button" type="submit">Update password</button></form><Notice>{passwordNotice}</Notice></>}</section></>}
 

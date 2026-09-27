@@ -11,6 +11,7 @@ export default function InternPortal() {
   const [checkins, setCheckins] = useState([])
   const [drafts, setDrafts] = useState({ morning: '', evening: '' })
   const [inbox, setInbox] = useState([])
+  const [certificates, setCertificates] = useState([])
   const [portalNotice, setPortalNotice] = useState('')
   const [portalError, setPortalError] = useState('')
   const [busySlot, setBusySlot] = useState('')
@@ -30,6 +31,11 @@ export default function InternPortal() {
     setInbox(messages)
   }, [])
 
+  const loadCertificates = useCallback(async () => {
+    const { certificates: issued } = await staffRequest('/api/intern/me/certificates')
+    setCertificates(issued)
+  }, [])
+
   useEffect(() => {
     let active = true
     authRequest('/session').then(({ account }) => {
@@ -43,8 +49,8 @@ export default function InternPortal() {
   useEffect(() => {
     if (!intern) return
     setPortalError('')
-    Promise.all([loadCheckins(), loadInbox()]).catch((error) => setPortalError(error.message || 'Could not load your workspace.'))
-  }, [intern, loadCheckins, loadInbox])
+    Promise.all([loadCheckins(), loadInbox(), loadCertificates()]).catch((error) => setPortalError(error.message || 'Could not load your workspace.'))
+  }, [intern, loadCheckins, loadInbox, loadCertificates])
 
   const signIn = async (event) => {
     event.preventDefault()
@@ -127,6 +133,7 @@ export default function InternPortal() {
           <section className="intern-card"><span className="eyebrow">YOUR ACTIVITY</span><h2>Previous check-ins</h2>
             {checkins.length === 0 ? <div className="intern-empty">Your submitted check-ins will appear here.</div> : checkins.map((entry) => <article className="intern-row" key={String(entry.date)}><small>{String(entry.date).slice(0, 10)}</small><div>Morning: {entry.morning || 'Not submitted'}</div><div>Evening: {entry.evening || 'Not submitted'}</div></article>)}
           </section>
+          <section className="intern-card"><span className="eyebrow">YOUR CREDENTIALS</span><h2>Certificates of internship</h2><p>Certificates issued by the WEBLOX master administrator are available here to view, share, and download.</p>{certificates.length ? <div className="intern-certificate-list">{certificates.map((certificate) => <article className="intern-certificate-card" key={certificate.id}><img src={certificate.imageUrl} alt={`Certificate of internship for ${certificate.certificateData.name}`} /><div><b>{certificate.certificateData.name}</b><small>{certificate.certificateData.track} · Issued {certificate.certificateData.issuedAt}</small><code>Credential ID: {certificate.credentialId}</code><label>Certificate image URL<input readOnly value={new URL(certificate.imageUrl, location.origin).href} onFocus={(event) => event.currentTarget.select()} /></label><a className="button" href={certificate.pdfUrl}>Download certificate PDF</a></div></article>)}</div> : <div className="intern-empty">No certificate has been issued to your account yet.</div>}</section>
           {portalError && <div className="intern-notice" role="alert">{portalError}</div>}
           {portalNotice && <div className="intern-notice success" role="status">{portalNotice}</div>}
           </>}

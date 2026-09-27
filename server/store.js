@@ -136,6 +136,46 @@ export function createPostgresStore(pool) {
       return rows;
     },
 
+    async issueInternshipCertificate({ id, credentialId, internAccountId, issuedByAccountId, certificateData, pdf, imageSvg }) {
+      const { rows } = await pool.query(
+        `INSERT INTO internship_certificates
+          (id, credential_id, intern_account_id, issued_by_account_id, certificate_data, pdf, image_svg)
+         VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7)
+         RETURNING id, credential_id AS "credentialId", intern_account_id AS "internAccountId",
+           certificate_data AS "certificateData", issued_at AS "issuedAt"`,
+        [id, credentialId, internAccountId, issuedByAccountId, JSON.stringify(certificateData), pdf, imageSvg],
+      );
+      return rows[0];
+    },
+
+    async listInternshipCertificates() {
+      const { rows } = await pool.query(
+        `SELECT c.id, c.credential_id AS "credentialId", c.intern_account_id AS "internAccountId",
+           a.name AS "internName", a.email AS "internEmail", c.certificate_data AS "certificateData",
+           c.issued_at AS "issuedAt"
+         FROM internship_certificates c JOIN accounts a ON a.id = c.intern_account_id
+         ORDER BY c.issued_at DESC`,
+      );
+      return rows;
+    },
+
+    async listMyInternshipCertificates(accountId) {
+      const { rows } = await pool.query(
+        `SELECT id, credential_id AS "credentialId", certificate_data AS "certificateData", issued_at AS "issuedAt"
+         FROM internship_certificates WHERE intern_account_id = $1 ORDER BY issued_at DESC`, [accountId],
+      );
+      return rows;
+    },
+
+    async findInternshipCertificate(id) {
+      const { rows } = await pool.query(
+        `SELECT id, credential_id AS "credentialId", intern_account_id AS "internAccountId",
+           certificate_data AS "certificateData", pdf, image_svg AS "imageSvg"
+         FROM internship_certificates WHERE id = $1`, [id],
+      );
+      return rows[0] ?? null;
+    },
+
     async listReportRecipients() {
       const { rows } = await pool.query(
         `SELECT id, email, name, account_type AS "accountType", role

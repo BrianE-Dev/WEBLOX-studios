@@ -11,6 +11,7 @@ import {
 import { promisify } from "node:util";
 import { createPostgresStore } from "./store.js";
 import { migrate } from "./migrate.js";
+import { createCertificatePdf, createCertificateSvg } from "./certificates.js";
 
 const scrypt = promisify(scryptCallback);
 const { Pool } = pg;
@@ -46,6 +47,17 @@ function sendImage(res, image) {
     "x-content-type-options": "nosniff",
   });
   res.end(image.content);
+}
+
+function sendCertificatePdf(res, certificate) {
+  res.writeHead(200, {
+    "content-type": "application/pdf",
+    "content-length": certificate.pdf.length,
+    "content-disposition": `attachment; filename="${certificate.credentialId}.pdf"`,
+    "cache-control": "private, no-store",
+    "x-content-type-options": "nosniff",
+  });
+  res.end(certificate.pdf);
 }
 
 function readBody(req, maxBytes = 16_384) {
@@ -319,6 +331,73 @@ async function handler(req, res) {
       const removed = await store.deleteDashboardImage(current.account.id, deleteRoute[1]);
       return removed ? send(res, 200, { ok: true }) : send(res, 404, { error: "Image not found in your library." });
     }
+  }
+
+  const certificateRoute = url.pathname.match(/^\/api\/certificates\/([0-9a-f-]{36})\/(image|pdf)$/i);
+  if (certificateRoute && req.method === "GET") {
+    const certificate = await store.findInternshipCertificate(certificateRoute[1]);
+    if (!certificate) return send(res, 404, { error: "Certificate not found." });
+    if (certificateRoute[2] === "image") {
+      res.writeHead(200, { "content-type": "image/svg+xml; charset=utf-8", "cache-control": "public, max-age=3600", "x-content-type-options": "nosniff" });
+      return res.end(certificate.imageSvg);
+    }
+    const current = await currentSession(req);
+    if (!current || (current.account.id !== certificate.internAccountId && !isAdministrator(current.account)))
+      return send(res, 403, { error: "Only this intern and administrators can download the certificate." });
+    return sendCertificatePdf(res, certificate);
+  }
+
+  if (url.pathname === "/api/admin/certificates" && ["GET", "POST"].includes(req.method)) {
+    const current = await currentSession(req);
+    if (!current || current.account.accountType !== "master_admin")
+      return send(res, 403, { error: "Master administrator access is required." });
+    if (req.method === "GET") {
+      const certificates = await store.listInternshipCertificates();
+      return send(res, 200, { certificates: certificates.map((item) => ({
+        ...item,
+        imageUrl: `/api/certificates/${item.id}/image`,
+        pdfUrl: `/api/certificates/${item.id}/pdf`,
+      })) });
+    }
+    const body = await readBody(req);
+    const internId = cleanText(body.internAccountId, 100);
+    const intern = (await store.listPeople("intern")).find((person) => person.id === internId);
+    if (!intern) return send(res, 404, { error: "Select an existing intern account." });
+    const name = cleanText(body.name, 120) || intern.name;
+    const track = cleanText(body.track, 120);
+    const dateValue = (value) => {
+      const text = cleanText(value, 10);
+      if (!text) return "";
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) return null;
+      const parsed = new Date(`${text}T00:00:00.000Z`);
+      return Number.isNaN(parsed.valueOf()) || parsed.toISOString().slice(0, 10) !== text ? null : text;
+    };
+    const startDate = dateValue(body.startDate);
+    const completionDate = dateValue(body.completionDate);
+    if (!name || !track || startDate === null || completionDate === null || (startDate && completionDate && completionDate < startDate))
+      return send(res, 400, { error: "Enter the intern name, program or track, and valid dates." });
+    const id = randomUUID();
+    const credentialId = `WEBLOX-INT-${new Date().getFullYear()}-${randomUUID().slice(0, 8).toUpperCase()}`;
+    const certificateData = {
+      name, track, startDate, completionDate,
+      description: cleanText(body.description, 500) || "For outstanding dedication, practical contribution, and successful completion of the WEBLOX Internship Program.",
+      credentialId,
+      issuedAt: new Date().toISOString().slice(0, 10),
+      signatoryName: cleanText(body.signatoryName, 120) || current.account.name || "WEBLOX Studios",
+      signatoryTitle: cleanText(body.signatoryTitle, 120) || "Internship Program",
+    };
+    const pdf = createCertificatePdf(certificateData);
+    const imageSvg = createCertificateSvg({ certificateData }, allowedOrigin.replace(/\/$/, ""));
+    const saved = await store.issueInternshipCertificate({
+      id, credentialId, internAccountId: intern.id, issuedByAccountId: current.account.id,
+      certificateData, pdf, imageSvg,
+    });
+    return send(res, 201, {
+      certificate: {
+        ...saved, internName: intern.name, internEmail: intern.email,
+        imageUrl: `/api/certificates/${id}/image`, pdfUrl: `/api/certificates/${id}/pdf`,
+      },
+    });
   }
 
   const publicPortfolioRoute = url.pathname.match(/^\/api\/portfolios\/public\/([a-z0-9-]{1,180})$/i);
@@ -675,6 +754,18 @@ async function handler(req, res) {
       return send(res, 400, { error: "Enter a subject and message, and select at least one recipient." });
     const result = await store.sendWorkspaceMessage({ type, subject, body: messageBody, sender: current.account, recipientIds });
     return send(res, 201, result);
+  }
+
+  if (url.pathname === "/api/intern/me/certificates" && req.method === "GET") {
+    const current = await currentSession(req);
+    if (!current || current.account.accountType !== "intern")
+      return send(res, 401, { error: "An intern session is required." });
+    const certificates = await store.listMyInternshipCertificates(current.account.id);
+    return send(res, 200, { certificates: certificates.map((item) => ({
+      ...item,
+      imageUrl: `/api/certificates/${item.id}/image`,
+      pdfUrl: `/api/certificates/${item.id}/pdf`,
+    })) });
   }
 
   if (url.pathname === "/api/intern/me/checkins") {

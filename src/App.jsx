@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
 import HomePage from './components/home/HomePage.jsx'
 import InternPortal from './intern-portal.jsx'
+import InternshipPage from './internship-page.jsx'
 import MasterAdmin from './master-admin.jsx'
 import PortfolioPage from './portfolio.jsx'
 import SignIn from './sign-in.jsx'
@@ -10,6 +11,7 @@ import StaffDashboard from './staff-dashboard.jsx'
 import StaffPortfolioBuilder from './staff-portfolio.jsx'
 import StaffSignIn from './staff-sign-in.jsx'
 import './intern-portal.css'
+import './internship-page.css'
 import './master-admin.css'
 import './portfolio.css'
 import './portfolio-theme.css'
@@ -24,7 +26,7 @@ import './components/image-library.css'
 import './components/theme-aware-logo.css'
 
 const migratedPaths = new Set([
-  '/sign-in', '/sign-in.html', '/staff-sign-in', '/staff-sign-in.html',
+  '/internship', '/sign-in', '/sign-in.html', '/staff-sign-in', '/staff-sign-in.html',
   '/staff-admin', '/staff-admin.html', '/master-admin', '/master-admin.html',
   '/staff-dashboard', '/staff-dashboard.html', '/staff-portfolio', '/staff-portfolio.html',
   '/intern-portal', '/intern-portal.html', '/portfolio', '/portfolio.html',
@@ -71,6 +73,7 @@ function RouteMetadata() {
 
   useEffect(() => {
     const labels = {
+      '/internship': 'WEBLOX Internship Program | WEBLOX Studios',
       '/': 'WEBLOX Studios — Technology venture studio',
       '/index.html': 'WEBLOX Studios — Technology venture studio',
       '/sign-in': 'Sign in | WEBLOX Studios',
@@ -112,6 +115,8 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/index.html" element={<HomePage />} />
+      <Route path="/internship" element={<InternshipPage />} />
+      <Route path="/internship/" element={<InternshipPage />} />
       <Route path="/sign-in" element={<SignIn />} />
       <Route path="/sign-in.html" element={<SignIn />} />
       <Route path="/staff-sign-in" element={<StaffSignIn />} />
@@ -136,8 +141,8 @@ export default function App() {
   const path = window.location.pathname
   const publicLegacyPaths = new Set([
     '/ventures', '/ventures/signarol', '/services', '/studio', '/careers',
-    '/internship', '/internship/apply', '/internship/portal', '/insights', '/contact',
+    '/internship/apply', '/internship/portal', '/insights', '/contact',
   ])
-  if (publicLegacyPaths.has(path) || ['/ventures/', '/services/', '/studio/', '/careers/', '/internship/', '/insights/', '/contact/'].some((prefix) => path.startsWith(prefix))) return <LegacyPublicRoutes />
+  if (publicLegacyPaths.has(path) || ['/ventures/', '/services/', '/studio/', '/careers/', '/insights/', '/contact/'].some((prefix) => path.startsWith(prefix))) return <LegacyPublicRoutes />
   return <BrowserRouter><AppRoutes /></BrowserRouter>
 }
