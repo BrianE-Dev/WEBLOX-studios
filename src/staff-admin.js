@@ -2,6 +2,7 @@ import { authRequest, clearStaffSession, saveStaffSession } from './lib/staffAut
 
 const $ = (id) => document.getElementById(id)
 document.documentElement.dataset.theme = localStorage.getItem('weblox-theme') || 'dark'
+let applicantRefreshTimer
 
 async function adminRequest(path, options = {}) {
   const response = await fetch(path, {
@@ -40,7 +41,11 @@ function setupAdminPages() {
     views.forEach((view) => view.classList.toggle('hidden', view.dataset.adminView !== page))
     links.forEach((link) => link.classList.toggle('active', link.dataset.adminPage === page))
   }
-  links.forEach((link) => link.addEventListener('click', (event) => { event.preventDefault(); show(link.dataset.adminPage) }))
+  links.forEach((link) => link.addEventListener('click', (event) => {
+    event.preventDefault()
+    show(link.dataset.adminPage)
+    if (link.dataset.adminPage === 'applicants') refreshApplicants().catch((error) => { $('applicantList').textContent = error.message })
+  }))
   show('overview')
 }
 
@@ -179,6 +184,8 @@ async function startSession(account) {
   }
   message('loginNotice', '')
   await Promise.all([refreshStaff(), refreshActivity(), refreshInterns(), refreshApplicants()])
+  clearInterval(applicantRefreshTimer)
+  applicantRefreshTimer = setInterval(() => refreshApplicants().catch(() => {}), 30_000)
 }
 
 async function refreshInterns() {
@@ -319,6 +326,7 @@ $('passwordForm').addEventListener('submit', async (event) => {
 })
 
 $('logoutButton').addEventListener('click', async () => {
+  clearInterval(applicantRefreshTimer)
   await authRequest('/logout', { method: 'POST' }).catch(() => {})
   clearStaffSession()
   location.reload()
@@ -326,7 +334,7 @@ $('logoutButton').addEventListener('click', async () => {
 
 try {
   const { account } = await authRequest('/session')
-  if (showAdmin(account)) await Promise.all([refreshStaff(), refreshActivity()])
+  await startSession(account)
 } catch {
   clearStaffSession()
 }

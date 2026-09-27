@@ -22,7 +22,11 @@ function setupMasterPages() {
     views.forEach((view) => view.classList.toggle('hidden', view.dataset.masterView !== page))
     links.forEach((link) => link.classList.toggle('active', link.dataset.masterPage === page))
   }
-  links.forEach((link) => link.addEventListener('click', (event) => { event.preventDefault(); show(link.dataset.masterPage) }))
+  links.forEach((link) => link.addEventListener('click', (event) => {
+    event.preventDefault()
+    show(link.dataset.masterPage)
+    if (link.dataset.masterPage === 'applicants') refreshMasterApplicants().catch((error) => { $('masterApplicantList').textContent = error.message })
+  }))
   show('overview')
 }
 
@@ -467,7 +471,7 @@ async function startSession(account) {
   message('loginNotice', '')
   await Promise.all([refreshAdmins(), refreshPeopleAndActivity(), refreshMasterApplicants(), loadMasterPortfolio()])
   clearInterval(refreshTimer)
-  refreshTimer = setInterval(() => Promise.all([refreshAdmins(), refreshPeopleAndActivity()]).catch(() => {}), 30_000)
+  refreshTimer = setInterval(() => Promise.all([refreshAdmins(), refreshPeopleAndActivity(), refreshMasterApplicants()]).catch(() => {}), 30_000)
 }
 
 $('refreshButton').addEventListener('click', async () => {
@@ -614,6 +618,7 @@ $('masterChangePasswordButton').addEventListener('click', () => $('masterPasswor
 $('masterPasswordForm').addEventListener('submit', async (event) => { event.preventDefault(); const form = event.currentTarget; try { await authRequest('/password', { method: 'POST', body: JSON.stringify({ currentPassword: form.elements.currentPassword.value, newPassword: form.elements.newPassword.value }) }); form.reset(); $('masterPasswordNotice').textContent = 'Password updated.' } catch (error) { $('masterPasswordNotice').textContent = error.message } })
 
 $('logoutButton').addEventListener('click', async () => {
+  clearInterval(refreshTimer)
   await authRequest('/logout', { method: 'POST' }).catch(() => {})
   clearStaffSession()
   location.reload()
