@@ -39,7 +39,8 @@ The frontend is built with Vite and React dependencies. Most current pages are s
 | `src/lib/recovered-app.js` | Current public-site app implementation loaded by the main entry. |
 | `src/portfolio.js` | Public portfolio rendering. |
 | `src/staff-sign-in.js` | Staff sign-in and invitation activation behavior. |
-| `src/staff-dashboard.js` | Staff session, attendance, inbox, and dashboard interactions. |
+| `src/staff-dashboard.jsx` | React staff dashboard, including session, attendance, inbox, and portfolio summary. |
+| `src/staff-dashboard.css` | Staff dashboard and portfolio presentation styles. |
 | `src/staff-portfolio.js` | Portfolio editor, autosave, preview, and publish controls. |
 | `src/staff-admin.js` | Staff admin sign-in, invitation, directory, activity, and message tools. |
 | `src/master-admin.js` | Master admin sign-in and organization administration. |
@@ -284,4 +285,3 @@ The API process runs migrations on startup. For production, use a managed Postgr
 - Add new standalone pages to `build.rollupOptions.input` in `vite.config.js` so they are included in production builds.
 - Keep authentication and role checks on the API; hiding a frontend control is not authorization.
 - Keep the production API rewrite and frontend origin settings aligned when domains change.
-
