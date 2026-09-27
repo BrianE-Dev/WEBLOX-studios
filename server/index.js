@@ -98,6 +98,7 @@ function publicAccount(account) {
     email: account.email,
     name: account.name,
     role: account.role,
+    profilePhotoUrl: account.profilePhotoUrl || "",
     accountType: account.accountType || account.account_type || (account.role === "admin" ? "admin" : "staff"),
   };
 }
@@ -349,8 +350,8 @@ async function handler(req, res) {
 
   if (url.pathname === "/api/admin/certificates" && ["GET", "POST"].includes(req.method)) {
     const current = await currentSession(req);
-    if (!current || current.account.accountType !== "master_admin")
-      return send(res, 403, { error: "Master administrator access is required." });
+    if (!current || !isAdministrator(current.account))
+      return send(res, 403, { error: "Administrator access is required." });
     if (req.method === "GET") {
       const certificates = await store.listInternshipCertificates();
       return send(res, 200, { certificates: certificates.map((item) => ({
@@ -766,6 +767,24 @@ async function handler(req, res) {
       imageUrl: `/api/certificates/${item.id}/image`,
       pdfUrl: `/api/certificates/${item.id}/pdf`,
     })) });
+  }
+
+  if (url.pathname === "/api/intern/me/profile" && req.method === "PUT") {
+    const current = await currentSession(req);
+    if (!current || current.account.accountType !== "intern")
+      return send(res, 401, { error: "An intern session is required." });
+    const body = await readBody(req, 4_096);
+    const profilePhotoUrl = cleanText(body.profilePhotoUrl, 2048);
+    if (profilePhotoUrl && !/^\/api\/media\/[0-9a-f-]{36}$/i.test(profilePhotoUrl))
+      return send(res, 400, { error: "Choose a profile picture from your uploaded files." });
+    if (profilePhotoUrl) {
+      const photoId = profilePhotoUrl.slice("/api/media/".length);
+      const photo = await store.findOwnedDashboardImage(current.account.id, photoId);
+      if (!photo || !photo.contentType.startsWith("image/"))
+        return send(res, 400, { error: "Choose an image you uploaded to your files." });
+    }
+    const account = await store.updateInternProfilePhoto(current.account.id, profilePhotoUrl);
+    return send(res, 200, { account: publicAccount(account) });
   }
 
   if (url.pathname === "/api/intern/me/checkins") {

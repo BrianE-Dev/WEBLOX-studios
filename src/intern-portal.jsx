@@ -3,6 +3,7 @@ import { authRequest, clearStaffSession, staffRequest } from './lib/staffAuth.js
 import ThemeSettings, { useThemePreference } from './components/ThemeSettings.jsx'
 import ImageLibrary from './components/ImageLibrary.jsx'
 import ThemeAwareLogo from './components/ThemeAwareLogo.jsx'
+import { uploadDashboardImage } from './lib/imageLibrary.js'
 
 export default function InternPortal() {
   const [intern, setIntern] = useState(null)
@@ -17,6 +18,7 @@ export default function InternPortal() {
   const [busySlot, setBusySlot] = useState('')
   const [page, setPage] = useState('dashboard')
   const [theme, setTheme] = useThemePreference()
+  const [photoBusy, setPhotoBusy] = useState(false)
 
   const loadCheckins = useCallback(async () => {
     const { checkins: entries } = await staffRequest('/api/intern/me/checkins')
@@ -111,18 +113,71 @@ export default function InternPortal() {
 
   const updateDraft = (slot, value) => setDrafts((current) => ({ ...current, [slot]: value }))
 
+  const updateProfilePhoto = async (event) => {
+    const file = event.currentTarget.files?.[0]
+    event.currentTarget.value = ''
+    if (!file) return
+    setPhotoBusy(true)
+    setPortalError('')
+    setPortalNotice('')
+    try {
+      const image = await uploadDashboardImage(file)
+      const { account } = await staffRequest('/api/intern/me/profile', {
+        method: 'PUT', body: JSON.stringify({ profilePhotoUrl: image.url }),
+      })
+      setIntern(account)
+      setPortalNotice('Profile picture updated.')
+    } catch (error) {
+      setPortalError(error.message || 'Could not update your profile picture.')
+    } finally {
+      setPhotoBusy(false)
+    }
+  }
+
+  const removeProfilePhoto = async () => {
+    setPhotoBusy(true)
+    setPortalError('')
+    setPortalNotice('')
+    try {
+      const { account } = await staffRequest('/api/intern/me/profile', {
+        method: 'PUT', body: JSON.stringify({ profilePhotoUrl: '' }),
+      })
+      setIntern(account)
+      setPortalNotice('Profile picture removed.')
+    } catch (error) {
+      setPortalError(error.message || 'Could not remove your profile picture.')
+    } finally {
+      setPhotoBusy(false)
+    }
+  }
+
   return (
-    <main className="intern-shell">
-      <a className="intern-brand" href="/"><ThemeAwareLogo /> WEBLOX STUDIOS</a>
+    <main className={`intern-shell${intern ? ' has-sidebar' : ''}`}>
       {!intern ? (
-        <section className="intern-card"><span className="eyebrow">WEBLOX INTERNSHIP PROGRAM</span><h1>Intern sign in</h1><p>Use the email and temporary password provided by your administrator.</p>
+        <section className="intern-card intern-login"><a className="intern-brand" href="/"><ThemeAwareLogo /> WEBLOX STUDIOS</a><span className="eyebrow">WEBLOX INTERNSHIP PROGRAM</span><h1>Intern sign in</h1><p>Use the email and temporary password provided by your administrator.</p>
           <form className="intern-form" onSubmit={signIn}><label>Email address<input name="email" type="email" autoComplete="username" required /></label><label>Password<input name="password" type="password" autoComplete="current-password" required /></label><button className="button" type="submit" disabled={loginBusy}>{loginBusy ? 'Signing in…' : 'Sign in'}</button></form>
           {loginNotice && <div className="intern-notice" role="alert">{loginNotice}</div>}
         </section>
       ) : (
         <>
-          <header className="intern-card intern-head"><div><span className="eyebrow">WEBLOX INTERNSHIP PROGRAM</span><h1>Daily check-ins</h1><p>{intern.name} · {intern.role}</p></div><button className="button secondary" type="button" onClick={signOut}>Sign out</button></header>
-          <nav className="intern-nav" aria-label="Intern dashboard navigation"><button className={page === 'dashboard' ? 'active' : ''} type="button" aria-current={page === 'dashboard' ? 'page' : undefined} onClick={() => setPage('dashboard')}>Dashboard</button><button className={page === 'images' ? 'active' : ''} type="button" aria-current={page === 'images' ? 'page' : undefined} onClick={() => setPage('images')}>Image library</button><button className={page === 'settings' ? 'active' : ''} type="button" aria-current={page === 'settings' ? 'page' : undefined} onClick={() => setPage('settings')}>Settings</button></nav>
+          <aside className="intern-sidebar">
+            <a className="intern-brand" href="/"><ThemeAwareLogo /> <span>WEBLOX<small>INTERNSHIP PORTAL</small></span></a>
+            <div className="intern-profile">
+              <div className="intern-avatar">{intern.profilePhotoUrl ? <img src={intern.profilePhotoUrl} alt={`${intern.name}'s profile`} /> : <span>{intern.name?.trim()?.[0]?.toUpperCase() || 'I'}</span>}</div>
+              <b>{intern.name}</b><small>{intern.role}</small>
+              <label className="button secondary intern-photo-button" htmlFor="internPhotoUpload">{photoBusy ? 'Saving…' : intern.profilePhotoUrl ? 'Change photo' : 'Add photo'}</label>
+              <input id="internPhotoUpload" className="intern-file-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif" disabled={photoBusy} onChange={updateProfilePhoto} />
+              {intern.profilePhotoUrl && <button type="button" className="intern-remove-photo" disabled={photoBusy} onClick={removeProfilePhoto}>Remove photo</button>}
+            </div>
+            <nav className="intern-side-nav" aria-label="Intern dashboard navigation">
+              <button className={page === 'dashboard' ? 'active' : ''} type="button" onClick={() => setPage('dashboard')}><span>⌂</span>Dashboard</button>
+              <button className={page === 'images' ? 'active' : ''} type="button" onClick={() => setPage('images')}><span>▤</span>My files</button>
+              <button className={page === 'settings' ? 'active' : ''} type="button" onClick={() => setPage('settings')}><span>⚙</span>Settings</button>
+            </nav>
+            <button className="intern-signout" type="button" onClick={signOut}>Sign out <span>↗</span></button>
+          </aside>
+          <div className="intern-main-content">
+          <header className="intern-card intern-head"><div><span className="eyebrow">WEBLOX INTERNSHIP PROGRAM</span><h1>{page === 'images' ? 'My files' : page === 'settings' ? 'Settings' : 'Daily check-ins'}</h1><p>{intern.name} · {intern.role}</p></div></header>
           {page === 'dashboard' && <>
           <section className="intern-card"><span className="eyebrow">WORKSPACE INBOX</span><h2>Reports and announcements</h2><p>{inbox.filter((item) => !item.readAt).length ? `${inbox.filter((item) => !item.readAt).length} unread message(s)` : 'You’re up to date.'}</p>
             {inbox.length === 0 ? <div className="intern-empty">Reports and announcements will appear here.</div> : inbox.map((item) => <article className="intern-row" key={item.id}><b>{item.subject}</b><small>{item.type === 'announcement' ? 'Announcement' : 'Weekly report'} · {item.senderName} · {new Date(item.createdAt).toLocaleString()}</small><p>{item.body}</p>{!item.readAt && <button className="button secondary" type="button" onClick={() => markRead(item.id)}>Mark as read</button>}</article>)}
@@ -139,6 +194,7 @@ export default function InternPortal() {
           </>}
           {page === 'images' && <ImageLibrary />}
           {page === 'settings' && <section className="intern-card"><span className="eyebrow">PREFERENCES</span><h2>Appearance</h2><p className="theme-settings-copy">Choose how your intern workspace looks. This preference is saved for your next visit.</p><ThemeSettings theme={theme} onChange={setTheme} /></section>}
+          </div>
         </>
       )}
     </main>

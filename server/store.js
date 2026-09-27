@@ -16,7 +16,7 @@ export function createPostgresStore(pool) {
   return {
     async findAccountByEmail(email) {
       const { rows } = await pool.query(
-        `SELECT id, email, name, role, account_type AS "accountType", salt, hash, created_at AS "createdAt"
+        `SELECT id, email, name, role, profile_photo_url AS "profilePhotoUrl", account_type AS "accountType", salt, hash, created_at AS "createdAt"
          FROM accounts WHERE email = $1 AND active = true`,
         [email.toLowerCase()],
       );
@@ -561,11 +561,20 @@ export function createPostgresStore(pool) {
 
     async findSession(tokenHash) {
       const { rows } = await pool.query(
-        `SELECT a.id, a.email, a.name, a.role, a.account_type AS "accountType",
+        `SELECT a.id, a.email, a.name, a.role, a.profile_photo_url AS "profilePhotoUrl", a.account_type AS "accountType",
            s.expires_at AS "expiresAt"
          FROM auth_sessions s JOIN accounts a ON a.id = s.account_id
          WHERE s.token_hash = $1 AND s.expires_at > now() AND a.active = true`,
         [tokenHash],
+      );
+      return rows[0] ?? null;
+    },
+
+    async updateInternProfilePhoto(accountId, profilePhotoUrl) {
+      const { rows } = await pool.query(
+        `UPDATE accounts SET profile_photo_url = $2 WHERE id = $1 AND account_type = 'intern'
+         RETURNING id, email, name, role, profile_photo_url AS "profilePhotoUrl", account_type AS "accountType"`,
+        [accountId, profilePhotoUrl],
       );
       return rows[0] ?? null;
     },
@@ -694,6 +703,14 @@ export function createPostgresStore(pool) {
         `SELECT id, content_type AS "contentType", content
          FROM dashboard_images WHERE id = $1`,
         [id],
+      );
+      return rows[0] ?? null;
+    },
+
+    async findOwnedDashboardImage(accountId, id) {
+      const { rows } = await pool.query(
+        `SELECT id, content_type AS "contentType" FROM dashboard_images
+         WHERE id = $1 AND owner_account_id = $2`, [id, accountId],
       );
       return rows[0] ?? null;
     },
