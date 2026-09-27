@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto'
+
 async function appendAdminAudit(db, event) {
   await db.query(
     `INSERT INTO admin_audit_log
