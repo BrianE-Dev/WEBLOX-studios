@@ -21,6 +21,7 @@ import './staff-portfolio.css'
 import './staff-sign-in.css'
 import './theme-settings.css'
 import './components/image-library.css'
+import './components/theme-aware-logo.css'
 
 const migratedPaths = new Set([
   '/sign-in', '/sign-in.html', '/staff-sign-in', '/staff-sign-in.html',

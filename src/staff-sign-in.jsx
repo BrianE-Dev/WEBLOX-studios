@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { authRequest, clearStaffSession, saveStaffSession } from './lib/staffAuth.js'
+import ThemeAwareLogo from './components/ThemeAwareLogo.jsx'
 
 const params = new URLSearchParams(location.search)
 
@@ -63,7 +64,7 @@ export default function StaffSignIn() {
 
   return (
     <main className="staff-auth">
-      <a href="/" className="staff-auth-brand"><img src="/assets/weblox-logo.png" alt="" /> WEBLOX <span className="eyebrow">STAFF WORKSPACE</span></a>
+      <a href="/" className="staff-auth-brand"><ThemeAwareLogo alt="" /> WEBLOX <span className="eyebrow">STAFF WORKSPACE</span></a>
       <section className="staff-auth-card" aria-labelledby="authTitle">
         <span className="eyebrow">SECURE STAFF ACCESS</span>
         <h1 id="authTitle">{activating ? 'Set up your account.' : 'Welcome back.'}</h1>

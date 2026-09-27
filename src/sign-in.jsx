@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import ThemeAwareLogo from './components/ThemeAwareLogo.jsx'
 
 const defaults = {
   staffEnabled: true,
@@ -38,7 +39,7 @@ export default function SignIn() {
   return (
     <main className="signin-shell">
       <a className="signin-brand" href="/">
-        <img src="/assets/weblox-logo.png" alt="" />
+        <ThemeAwareLogo alt="" />
         <span>WEBLOX <em>WORKSPACE</em></span>
       </a>
       <section className="signin-card">

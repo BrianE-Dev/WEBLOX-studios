@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { authRequest, clearStaffSession, staffRequest } from './lib/staffAuth.js'
 import ThemeSettings, { useThemePreference } from './components/ThemeSettings.jsx'
 import ImageLibrary from './components/ImageLibrary.jsx'
+import ThemeAwareLogo from './components/ThemeAwareLogo.jsx'
 
 export default function StaffDashboard() {
   const [staff, setStaff] = useState(null)
@@ -102,7 +103,7 @@ export default function StaffDashboard() {
   return (
     <main className="staff-dash">
       <header className="dash-head">
-        <a href="/" className="dash-brand"><img src="/assets/weblox-logo.png" alt="" /> WEBLOX <span className="eyebrow">STAFF WORKSPACE</span></a>
+        <a href="/" className="dash-brand"><ThemeAwareLogo alt="" /> WEBLOX <span className="eyebrow">STAFF WORKSPACE</span></a>
         <div className="dash-actions">
           <button className="button secondary dash-secondary" type="button" onClick={signOut}>Sign out</button>
         </div>

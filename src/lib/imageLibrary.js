@@ -1,8 +1,8 @@
 export async function uploadDashboardImage(file) {
-  if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
-    throw new Error('Choose a JPEG, PNG, WebP, or GIF image.')
+  if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'].includes(file.type)) {
+    throw new Error('Choose a JPEG, PNG, WebP, GIF, or PDF file.')
   }
-  if (!file.size || file.size > 5 * 1024 * 1024) throw new Error('Images must be smaller than 5 MB.')
+  if (!file.size || file.size > 5 * 1024 * 1024) throw new Error('Files must be smaller than 5 MB.')
 
   const dataUrl = await new Promise((resolve, reject) => {
     const reader = new FileReader()

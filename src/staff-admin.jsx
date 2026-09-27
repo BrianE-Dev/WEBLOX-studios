@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { authRequest, clearStaffSession, saveStaffSession } from './lib/staffAuth.js'
 import ThemeSettings, { useThemePreference } from './components/ThemeSettings.jsx'
 import ImageLibrary from './components/ImageLibrary.jsx'
+import ThemeAwareLogo from './components/ThemeAwareLogo.jsx'
 
 async function adminRequest(path, options = {}) {
   const response = await fetch(path, { ...options, credentials: 'include', headers: { 'content-type': 'application/json', ...options.headers } })
@@ -244,7 +245,7 @@ export default function StaffAdmin() {
 
   return (
     <main className="admin-shell">
-      <header className="admin-head"><img src="/assets/weblox-logo.png" alt="WEBLOX Studios" style={{ width: 46, height: 46, objectFit: 'contain' }} /><div><span className="eyebrow">WEBLOX · STAFF ACCESS</span><h1 className="admin-title">Staff administrator</h1><p>Invite staff and manage account access.</p></div>{account && <div className="admin-actions"><button className="button secondary" type="button" onClick={signOut}>Sign out</button></div>}</header>
+      <header className="admin-head"><ThemeAwareLogo /><div><span className="eyebrow">WEBLOX · STAFF ACCESS</span><h1 className="admin-title">Staff administrator</h1><p>Invite staff and manage account access.</p></div>{account && <div className="admin-actions"><button className="button secondary" type="button" onClick={signOut}>Sign out</button></div>}</header>
       {!account ? <section className="admin-card"><h2>Administrator sign in</h2><p>Use the administrator account created by the local bootstrap command.</p><form className="admin-form" onSubmit={signIn}><label className="wide">Email address<input name="email" type="email" autoComplete="username" required /></label><label className="wide">Password<input name="password" type="password" autoComplete="current-password" required /></label><button className="button wide" type="submit" disabled={loginBusy}>{loginBusy ? 'Signing in…' : 'Sign in'}</button></form>{loginNotice && <div className="admin-notice" role="alert">{loginNotice}</div>}</section> : <div className="admin-layout">
         <aside className="admin-sidebar"><div className="admin-profile"><span className="eyebrow">SIGNED IN AS</span><strong>{account.name || 'Administrator'}</strong><small>{account.email}</small></div>
           <nav aria-label="Staff admin navigation">{[['overview', 'Overview'], ['people', 'People'], ['applicants', 'Applicants'], ['history', 'History'], ['images', 'Image library'], ['settings', 'Settings']].map(([page, label]) => <a key={page} href={`#${page}`} className={activePage === page ? 'active' : ''} aria-current={activePage === page ? 'page' : undefined} onClick={(event) => { event.preventDefault(); showPage(page) }}>{label}</a>)}</nav>

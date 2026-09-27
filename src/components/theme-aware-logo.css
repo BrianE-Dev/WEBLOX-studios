@@ -1,0 +1,2 @@
+.theme-aware-logo{display:contents}.theme-logo-dark,.theme-logo-light{display:block}.theme-logo-light{display:none}html[data-theme="light"] .theme-logo-dark{display:none}html[data-theme="light"] .theme-logo-light{display:block}
+.master-brand>.theme-aware-logo img{width:50px;height:50px;object-fit:contain}.admin-head>.theme-aware-logo img{width:46px;height:46px;object-fit:contain}

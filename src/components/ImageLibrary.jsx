@@ -52,7 +52,7 @@ export default function ImageLibrary() {
         await uploadDashboardImage(file)
       }
       await loadImages()
-      setNotice(`${files.length} image${files.length === 1 ? '' : 's'} uploaded.`)
+      setNotice(`${files.length} file${files.length === 1 ? '' : 's'} uploaded.`)
     } catch (uploadError) {
       await loadImages().catch(() => {})
       setError(uploadError.message || 'Could not upload these images.')
@@ -89,12 +89,12 @@ export default function ImageLibrary() {
   }
 
   return <section className="image-library-panel">
-    <header className="image-library-head"><div><span className="eyebrow">MEDIA</span><h2>Image library</h2><p>Upload an image, then copy its URL into a portfolio, profile, or other image URL field.</p></div><div className="image-library-usage">{usage.count} / 200 images · {formatSize(usage.byteSize)} / 50 MB</div></header>
-    <div className="image-library-upload"><label className="button" htmlFor="dashboardImageUpload">{busy ? 'Please wait…' : 'Upload images'}</label><input id="dashboardImageUpload" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple disabled={busy} onChange={upload} /><span>JPEG, PNG, WebP, or GIF · up to 5 MB each</span></div>
+    <header className="image-library-head"><div><span className="eyebrow">MEDIA</span><h2>Image and resume library</h2><p>Upload images or resumes, then copy a file URL into your portfolio or share it elsewhere.</p></div><div className="image-library-usage">{usage.count} / 200 files · {formatSize(usage.byteSize)} / 50 MB</div></header>
+    <div className="image-library-upload"><label className="button" htmlFor="dashboardImageUpload">{busy ? 'Please wait…' : 'Upload files'}</label><input id="dashboardImageUpload" type="file" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,.pdf" multiple disabled={busy} onChange={upload} /><span>JPEG, PNG, WebP, GIF, or PDF · up to 5 MB each</span></div>
     {error && <p className="image-library-error" role="alert">{error}</p>}
     {notice && <p className="image-library-notice" role="status">{notice}</p>}
     {loading ? <p className="theme-settings-copy">Loading image library…</p> : images.length ? <div className="image-library-grid">{images.map((image) => <article className="image-library-item" key={image.id}>
-      <img src={image.url} alt={image.originalName} loading="lazy" />
+      {image.contentType === 'application/pdf' ? <div className="image-library-pdf-preview"><b>PDF</b><a href={image.url} target="_blank" rel="noopener noreferrer">Open resume</a></div> : <img src={image.url} alt={image.originalName} loading="lazy" />}
       <div className="image-library-item-info"><strong title={image.originalName}>{image.originalName}</strong><small>{formatSize(image.byteSize)} · {new Date(image.createdAt).toLocaleDateString()}</small><input readOnly aria-label={`URL for ${image.originalName}`} value={absoluteImageUrl(image)} onFocus={(event) => event.currentTarget.select()} /></div>
       <div className="image-library-item-actions"><button className="button secondary" type="button" onClick={() => copyUrl(image)}>Copy URL</button><button className="button secondary image-library-delete" type="button" disabled={busy} onClick={() => deleteImage(image)}>Delete</button></div>
     </article>)}</div> : <div className="image-library-empty">{error ? 'Your image library could not be loaded.' : 'No images yet. Upload an image to generate its reusable URL.'}</div>}

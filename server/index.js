@@ -169,7 +169,7 @@ function cleanPortfolio(body, account) {
   const projects = Array.isArray(body.projects) ? body.projects : [];
   const metrics = Array.isArray(body.metrics) ? body.metrics : [];
   const repositories = Array.isArray(body.repositories) ? body.repositories : [];
-  const testimonials = Array.isArray(body.testimonials) ? body.testimonials : [];
+  const testimonials = Array.isArray(body.testimonials) ? body.testimonials : Array.isArray(body.recommendations) ? body.recommendations : [];
   const social = body.socialLinks && typeof body.socialLinks === "object" ? body.socialLinks : {};
   const email = cleanText(body.contactEmail, 254).toLowerCase();
   const accentColor = /^#[0-9a-f]{6}$/i.test(body.accentColor) ? body.accentColor : "#a259ff";
@@ -237,11 +237,11 @@ function cleanPortfolio(body, account) {
     })).filter((item) => item.name || item.description),
     testimonials: testimonials.slice(0, 20).map((item) => ({
       id: cleanText(item?.id, 80) || randomUUID(),
-      quote: cleanText(item?.quote, 1000),
-      name: cleanText(item?.name, 120),
+      quote: cleanText(typeof item === "string" ? item : item?.quote || item?.recommendation || item?.text, 1000),
+      name: cleanText(item?.name || item?.author, 120),
       title: cleanText(item?.title, 120),
       organization: cleanText(item?.organization, 120),
-    })).filter((item) => item.quote && item.name),
+    })).filter((item) => item.quote),
     layout: body.layout === "cards" ? "cards" : "editorial",
     accentColor,
   };
@@ -289,20 +289,21 @@ async function handler(req, res) {
     if (req.method === "POST") {
       const body = await readBody(req, 7_100_000);
       const contentType = String(body.contentType || "").toLowerCase();
-      if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(contentType))
-        return send(res, 400, { error: "Upload a JPEG, PNG, WebP, or GIF image." });
+      if (!["image/jpeg", "image/png", "image/webp", "image/gif", "application/pdf"].includes(contentType))
+        return send(res, 400, { error: "Upload a JPEG, PNG, WebP, GIF, or PDF file." });
       if (typeof body.data !== "string" || !/^[A-Za-z0-9+/]+={0,2}$/.test(body.data) || body.data.length % 4 !== 0)
-        return send(res, 400, { error: "The selected image could not be read." });
+        return send(res, 400, { error: "The selected file could not be read." });
       const content = Buffer.from(body.data, "base64");
       if (!content.length || content.length > 5 * 1024 * 1024 || content.toString("base64") !== body.data)
-        return send(res, 400, { error: "Images must be smaller than 5 MB." });
+        return send(res, 400, { error: "Files must be smaller than 5 MB." });
       const signatures = {
         "image/jpeg": content.length >= 3 && content[0] === 0xff && content[1] === 0xd8 && content[2] === 0xff,
         "image/png": content.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])),
         "image/webp": content.length >= 12 && content.toString("ascii", 0, 4) === "RIFF" && content.toString("ascii", 8, 12) === "WEBP",
         "image/gif": ["GIF87a", "GIF89a"].includes(content.toString("ascii", 0, 6)),
+        "application/pdf": content.length >= 5 && content.toString("ascii", 0, 5) === "%PDF-",
       };
-      if (!signatures[contentType]) return send(res, 400, { error: "The selected file is not a valid image." });
+      if (!signatures[contentType]) return send(res, 400, { error: "The selected file does not match its file type." });
       const usage = await store.getDashboardImageUsage(current.account.id);
       if (usage.byteSize + content.length > 50 * 1024 * 1024 || usage.count >= 200)
         return send(res, 413, { error: "Your image library is full. Remove an image before uploading more." });

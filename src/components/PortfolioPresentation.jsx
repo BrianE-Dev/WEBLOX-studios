@@ -36,6 +36,7 @@ export default function PortfolioPresentation({ portfolio = {}, preview = false 
   const visibleProjects = category === 'All Projects' ? projects : projects.filter((item) => item.category === category)
   const photo = safeUrl(portfolio.photoUrl)
   const cvUrl = safeUrl(portfolio.cvUrl)
+  const recommendations = portfolio.testimonials || portfolio.recommendations || []
   const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(portfolio.contactEmail || '') ? portfolio.contactEmail : ''
   const socials = [
     ['linkedin', 'LinkedIn'], ['github', 'GitHub'], ['website', 'Website'], ['instagram', 'Instagram'],
@@ -76,7 +77,7 @@ export default function PortfolioPresentation({ portfolio = {}, preview = false 
     <ExperienceTimeline entries={portfolio.experience} />
     {!!portfolio.repositories?.length && <section className="presentation-section"><span className="eyebrow">COMMUNITY & CODE</span><h2>Open Source &amp; Technical Tools</h2><div className="presentation-repositories">{portfolio.repositories.map((repo, index) => <article key={repo.id || `${repo.name}-${index}`}><div className="repository-meta"><code>{repo.name || 'Repository'}</code>{repo.stars && <span>★ {repo.stars}</span>}</div><p>{repo.description}</p>{repo.language && <small>{repo.language}</small>}{safeUrl(repo.url) && <ExternalLink href={repo.url}>View repository ↗</ExternalLink>}</article>)}</div></section>}
     <ExperienceTimeline entries={portfolio.education} title="Education" eyebrow="LEARNING" education />
-    {!!portfolio.testimonials?.length && <section className="presentation-section"><span className="eyebrow">ENDORSEMENTS</span><h2>What Colleagues Say</h2><div className="presentation-testimonials">{portfolio.testimonials.map((item, index) => <article key={item.id || `${item.name}-${index}`}><blockquote>“{item.quote}”</blockquote><div><b>{item.name}</b><small>{[item.title, item.organization].filter(Boolean).join(' @ ')}</small></div></article>)}</div></section>}
+    {!!recommendations.length && <section className="presentation-section"><span className="eyebrow">ENDORSEMENTS</span><h2>What Colleagues Say</h2><div className="presentation-testimonials">{recommendations.map((item, index) => { const quote = typeof item === 'string' ? item : item.quote || item.recommendation || item.text; const name = item.name || item.author; return quote ? <article key={item.id || `${name || 'recommendation'}-${index}`}><blockquote>“{quote}”</blockquote>{(name || item.title || item.organization) && <div>{name && <b>{name}</b>}<small>{[item.title, item.organization].filter(Boolean).join(' @ ')}</small></div>}</article> : null })}</div></section>}
     {(email || cvUrl) && <section className="presentation-contact"><div><span className="eyebrow">LET'S CONNECT</span><h2>Have a project in mind?</h2></div>{email && <a className="button" href={`mailto:${email}`}>Contact me <span aria-hidden="true">→</span></a>}</section>}
     {!preview && <footer className="presentation-footer">Portfolio by {portfolio.name || ''} · Built with WEBLOX Studios</footer>}
   </div>

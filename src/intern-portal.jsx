@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { authRequest, clearStaffSession, staffRequest } from './lib/staffAuth.js'
 import ThemeSettings, { useThemePreference } from './components/ThemeSettings.jsx'
 import ImageLibrary from './components/ImageLibrary.jsx'
+import ThemeAwareLogo from './components/ThemeAwareLogo.jsx'
 
 export default function InternPortal() {
   const [intern, setIntern] = useState(null)
@@ -106,7 +107,7 @@ export default function InternPortal() {
 
   return (
     <main className="intern-shell">
-      <a className="intern-brand" href="/"><img src="/assets/weblox-logo.png" alt="WEBLOX Studios" /> WEBLOX STUDIOS</a>
+      <a className="intern-brand" href="/"><ThemeAwareLogo /> WEBLOX STUDIOS</a>
       {!intern ? (
         <section className="intern-card"><span className="eyebrow">WEBLOX INTERNSHIP PROGRAM</span><h1>Intern sign in</h1><p>Use the email and temporary password provided by your administrator.</p>
           <form className="intern-form" onSubmit={signIn}><label>Email address<input name="email" type="email" autoComplete="username" required /></label><label>Password<input name="password" type="password" autoComplete="current-password" required /></label><button className="button" type="submit" disabled={loginBusy}>{loginBusy ? 'Signing in…' : 'Sign in'}</button></form>

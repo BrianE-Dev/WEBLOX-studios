@@ -178,8 +178,8 @@ The site has one root HTML entry point, `index.html`, which loads `src/main.jsx`
 ### 7.6 Image library and dashboard themes
 
 - Staff, interns, staff administrators, and the master administrator have an account-scoped image library in their dashboard navigation.
-- Upload JPEG, PNG, WebP, or GIF files up to 5 MB each. The library limits each account to 200 images and 50 MB total. Images are stored in PostgreSQL and served through `/api/media/:id`.
-- Copy an image's generated URL into portfolio profile or project image fields, or another image URL field. Deleting a library image also makes its URL unavailable.
+- Upload JPEG, PNG, WebP, GIF, or PDF files up to 5 MB each. The library limits each account to 200 files and 50 MB total. Files are stored in PostgreSQL and served through `/api/media/:id`.
+- Copy an image's or resume PDF's generated URL into a portfolio profile or project field, or reuse it elsewhere. Deleting a library file also makes its URL unavailable.
 - Each dashboard's Settings page offers light and dark theme controls. The selection is stored in browser local storage and shared by dashboard and portfolio presentation styling.
 
 ### 7.7 Administration

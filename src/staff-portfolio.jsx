@@ -39,7 +39,7 @@ function makeDraft(account, saved = {}) {
     education: normalizeItems(saved.education),
     metrics: normalizeItems(saved.metrics),
     repositories: normalizeItems(saved.repositories),
-    testimonials: normalizeItems(saved.testimonials),
+    testimonials: normalizeItems(saved.testimonials || saved.recommendations),
   }
 }
 
