@@ -167,6 +167,9 @@ function cleanPortfolio(body, account) {
   const experience = Array.isArray(body.experience) ? body.experience : [];
   const education = Array.isArray(body.education) ? body.education : [];
   const projects = Array.isArray(body.projects) ? body.projects : [];
+  const metrics = Array.isArray(body.metrics) ? body.metrics : [];
+  const repositories = Array.isArray(body.repositories) ? body.repositories : [];
+  const testimonials = Array.isArray(body.testimonials) ? body.testimonials : [];
   const social = body.socialLinks && typeof body.socialLinks === "object" ? body.socialLinks : {};
   const email = cleanText(body.contactEmail, 254).toLowerCase();
   const accentColor = /^#[0-9a-f]{6}$/i.test(body.accentColor) ? body.accentColor : "#a259ff";
@@ -175,8 +178,16 @@ function cleanPortfolio(body, account) {
     title: cleanText(body.title, 120),
     photoUrl: safeWebUrl(body.photoUrl),
     location: cleanText(body.location, 100),
+    availability: cleanText(body.availability, 120),
+    cvUrl: safeWebUrl(body.cvUrl),
     biography: cleanText(body.biography, 3000),
     skills: cleanStringList(body.skills),
+    metrics: metrics.slice(0, 8).map((item) => ({
+      id: cleanText(item?.id, 80) || randomUUID(),
+      value: cleanText(item?.value, 50),
+      label: cleanText(item?.label, 80),
+      detail: cleanText(item?.detail, 100),
+    })).filter((item) => item.value && item.label),
     experience: experience.slice(0, 30).map((item) => ({
       id: cleanText(item?.id, 80) || randomUUID(),
       title: cleanText(item?.title, 120),
@@ -185,6 +196,7 @@ function cleanPortfolio(body, account) {
       startDate: cleanText(item?.startDate, 30),
       endDate: cleanText(item?.endDate, 30),
       description: cleanText(item?.description, 1500),
+      technologies: cleanStringList(item?.technologies, 15, 50),
     })).filter((item) => item.title || item.organization),
     education: education.slice(0, 30).map((item) => ({
       id: cleanText(item?.id, 80) || randomUUID(),
@@ -213,7 +225,23 @@ function cleanPortfolio(body, account) {
       startDate: cleanText(item?.startDate, 30),
       endDate: cleanText(item?.endDate, 30),
       featured: item?.featured === true,
+      category: cleanText(item?.category, 60),
     })).filter((item) => item.title || item.description),
+    repositories: repositories.slice(0, 30).map((item) => ({
+      id: cleanText(item?.id, 80) || randomUUID(),
+      name: cleanText(item?.name, 120),
+      description: cleanText(item?.description, 600),
+      language: cleanText(item?.language, 50),
+      url: safeWebUrl(item?.url),
+      stars: cleanText(item?.stars, 30),
+    })).filter((item) => item.name || item.description),
+    testimonials: testimonials.slice(0, 20).map((item) => ({
+      id: cleanText(item?.id, 80) || randomUUID(),
+      quote: cleanText(item?.quote, 1000),
+      name: cleanText(item?.name, 120),
+      title: cleanText(item?.title, 120),
+      organization: cleanText(item?.organization, 120),
+    })).filter((item) => item.quote && item.name),
     layout: body.layout === "cards" ? "cards" : "editorial",
     accentColor,
   };

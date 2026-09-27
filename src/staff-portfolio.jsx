@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { authRequest, clearStaffSession, staffRequest } from './lib/staffAuth.js'
 import { absoluteImageUrl, uploadDashboardImage } from './lib/imageLibrary.js'
+import PortfolioPresentation from './components/PortfolioPresentation.jsx'
 
 const defaultPortfolio = (account) => ({
-  name: account?.name || '', title: '', photoUrl: '', location: '', biography: '', skills: [],
-  experience: [], education: [], socialLinks: {}, contactEmail: '', projects: [],
+  name: account?.name || '', title: '', photoUrl: '', location: '', availability: '', cvUrl: '', biography: '', skills: [],
+  metrics: [], experience: [], education: [], socialLinks: {}, contactEmail: '', projects: [], repositories: [], testimonials: [],
   layout: 'editorial', accentColor: '#a259ff',
 })
 
@@ -36,6 +37,9 @@ function makeDraft(account, saved = {}) {
     projects: normalizeItems(saved.projects),
     experience: normalizeItems(saved.experience),
     education: normalizeItems(saved.education),
+    metrics: normalizeItems(saved.metrics),
+    repositories: normalizeItems(saved.repositories),
+    testimonials: normalizeItems(saved.testimonials),
   }
 }
 
@@ -47,12 +51,21 @@ function ExternalLink({ href, children }) {
 function EntryCard({ kind, item, onChange, onMove, onDelete, first, last }) {
   const isProject = kind === 'project'
   const isExperience = kind === 'experience'
-  const fields = isProject
-    ? [['title', 'Project title'], ['dates', 'Project dates'], ['imageUrl', 'Cover image URL', 'url'], ['technologies', 'Technologies and tools'], ['liveUrl', 'Live demo URL', 'url'], ['sourceUrl', 'Source code URL', 'url'], ['description', 'Description', 'textarea', 'wide']]
+  const isMetric = kind === 'metrics'
+  const isRepository = kind === 'repositories'
+  const isTestimonial = kind === 'testimonials'
+  const fields = isMetric
+    ? [['value', 'Metric value'], ['label', 'Label'], ['detail', 'Small detail']]
+    : isRepository
+      ? [['name', 'Repository name'], ['language', 'Language or tool'], ['stars', 'Stars or downloads'], ['url', 'Repository URL', 'url'], ['description', 'Description', 'textarea', 'wide']]
+      : isTestimonial
+        ? [['quote', 'Recommendation', 'textarea', 'wide'], ['name', 'Colleague name'], ['title', 'Job title'], ['organization', 'Organization']]
+        : isProject
+          ? [['title', 'Project title'], ['category', 'Project category'], ['dates', 'Project dates'], ['imageUrl', 'Cover image URL', 'url'], ['technologies', 'Technologies and tools'], ['liveUrl', 'Live demo URL', 'url'], ['sourceUrl', 'Source code URL', 'url'], ['description', 'Description', 'textarea', 'wide']]
     : isExperience
-      ? [['title', 'Position or role'], ['organization', 'Organization'], ['location', 'Location'], ['dates', 'Dates'], ['description', 'Description', 'textarea', 'wide']]
+      ? [['title', 'Position or role'], ['organization', 'Organization'], ['location', 'Location'], ['dates', 'Dates'], ['technologies', 'Technologies used'], ['description', 'Description', 'textarea', 'wide']]
       : [['qualification', 'Qualification'], ['institution', 'Institution'], ['location', 'Location'], ['dates', 'Dates'], ['description', 'Details', 'textarea', 'wide']]
-  const heading = isProject ? item.title || 'New project' : isExperience ? item.title || 'New experience' : item.qualification || 'New education'
+  const heading = isMetric ? item.label || 'New metric' : isRepository ? item.name || 'New repository' : isTestimonial ? item.name || 'New testimonial' : isProject ? item.title || 'New project' : isExperience ? item.title || 'New experience' : item.qualification || 'New education'
 
   return (
     <article className="builder-card">
@@ -72,21 +85,7 @@ function EntryCard({ kind, item, onChange, onMove, onDelete, first, last }) {
 }
 
 function LivePreview({ draft }) {
-  const accent = /^#[0-9a-f]{6}$/i.test(draft.accentColor || '') ? draft.accentColor : '#a259ff'
-  const photo = safeUrl(draft.photoUrl)
-  const initials = (draft.name || '').split(/\s+/).map((part) => part[0]).slice(0, 2).join('').toUpperCase() || 'W'
-  const socials = [['linkedin', 'LinkedIn ↗'], ['github', 'GitHub ↗'], ['website', 'Website ↗'], ['instagram', 'Instagram ↗']]
-
-  return (
-    <div className={`portfolio-live${draft.layout === 'cards' ? ' cards' : ''}`} style={{ '--accent': accent }}>
-      <header className="live-hero">{photo ? <img className="live-avatar" src={photo} alt={`${draft.name || 'Staff'} profile`} /> : <div className="live-avatar">{initials}</div>}<h2>{draft.name || 'Your name'}</h2><p className="live-accent">{draft.title || 'Professional title'}</p>{draft.location && <p>{draft.location}</p>}</header>
-      {draft.biography && <section className="live-section"><h3>About</h3><p>{draft.biography}</p></section>}
-      {!!draft.skills.length && <section className="live-section"><h3>Skills</h3><div className="live-pills">{draft.skills.map((skill, index) => <span key={`${skill}-${index}`}>{skill}</span>)}</div></section>}
-      {[[draft.experience, 'Experience', 'title', 'organization'], [draft.education, 'Education', 'qualification', 'institution']].map(([entries, title, main, secondary]) => entries.length > 0 && <section className="live-section" key={title}><h3>{title}</h3>{entries.map((entry) => <article className="live-project" key={entry.id}><b>{entry[main] || entry[secondary]}</b><p>{[entry[secondary], entry.dates].filter(Boolean).join(' · ')}</p>{entry.description && <p>{entry.description}</p>}</article>)}</section>)}
-      {!!draft.projects.length && <section className="live-section"><h3>Selected projects</h3>{draft.projects.map((project) => <article className="live-project" key={project.id}><b>{project.title || 'Project title'}</b>{safeUrl(project.imageUrl) && <img src={safeUrl(project.imageUrl)} alt={`${project.title || 'Project'} cover`} loading="lazy" />}{project.description && <p>{project.description}</p>}{project.technologies.length > 0 && <p>{project.technologies.join(' · ')}</p>}<div className="live-links"><ExternalLink href={project.liveUrl}>Live demo ↗</ExternalLink><ExternalLink href={project.sourceUrl}>Source ↗</ExternalLink></div></article>)}</section>}
-      <div className="live-section live-links">{socials.map(([key, label]) => <ExternalLink href={draft.socialLinks[key]} key={key}>{label}</ExternalLink>)}{draft.contactEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.contactEmail) && <a href={`mailto:${draft.contactEmail}`}>Contact ↗</a>}</div>
-    </div>
-  )
+  return <PortfolioPresentation portfolio={draft} preview />
 }
 
 export default function StaffPortfolioBuilder() {
@@ -223,8 +222,11 @@ export default function StaffPortfolioBuilder() {
 
   const addItem = (kind) => {
     const item = { id: crypto.randomUUID(), dates: '', startDate: '', endDate: '', description: '', technologies: [] }
-    if (kind === 'projects') Object.assign(item, { title: '', imageUrl: '', liveUrl: '', sourceUrl: '', featured: false })
-    if (kind === 'experience') Object.assign(item, { title: '', organization: '', location: '' })
+    if (kind === 'projects') Object.assign(item, { title: '', category: '', imageUrl: '', liveUrl: '', sourceUrl: '', featured: false })
+    if (kind === 'metrics') Object.assign(item, { value: '', label: '', detail: '' })
+    if (kind === 'repositories') Object.assign(item, { name: '', language: '', stars: '', url: '' })
+    if (kind === 'testimonials') Object.assign(item, { quote: '', name: '', title: '', organization: '' })
+    if (kind === 'experience') Object.assign(item, { title: '', organization: '', location: '', technologies: [] })
     if (kind === 'education') Object.assign(item, { qualification: '', institution: '', location: '' })
     replaceDraft({ ...draftRef.current, [kind]: [...draftRef.current[kind], item] })
   }
@@ -280,11 +282,11 @@ export default function StaffPortfolioBuilder() {
     else document.querySelector('.preview-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
-  const checks = [Boolean(draft.name && draft.title && draft.location), Boolean(draft.biography), draft.skills.length > 0, draft.projects.length > 0, draft.experience.length > 0, draft.education.length > 0, Object.values(draft.socialLinks).some(Boolean) || Boolean(draft.contactEmail), Boolean(draft.photoUrl)]
+  const checks = [Boolean(draft.name && draft.title && draft.location), Boolean(draft.biography), draft.skills.length > 0, draft.projects.length > 0, draft.experience.length > 0, draft.education.length > 0, Object.values(draft.socialLinks).some(Boolean) || Boolean(draft.contactEmail), Boolean(draft.photoUrl), draft.metrics.length > 0, draft.repositories.length > 0, draft.testimonials.length > 0]
   const progress = Math.round((checks.filter(Boolean).length / checks.length) * 100)
   const status = record?.status || 'draft'
   const published = status === 'published' && record?.slug
-  const sections = [['profile', 'Profile'], ['about', 'About'], ['skills', 'Skills'], ['projects', 'Projects'], ['experience', 'Experience'], ['education', 'Education'], ['links', 'Links'], ['design', 'Design']]
+  const sections = [['profile', 'Profile'], ['highlights', 'Highlights'], ['about', 'About'], ['skills', 'Skills'], ['projects', 'Projects'], ['experience', 'Experience'], ['education', 'Education'], ['repositories', 'Open source'], ['testimonials', 'Testimonials'], ['links', 'Links'], ['design', 'Design']]
 
   if (!ready) return <main className="builder"><header className="builder-head"><div><a className="eyebrow" href="/staff-dashboard.html">← STAFF DASHBOARD</a><h1>Portfolio builder</h1></div></header><section className="builder-panel builder-loading" role={noticeError ? 'alert' : 'status'}>{notice || 'Loading your private portfolio…'}</section></main>
 
@@ -294,12 +296,15 @@ export default function StaffPortfolioBuilder() {
       <div className="builder-layout">
         <nav className="builder-nav" aria-label="Portfolio sections">{sections.map(([id, title]) => <a key={id} className={activeSection === id ? 'active' : ''} href={`#${id}`} onClick={() => setActiveSection(id)}>{title}</a>)}</nav>
         <div className="builder-content">
-          <section id="profile" className="builder-panel"><h2>Personal profile</h2><div className="builder-fields"><label>Full name<input maxLength="120" autoComplete="name" required value={draft.name} onChange={(event) => updateField('name', event.target.value)} /></label><label>Professional title<input maxLength="120" placeholder="Product designer" required value={draft.title} onChange={(event) => updateField('title', event.target.value)} /></label><label>Location<input maxLength="100" placeholder="Lagos, Nigeria" value={draft.location} onChange={(event) => updateField('location', event.target.value)} /></label><div className="wide profile-picture-field"><span className="profile-picture-preview">{safeUrl(draft.photoUrl) ? <img src={safeUrl(draft.photoUrl)} alt="Current portfolio profile" /> : <span>{(draft.name || 'W').split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase()}</span>}</span><div><b>Profile picture</b><p className="builder-hint">Upload a new picture, or remove the current one. Uploaded images are also saved in your image library.</p><label className="button secondary profile-picture-upload" htmlFor="profilePhotoUpload">{photoBusy ? 'Uploading?' : draft.photoUrl ? 'Change picture' : 'Upload picture'}</label><input id="profilePhotoUpload" className="profile-picture-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" disabled={photoBusy} onChange={uploadProfilePhoto} />{draft.photoUrl && <button className="button secondary" type="button" disabled={photoBusy} onClick={() => { updateField('photoUrl', ''); notify('Profile picture removed. Save or wait for autosave to update your portfolio.') }}>Remove picture</button>}</div></div><label>Profile photo URL<input type="url" placeholder="https://…" value={draft.photoUrl} onChange={(event) => updateField('photoUrl', event.target.value)} /></label></div></section>
+          <section id="profile" className="builder-panel"><h2>Personal profile</h2><div className="builder-fields"><label>Full name<input maxLength="120" autoComplete="name" required value={draft.name} onChange={(event) => updateField('name', event.target.value)} /></label><label>Professional title<input maxLength="120" placeholder="Product designer" required value={draft.title} onChange={(event) => updateField('title', event.target.value)} /></label><label>Location<input maxLength="100" placeholder="Lagos, Nigeria" value={draft.location} onChange={(event) => updateField('location', event.target.value)} /></label><label>Availability<input maxLength="120" placeholder="Available for contract work" value={draft.availability} onChange={(event) => updateField('availability', event.target.value)} /></label><label>CV or resume URL<input type="url" maxLength="2048" placeholder="Paste a CV or resume URL" value={draft.cvUrl} onChange={(event) => updateField('cvUrl', event.target.value)} /></label><div className="wide profile-picture-field"><span className="profile-picture-preview">{safeUrl(draft.photoUrl) ? <img src={safeUrl(draft.photoUrl)} alt="Current portfolio profile" /> : <span>{(draft.name || 'W').split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase()}</span>}</span><div><b>Profile picture</b><p className="builder-hint">Upload a new picture, or remove the current one. Uploaded images are also saved in your image library.</p><label className="button secondary profile-picture-upload" htmlFor="profilePhotoUpload">{photoBusy ? 'Uploading...' : draft.photoUrl ? 'Change picture' : 'Upload picture'}</label><input id="profilePhotoUpload" className="profile-picture-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" disabled={photoBusy} onChange={uploadProfilePhoto} />{draft.photoUrl && <button className="button secondary" type="button" disabled={photoBusy} onClick={() => { updateField('photoUrl', ''); notify('Profile picture removed. Save or wait for autosave to update your portfolio.') }}>Remove picture</button>}</div></div><label>Profile photo URL<input type="url" placeholder="Paste a profile photo URL" value={draft.photoUrl} onChange={(event) => updateField('photoUrl', event.target.value)} /></label></div></section>
+          <section id="highlights" className="builder-panel"><h2>Career highlights</h2><p className="builder-hint">Add up to eight short metrics for the top of your portfolio.</p>{draft.metrics.map((item, index) => <EntryCard key={item.id} kind="metrics" item={item} first={index === 0} last={index === draft.metrics.length - 1} onChange={(key, value) => updateItem('metrics', item.id, key, value)} onMove={(offset) => moveItem('metrics', item.id, offset)} onDelete={() => removeItem('metrics', item.id)} />)}<button className="builder-add" type="button" onClick={() => addItem('metrics')}>Add highlight</button></section>
           <section id="about" className="builder-panel"><h2>About you</h2><div className="builder-fields"><label className="wide">Professional biography<textarea rows="5" maxLength="3000" placeholder="Introduce yourself and the work you care about…" required value={draft.biography} onChange={(event) => updateField('biography', event.target.value)} /></label><label>Contact email<input type="email" maxLength="254" placeholder="hello@example.com" value={draft.contactEmail} onChange={(event) => updateField('contactEmail', event.target.value)} /></label></div></section>
           <section id="skills" className="builder-panel"><h2>Skills and tools</h2><p className="builder-hint">Separate skills with commas. They appear as compact tags on your portfolio.</p><div className="builder-fields"><label className="wide">Skills<input maxLength="2000" placeholder="JavaScript, Product design, Figma" value={draft.skills.join(', ')} onChange={(event) => updateField('skills', event.target.value)} /></label></div></section>
           <section id="projects" className="builder-panel"><h2>Selected projects</h2><p className="builder-hint">Add, edit, reorder, or remove projects. Only saved draft content appears here; visitors see the last version you published.</p>{draft.projects.map((item, index) => <EntryCard key={item.id} kind="project" item={item} first={index === 0} last={index === draft.projects.length - 1} onChange={(key, value) => updateItem('projects', item.id, key, value)} onMove={(offset) => moveItem('projects', item.id, offset)} onDelete={() => removeItem('projects', item.id)} />)}<button className="builder-add" type="button" onClick={() => addItem('projects')}>＋ Add project</button></section>
           <section id="experience" className="builder-panel"><h2>Work experience</h2>{draft.experience.map((item, index) => <EntryCard key={item.id} kind="experience" item={item} first={index === 0} last={index === draft.experience.length - 1} onChange={(key, value) => updateItem('experience', item.id, key, value)} onMove={(offset) => moveItem('experience', item.id, offset)} onDelete={() => removeItem('experience', item.id)} />)}<button className="builder-add" type="button" onClick={() => addItem('experience')}>＋ Add experience</button></section>
           <section id="education" className="builder-panel"><h2>Education</h2>{draft.education.map((item, index) => <EntryCard key={item.id} kind="education" item={item} first={index === 0} last={index === draft.education.length - 1} onChange={(key, value) => updateItem('education', item.id, key, value)} onMove={(offset) => moveItem('education', item.id, offset)} onDelete={() => removeItem('education', item.id)} />)}<button className="builder-add" type="button" onClick={() => addItem('education')}>＋ Add education</button></section>
+          <section id="repositories" className="builder-panel"><h2>Open-source work</h2><p className="builder-hint">Feature repositories, tools, or community projects.</p>{draft.repositories.map((item, index) => <EntryCard key={item.id} kind="repositories" item={item} first={index === 0} last={index === draft.repositories.length - 1} onChange={(key, value) => updateItem('repositories', item.id, key, value)} onMove={(offset) => moveItem('repositories', item.id, offset)} onDelete={() => removeItem('repositories', item.id)} />)}<button className="builder-add" type="button" onClick={() => addItem('repositories')}>Add repository</button></section>
+          <section id="testimonials" className="builder-panel"><h2>Recommendations</h2><p className="builder-hint">Add a short quote with the colleague's name and role.</p>{draft.testimonials.map((item, index) => <EntryCard key={item.id} kind="testimonials" item={item} first={index === 0} last={index === draft.testimonials.length - 1} onChange={(key, value) => updateItem('testimonials', item.id, key, value)} onMove={(offset) => moveItem('testimonials', item.id, offset)} onDelete={() => removeItem('testimonials', item.id)} />)}<button className="builder-add" type="button" onClick={() => addItem('testimonials')}>Add recommendation</button></section>
           <section id="links" className="builder-panel"><h2>Professional links</h2><div className="builder-fields">{[['linkedin', 'LinkedIn URL', 'https://linkedin.com/in/…'], ['github', 'GitHub URL', 'https://github.com/…'], ['website', 'Website URL', 'https://…'], ['instagram', 'Instagram URL', 'https://instagram.com/…']].map(([key, label, placeholder]) => <label key={key}>{label}<input type="url" placeholder={placeholder} value={draft.socialLinks[key] || ''} onChange={(event) => updateSocial(key, event.target.value)} /></label>)}</div></section>
           <section id="design" className="builder-panel"><h2>Portfolio design</h2><div className="builder-fields"><label>Layout<select value={draft.layout} onChange={(event) => updateField('layout', event.target.value)}><option value="editorial">Editorial</option><option value="cards">Card showcase</option></select></label><label>Accent color<input type="color" value={draft.accentColor || '#a259ff'} onChange={(event) => updateField('accentColor', event.target.value)} /></label></div></section>
           <section className="builder-panel"><span className="eyebrow">PUBLISHING</span><h2>{status === 'published' ? 'Published' : status === 'unpublished' ? 'Unpublished' : 'Draft'}</h2><p className="builder-hint">{record?.updatedAt ? `Last saved ${new Date(record.updatedAt).toLocaleString()}. ${status === 'published' ? 'Draft edits do not change the live version until you publish again.' : status === 'unpublished' ? 'The public page is unavailable until you publish again.' : 'Private until you publish.'}` : 'Private until you publish.'}</p><div className="builder-progress"><span style={{ width: `${progress}%` }} /></div><div className="builder-hint">{progress}% complete · {checks.filter(Boolean).length} of {checks.length} sections filled</div>{published && <div className="builder-invite-result"><input id="publicLink" readOnly aria-label="Public portfolio link" value={`${location.origin}/portfolio.html?slug=${encodeURIComponent(record.slug)}`} /><button className="builder-add" type="button" onClick={copyLink}>Copy link</button></div>}<div className="builder-footer">{published && <button className="button secondary" type="button" onClick={unpublish}>Unpublish</button>}<span className={`builder-status${noticeError ? ' error' : ''}`} role="status" aria-live="polite">{notice}</span>{dirty && <span className="builder-dirty">Unsaved changes</span>}</div></section>
