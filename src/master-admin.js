@@ -19,15 +19,17 @@ function setupMasterPages() {
   const links = [...document.querySelectorAll('[data-master-page]')]
   const views = [...document.querySelectorAll('[data-master-view]')]
   const show = (page) => {
+    if (!views.some((view) => view.dataset.masterView === page)) page = 'overview'
     views.forEach((view) => view.classList.toggle('hidden', view.dataset.masterView !== page))
     links.forEach((link) => link.classList.toggle('active', link.dataset.masterPage === page))
+    if (location.hash !== `#${page}`) history.replaceState(null, '', `#${page}`)
   }
   links.forEach((link) => link.addEventListener('click', (event) => {
     event.preventDefault()
     show(link.dataset.masterPage)
     if (link.dataset.masterPage === 'applicants') refreshMasterApplicants().catch((error) => { $('masterApplicantList').textContent = error.message })
   }))
-  show('overview')
+  show(location.hash.slice(1) || 'overview')
 }
 
 async function refreshMasterApplicants() {

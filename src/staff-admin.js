@@ -38,15 +38,17 @@ function setupAdminPages() {
   const links = [...document.querySelectorAll('[data-admin-page]')]
   const views = [...document.querySelectorAll('[data-admin-view]')]
   const show = (page) => {
+    if (!views.some((view) => view.dataset.adminView === page)) page = 'overview'
     views.forEach((view) => view.classList.toggle('hidden', view.dataset.adminView !== page))
     links.forEach((link) => link.classList.toggle('active', link.dataset.adminPage === page))
+    if (location.hash !== `#${page}`) history.replaceState(null, '', `#${page}`)
   }
   links.forEach((link) => link.addEventListener('click', (event) => {
     event.preventDefault()
     show(link.dataset.adminPage)
     if (link.dataset.adminPage === 'applicants') refreshApplicants().catch((error) => { $('applicantList').textContent = error.message })
   }))
-  show('overview')
+  show(location.hash.slice(1) || 'overview')
 }
 
 async function refreshApplicants() {
