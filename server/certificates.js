@@ -1,3 +1,5 @@
+import { deflateSync, inflateSync } from 'node:zlib'
+
 const clean = (value, max = 200) => String(value || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^\x20-\x7e]/g, '?').slice(0, max)
 const xml = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' })[char])
 const wrapText = (value, width, maxLines = 3) => {
@@ -10,6 +12,53 @@ const wrapText = (value, width, maxLines = 3) => {
   }
   if (line) result.push(line)
   return result.slice(0, maxLines)
+}
+
+function decodePng(buffer) {
+  if (!Buffer.isBuffer(buffer) || buffer.toString('hex', 0, 8) !== '89504e470d0a1a0a') return null
+  let width, height, bitDepth, colorType, interlace
+  const compressed = []
+  for (let offset = 8; offset < buffer.length;) {
+    const length = buffer.readUInt32BE(offset)
+    const type = buffer.toString('ascii', offset + 4, offset + 8)
+    const chunk = buffer.subarray(offset + 8, offset + 8 + length)
+    if (type === 'IHDR') { width = chunk.readUInt32BE(0); height = chunk.readUInt32BE(4); bitDepth = chunk[8]; colorType = chunk[9]; interlace = chunk[12] }
+    if (type === 'IDAT') compressed.push(chunk)
+    if (type === 'IEND') break
+    offset += length + 12
+  }
+  if (!width || !height || bitDepth !== 8 || ![2, 6].includes(colorType) || interlace !== 0) return null
+  const channels = colorType === 6 ? 4 : 3
+  const stride = width * channels
+  const raw = inflateSync(Buffer.concat(compressed))
+  if (raw.length !== (stride + 1) * height) return null
+  const decoded = Buffer.alloc(stride * height)
+  for (let y = 0; y < height; y++) {
+    const filter = raw[y * (stride + 1)]
+    for (let x = 0; x < stride; x++) {
+      const value = raw[y * (stride + 1) + 1 + x]
+      const left = x >= channels ? decoded[y * stride + x - channels] : 0
+      const up = y ? decoded[(y - 1) * stride + x] : 0
+      const upperLeft = y && x >= channels ? decoded[(y - 1) * stride + x - channels] : 0
+      let predictor = 0
+      if (filter === 1) predictor = left
+      else if (filter === 2) predictor = up
+      else if (filter === 3) predictor = Math.floor((left + up) / 2)
+      else if (filter === 4) {
+        const p = left + up - upperLeft
+        const a = Math.abs(p - left), b = Math.abs(p - up), c = Math.abs(p - upperLeft)
+        predictor = a <= b && a <= c ? left : b <= c ? up : upperLeft
+      } else if (filter !== 0) return null
+      decoded[y * stride + x] = (value + predictor) & 255
+    }
+  }
+  const rgb = Buffer.alloc(width * height * 3)
+  const alpha = colorType === 6 ? Buffer.alloc(width * height) : null
+  for (let i = 0; i < width * height; i++) {
+    decoded.copy(rgb, i * 3, i * channels, i * channels + 3)
+    if (alpha) alpha[i] = decoded[i * 4 + 3]
+  }
+  return { width, height, rgb: deflateSync(rgb), alpha: alpha ? deflateSync(alpha) : null }
 }
 
 export function createCertificateSvg(record, publicOrigin, imageAssets = {}) {
@@ -61,4 +110,3 @@ export function createCertificatePdfFromArtwork(png) {
   parts.push(Buffer.from(`${xref}trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`))
   return Buffer.concat(parts)
 }
-import { deflateSync, inflateSync } from 'node:zlib'
