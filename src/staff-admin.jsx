@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { authRequest, clearStaffSession, saveStaffSession } from './lib/staffAuth.js'
 import ThemeSettings, { useThemePreference } from './components/ThemeSettings.jsx'
+import ImageLibrary from './components/ImageLibrary.jsx'
 
 async function adminRequest(path, options = {}) {
   const response = await fetch(path, { ...options, credentials: 'include', headers: { 'content-type': 'application/json', ...options.headers } })
@@ -15,7 +16,7 @@ const display = (value) => Array.isArray(value) ? value.join(', ') : value
 export default function StaffAdmin() {
   const [account, setAccount] = useState(null)
   const [loginReady, setLoginReady] = useState(false)
-  const [activePage, setActivePage] = useState(() => ['overview', 'people', 'applicants', 'history', 'settings'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'overview')
+  const [activePage, setActivePage] = useState(() => ['overview', 'people', 'applicants', 'history', 'images', 'settings'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'overview')
   const [loginNotice, setLoginNotice] = useState('')
   const [loginBusy, setLoginBusy] = useState(false)
   const [attendance, setAttendance] = useState(null)
@@ -92,7 +93,7 @@ export default function StaffAdmin() {
   }, [account, refreshStaff, refreshActivity, refreshInterns, refreshApplications, refreshWorkspace])
 
   const showPage = (page) => {
-    const next = ['overview', 'people', 'applicants', 'history', 'settings'].includes(page) ? page : 'overview'
+    const next = ['overview', 'people', 'applicants', 'history', 'images', 'settings'].includes(page) ? page : 'overview'
     setActivePage(next)
     if (location.hash !== `#${next}`) history.replaceState(null, '', `#${next}`)
     if (next === 'applicants') refreshApplications().catch((error) => setLoginNotice(error.message))
@@ -246,7 +247,7 @@ export default function StaffAdmin() {
       <header className="admin-head"><img src="/assets/weblox-logo.png" alt="WEBLOX Studios" style={{ width: 46, height: 46, objectFit: 'contain' }} /><div><span className="eyebrow">WEBLOX · STAFF ACCESS</span><h1 className="admin-title">Staff administrator</h1><p>Invite staff and manage account access.</p></div>{account && <div className="admin-actions"><button className="button secondary" type="button" onClick={signOut}>Sign out</button></div>}</header>
       {!account ? <section className="admin-card"><h2>Administrator sign in</h2><p>Use the administrator account created by the local bootstrap command.</p><form className="admin-form" onSubmit={signIn}><label className="wide">Email address<input name="email" type="email" autoComplete="username" required /></label><label className="wide">Password<input name="password" type="password" autoComplete="current-password" required /></label><button className="button wide" type="submit" disabled={loginBusy}>{loginBusy ? 'Signing in…' : 'Sign in'}</button></form>{loginNotice && <div className="admin-notice" role="alert">{loginNotice}</div>}</section> : <div className="admin-layout">
         <aside className="admin-sidebar"><div className="admin-profile"><span className="eyebrow">SIGNED IN AS</span><strong>{account.name || 'Administrator'}</strong><small>{account.email}</small></div>
-          <nav aria-label="Staff admin navigation">{[['overview', 'Overview'], ['people', 'People'], ['applicants', 'Applicants'], ['history', 'History'], ['settings', 'Settings']].map(([page, label]) => <a key={page} href={`#${page}`} className={activePage === page ? 'active' : ''} aria-current={activePage === page ? 'page' : undefined} onClick={(event) => { event.preventDefault(); showPage(page) }}>{label}</a>)}</nav>
+          <nav aria-label="Staff admin navigation">{[['overview', 'Overview'], ['people', 'People'], ['applicants', 'Applicants'], ['history', 'History'], ['images', 'Image library'], ['settings', 'Settings']].map(([page, label]) => <a key={page} href={`#${page}`} className={activePage === page ? 'active' : ''} aria-current={activePage === page ? 'page' : undefined} onClick={(event) => { event.preventDefault(); showPage(page) }}>{label}</a>)}</nav>
           <section aria-label="Attendance"><span className="eyebrow">TODAY’S ATTENDANCE</span><p className="admin-notice">{attendance ? `In: ${attendance.clockInAt ? new Date(attendance.clockInAt).toLocaleTimeString() : '—'} · Out: ${attendance.clockOutAt ? new Date(attendance.clockOutAt).toLocaleTimeString() : '—'}` : attendanceError || 'Loading attendance…'}</p><div className="admin-clock"><button className="button" type="button" onClick={() => updateAttendance('clock_in')}>Clock in</button><button className="button secondary" type="button" onClick={() => updateAttendance('clock_out')}>Clock out</button></div>{attendanceNotice && <p className="admin-notice success" role="status">{attendanceNotice}</p>}{attendanceError && <p className="admin-notice" role="alert">{attendanceError}</p>}</section>
         </aside>
         <div className="admin-main">
@@ -267,6 +268,7 @@ export default function StaffAdmin() {
             <section className="admin-card"><span className="eyebrow">INTERN PROGRAM</span><h2>Intern check-ins</h2><div className="admin-list">{activity.internCheckins.length ? activity.internCheckins.map((item, index) => <article className="admin-person" key={`${item.email}-${item.date}-${index}`}><div><b>{item.name}</b><small>{item.email} · {item.date || 'No check-ins'} · Morning: {item.morning || '—'} · Evening: {item.evening || '—'}</small></div></article>) : <p>No onboarded interns or check-ins yet.</p>}</div></section>
           </section>}
 
+          {activePage === 'images' && <section className="admin-page-section"><ImageLibrary /></section>}
           {activePage === 'settings' && <section className="admin-page-section"><section className="admin-card"><span className="eyebrow">APPEARANCE</span><h2>Color theme</h2><p className="theme-settings-copy">Choose how the dashboard looks. Your preference is saved for your next visit.</p><ThemeSettings theme={theme} onChange={setTheme} /></section><section className="admin-card"><span className="eyebrow">ACCOUNT SETTINGS</span><h2>Change administrator password</h2><form className="admin-form" onSubmit={changePassword}><label>Current password<input name="currentPassword" type="password" required /></label><label>New password<input name="newPassword" type="password" minLength="8" required /></label><button className="button" type="submit">Update password</button></form><p className={`admin-notice${passwordNotice.success ? ' success' : ''}`} role="status">{passwordNotice.text}</p></section></section>}
         </div>
       </div>}

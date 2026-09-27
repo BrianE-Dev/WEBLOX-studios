@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import { authRequest, clearStaffSession, staffRequest } from './lib/staffAuth.js'
 import ThemeSettings, { useThemePreference } from './components/ThemeSettings.jsx'
+import ImageLibrary from './components/ImageLibrary.jsx'
 
 export default function StaffDashboard() {
   const [staff, setStaff] = useState(null)
-  const [page, setPage] = useState(() => ['overview', 'inbox', 'settings'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'overview')
+  const [page, setPage] = useState(() => ['overview', 'inbox', 'images', 'settings'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'overview')
   const [theme, setTheme] = useThemePreference()
   const [attendance, setAttendance] = useState(null)
   const [attendanceLoaded, setAttendanceLoaded] = useState(false)
@@ -56,7 +57,7 @@ export default function StaffDashboard() {
       location.assign('/staff-portfolio.html')
       return
     }
-    const selected = ['overview', 'inbox', 'settings'].includes(nextPage) ? nextPage : 'overview'
+    const selected = ['overview', 'inbox', 'images', 'settings'].includes(nextPage) ? nextPage : 'overview'
     setPage(selected)
     if (location.hash !== `#${selected}`) history.replaceState(null, '', `#${selected}`)
     if (selected === 'inbox') loadInbox()
@@ -117,6 +118,7 @@ export default function StaffDashboard() {
           <button className={page === 'overview' ? 'active' : ''} aria-current={page === 'overview' ? 'page' : undefined} type="button" onClick={() => showPage('overview')}>Overview</button>
           <button className={page === 'inbox' ? 'active' : ''} aria-current={page === 'inbox' ? 'page' : undefined} type="button" onClick={() => showPage('inbox')}>Inbox <span className={`inbox-unread${unreadCount ? '' : ' hidden'}`} aria-label={`${unreadCount} unread messages`}>{unreadCount > 99 ? '99+' : unreadCount}</span></button>
           <button type="button" onClick={() => showPage('portfolio')}>Portfolio builder</button>
+          <button className={page === 'images' ? 'active' : ''} aria-current={page === 'images' ? 'page' : undefined} type="button" onClick={() => showPage('images')}>Image library</button>
           <button className={page === 'settings' ? 'active' : ''} aria-current={page === 'settings' ? 'page' : undefined} type="button" onClick={() => showPage('settings')}>Settings</button>
         </nav>
         <section className="dash-attendance" aria-label="Attendance">
@@ -156,6 +158,7 @@ export default function StaffDashboard() {
       )}
 
       {page === 'settings' && <section id="settings" className="dash-panel" aria-label="Settings"><span className="eyebrow">PREFERENCES</span><h2>Appearance</h2><p className="theme-settings-copy">Choose how your staff workspace looks. This preference is saved for your next visit.</p><ThemeSettings theme={theme} onChange={setTheme} /></section>}
+      {page === 'images' && <div id="images"><ImageLibrary /></div>}
     </main>
   )
 }

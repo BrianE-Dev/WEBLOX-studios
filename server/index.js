@@ -38,6 +38,16 @@ function send(res, status, data, headers = {}) {
   res.end(JSON.stringify(data));
 }
 
+function sendImage(res, image) {
+  res.writeHead(200, {
+    "content-type": image.contentType,
+    "content-length": image.content.length,
+    "cache-control": "public, max-age=31536000, immutable",
+    "x-content-type-options": "nosniff",
+  });
+  res.end(image.content);
+}
+
 function readBody(req, maxBytes = 16_384) {
   return new Promise((resolve, reject) => {
     let raw = "";
@@ -218,7 +228,7 @@ async function handler(req, res) {
   res.setHeader("vary", "Origin");
   if (req.method === "OPTIONS") {
     res.writeHead(204, {
-      "access-control-allow-methods": "GET,POST,OPTIONS",
+      "access-control-allow-methods": "GET,POST,DELETE,OPTIONS",
       "access-control-allow-headers": "content-type",
     });
     return res.end();
@@ -227,6 +237,60 @@ async function handler(req, res) {
   const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
   if (req.method === "GET" && url.pathname === "/api/health")
     return send(res, 200, { status: "ok", database: "connected" });
+
+  const publicImageRoute = url.pathname.match(/^\/api\/media\/([0-9a-f-]{36})$/i);
+  if (req.method === "GET" && publicImageRoute) {
+    const image = await store.findDashboardImage(publicImageRoute[1]);
+    if (!image) return send(res, 404, { error: "Image not found." });
+    return sendImage(res, image);
+  }
+
+  if ((url.pathname === "/api/media/library" && ["GET", "POST"].includes(req.method)) || (url.pathname.startsWith("/api/media/library/") && req.method === "DELETE")) {
+    const current = await currentSession(req);
+    if (!current || !["staff", "intern", "admin", "master_admin"].includes(current.account.accountType))
+      return send(res, 401, { error: "Sign in to manage your image library." });
+
+    if (req.method === "GET") {
+      const [images, usage] = await Promise.all([
+        store.listDashboardImages(current.account.id),
+        store.getDashboardImageUsage(current.account.id),
+      ]);
+      return send(res, 200, { images: images.map((image) => ({ ...image, url: `/api/media/${image.id}` })), usage });
+    }
+
+    if (req.method === "POST") {
+      const body = await readBody(req, 7_100_000);
+      const contentType = String(body.contentType || "").toLowerCase();
+      if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(contentType))
+        return send(res, 400, { error: "Upload a JPEG, PNG, WebP, or GIF image." });
+      if (typeof body.data !== "string" || !/^[A-Za-z0-9+/]+={0,2}$/.test(body.data) || body.data.length % 4 !== 0)
+        return send(res, 400, { error: "The selected image could not be read." });
+      const content = Buffer.from(body.data, "base64");
+      if (!content.length || content.length > 5 * 1024 * 1024 || content.toString("base64") !== body.data)
+        return send(res, 400, { error: "Images must be smaller than 5 MB." });
+      const signatures = {
+        "image/jpeg": content.length >= 3 && content[0] === 0xff && content[1] === 0xd8 && content[2] === 0xff,
+        "image/png": content.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])),
+        "image/webp": content.length >= 12 && content.toString("ascii", 0, 4) === "RIFF" && content.toString("ascii", 8, 12) === "WEBP",
+        "image/gif": ["GIF87a", "GIF89a"].includes(content.toString("ascii", 0, 6)),
+      };
+      if (!signatures[contentType]) return send(res, 400, { error: "The selected file is not a valid image." });
+      const usage = await store.getDashboardImageUsage(current.account.id);
+      if (usage.byteSize + content.length > 50 * 1024 * 1024 || usage.count >= 200)
+        return send(res, 413, { error: "Your image library is full. Remove an image before uploading more." });
+      const originalName = cleanText(body.name, 180).replace(/[\\/\u0000-\u001f]/g, "_") || "image";
+      const image = await store.saveDashboardImage({
+        id: randomUUID(), accountId: current.account.id, originalName, contentType, content,
+      });
+      return send(res, 201, { image: { ...image, url: `/api/media/${image.id}` } });
+    }
+
+    const deleteRoute = url.pathname.match(/^\/api\/media\/library\/([0-9a-f-]{36})$/i);
+    if (deleteRoute) {
+      const removed = await store.deleteDashboardImage(current.account.id, deleteRoute[1]);
+      return removed ? send(res, 200, { ok: true }) : send(res, 404, { error: "Image not found in your library." });
+    }
+  }
 
   const publicPortfolioRoute = url.pathname.match(/^\/api\/portfolios\/public\/([a-z0-9-]{1,180})$/i);
   if (req.method === "GET" && publicPortfolioRoute) {
@@ -836,8 +900,9 @@ async function handler(req, res) {
 const server = createServer((req, res) => {
   handler(req, res).catch((error) => {
     console.error(error);
-    const clientError = error.message === "Request body is too large" || error.message === "Invalid JSON body";
-    send(res, clientError ? 400 : 500, { error: clientError ? error.message : "Request failed." });
+    const bodyTooLarge = error.message === "Request body is too large";
+    const clientError = bodyTooLarge || error.message === "Invalid JSON body";
+    send(res, bodyTooLarge ? 413 : clientError ? 400 : 500, { error: clientError ? error.message : "Request failed." });
   });
 });
 

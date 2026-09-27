@@ -618,5 +618,52 @@ export function createPostgresStore(pool) {
       );
       return rows[0] ?? null;
     },
+
+    async listDashboardImages(accountId) {
+      const { rows } = await pool.query(
+        `SELECT id, original_name AS "originalName", content_type AS "contentType",
+           byte_size AS "byteSize", created_at AS "createdAt"
+         FROM dashboard_images WHERE owner_account_id = $1 ORDER BY created_at DESC`,
+        [accountId],
+      );
+      return rows;
+    },
+
+    async getDashboardImageUsage(accountId) {
+      const { rows } = await pool.query(
+        `SELECT COALESCE(SUM(byte_size), 0)::integer AS "byteSize", COUNT(*)::integer AS count
+         FROM dashboard_images WHERE owner_account_id = $1`,
+        [accountId],
+      );
+      return rows[0];
+    },
+
+    async saveDashboardImage({ id, accountId, originalName, contentType, content }) {
+      const { rows } = await pool.query(
+        `INSERT INTO dashboard_images (id, owner_account_id, original_name, content_type, content, byte_size)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING id, original_name AS "originalName", content_type AS "contentType",
+           byte_size AS "byteSize", created_at AS "createdAt"`,
+        [id, accountId, originalName, contentType, content, content.byteLength],
+      );
+      return rows[0];
+    },
+
+    async findDashboardImage(id) {
+      const { rows } = await pool.query(
+        `SELECT id, content_type AS "contentType", content
+         FROM dashboard_images WHERE id = $1`,
+        [id],
+      );
+      return rows[0] ?? null;
+    },
+
+    async deleteDashboardImage(accountId, id) {
+      const { rowCount } = await pool.query(
+        `DELETE FROM dashboard_images WHERE id = $1 AND owner_account_id = $2`,
+        [id, accountId],
+      );
+      return rowCount > 0;
+    },
   };
 }

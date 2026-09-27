@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { authRequest, clearStaffSession, staffRequest } from './lib/staffAuth.js'
+import { absoluteImageUrl, uploadDashboardImage } from './lib/imageLibrary.js'
 
 const defaultPortfolio = (account) => ({
   name: account?.name || '', title: '', photoUrl: '', location: '', biography: '', skills: [],
@@ -96,6 +97,7 @@ export default function StaffPortfolioBuilder() {
   const [dirty, setDirty] = useState(false)
   const [notice, setNotice] = useState('')
   const [noticeError, setNoticeError] = useState(false)
+  const [photoBusy, setPhotoBusy] = useState(false)
   const [activeSection, setActiveSection] = useState('profile')
   const draftRef = useRef(draft)
   const recordRef = useRef(record)
@@ -188,6 +190,22 @@ export default function StaffPortfolioBuilder() {
     replaceDraft({ ...draftRef.current, [key]: nextValue })
   }
 
+  const uploadProfilePhoto = async (event) => {
+    const file = event.currentTarget.files?.[0]
+    event.currentTarget.value = ''
+    if (!file) return
+    setPhotoBusy(true)
+    try {
+      const image = await uploadDashboardImage(file)
+      updateField('photoUrl', absoluteImageUrl(image))
+      notify('Profile picture uploaded. It will be saved with your portfolio.')
+    } catch (error) {
+      notify(error.message || 'Could not upload the profile picture.', true)
+    } finally {
+      setPhotoBusy(false)
+    }
+  }
+
   const updateSocial = (key, value) => replaceDraft({ ...draftRef.current, socialLinks: { ...draftRef.current.socialLinks, [key]: value } })
 
   const updateItem = (kind, id, key, value) => {
@@ -276,7 +294,7 @@ export default function StaffPortfolioBuilder() {
       <div className="builder-layout">
         <nav className="builder-nav" aria-label="Portfolio sections">{sections.map(([id, title]) => <a key={id} className={activeSection === id ? 'active' : ''} href={`#${id}`} onClick={() => setActiveSection(id)}>{title}</a>)}</nav>
         <div className="builder-content">
-          <section id="profile" className="builder-panel"><h2>Personal profile</h2><div className="builder-fields"><label>Full name<input maxLength="120" autoComplete="name" required value={draft.name} onChange={(event) => updateField('name', event.target.value)} /></label><label>Professional title<input maxLength="120" placeholder="Product designer" required value={draft.title} onChange={(event) => updateField('title', event.target.value)} /></label><label>Location<input maxLength="100" placeholder="Lagos, Nigeria" value={draft.location} onChange={(event) => updateField('location', event.target.value)} /></label><label>Profile photo URL<input type="url" placeholder="https://…" value={draft.photoUrl} onChange={(event) => updateField('photoUrl', event.target.value)} /></label></div></section>
+          <section id="profile" className="builder-panel"><h2>Personal profile</h2><div className="builder-fields"><label>Full name<input maxLength="120" autoComplete="name" required value={draft.name} onChange={(event) => updateField('name', event.target.value)} /></label><label>Professional title<input maxLength="120" placeholder="Product designer" required value={draft.title} onChange={(event) => updateField('title', event.target.value)} /></label><label>Location<input maxLength="100" placeholder="Lagos, Nigeria" value={draft.location} onChange={(event) => updateField('location', event.target.value)} /></label><div className="wide profile-picture-field"><span className="profile-picture-preview">{safeUrl(draft.photoUrl) ? <img src={safeUrl(draft.photoUrl)} alt="Current portfolio profile" /> : <span>{(draft.name || 'W').split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase()}</span>}</span><div><b>Profile picture</b><p className="builder-hint">Upload a new picture, or remove the current one. Uploaded images are also saved in your image library.</p><label className="button secondary profile-picture-upload" htmlFor="profilePhotoUpload">{photoBusy ? 'Uploading?' : draft.photoUrl ? 'Change picture' : 'Upload picture'}</label><input id="profilePhotoUpload" className="profile-picture-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" disabled={photoBusy} onChange={uploadProfilePhoto} />{draft.photoUrl && <button className="button secondary" type="button" disabled={photoBusy} onClick={() => { updateField('photoUrl', ''); notify('Profile picture removed. Save or wait for autosave to update your portfolio.') }}>Remove picture</button>}</div></div><label>Profile photo URL<input type="url" placeholder="https://…" value={draft.photoUrl} onChange={(event) => updateField('photoUrl', event.target.value)} /></label></div></section>
           <section id="about" className="builder-panel"><h2>About you</h2><div className="builder-fields"><label className="wide">Professional biography<textarea rows="5" maxLength="3000" placeholder="Introduce yourself and the work you care about…" required value={draft.biography} onChange={(event) => updateField('biography', event.target.value)} /></label><label>Contact email<input type="email" maxLength="254" placeholder="hello@example.com" value={draft.contactEmail} onChange={(event) => updateField('contactEmail', event.target.value)} /></label></div></section>
           <section id="skills" className="builder-panel"><h2>Skills and tools</h2><p className="builder-hint">Separate skills with commas. They appear as compact tags on your portfolio.</p><div className="builder-fields"><label className="wide">Skills<input maxLength="2000" placeholder="JavaScript, Product design, Figma" value={draft.skills.join(', ')} onChange={(event) => updateField('skills', event.target.value)} /></label></div></section>
           <section id="projects" className="builder-panel"><h2>Selected projects</h2><p className="builder-hint">Add, edit, reorder, or remove projects. Only saved draft content appears here; visitors see the last version you published.</p>{draft.projects.map((item, index) => <EntryCard key={item.id} kind="project" item={item} first={index === 0} last={index === draft.projects.length - 1} onChange={(key, value) => updateItem('projects', item.id, key, value)} onMove={(offset) => moveItem('projects', item.id, offset)} onDelete={() => removeItem('projects', item.id)} />)}<button className="builder-add" type="button" onClick={() => addItem('projects')}>＋ Add project</button></section>
