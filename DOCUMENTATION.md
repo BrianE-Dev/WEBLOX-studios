@@ -42,7 +42,8 @@ The frontend is built with Vite and React dependencies. Most current pages are s
 | `src/staff-sign-in.css` | Staff sign-in styles. |
 | `src/staff-dashboard.jsx` | React staff dashboard, including session, attendance, inbox, and portfolio summary. |
 | `src/staff-dashboard.css` | Staff dashboard and portfolio presentation styles. |
-| `src/staff-portfolio.js` | Portfolio editor, autosave, preview, and publish controls. |
+| `src/staff-portfolio.jsx` | React portfolio editor, autosave, preview, and publish controls. |
+| `src/staff-portfolio.css` | Portfolio builder styles. |
 | `src/staff-admin.js` | Staff admin sign-in, invitation, directory, activity, and message tools. |
 | `src/master-admin.js` | Master admin sign-in and organization administration. |
 | `src/intern-portal.jsx` | React intern sign-in, check-ins, history, and inbox. |
