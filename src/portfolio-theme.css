@@ -1,0 +1,9 @@
+html[data-theme="light"] .portfolio-public .portfolio-hero{border-color:#c9c1d1}
+html[data-theme="light"] .portfolio-public .eyebrow,html[data-theme="light"] .portfolio-title,html[data-theme="light"] .project-meta{color:#6730cb}
+html[data-theme="light"] .portfolio-social a,html[data-theme="light"] .public-projects a{color:#5225a0}
+html[data-theme="light"] .portfolio-initials{background:#f1eaff;color:#5225a0}
+html[data-theme="light"] .skill-pills span{background:#f1eaff;border-color:#c9b3ef;color:#5225a0}
+html[data-theme="light"] .portfolio-contact{border-color:#c9b3ef;background:linear-gradient(135deg,#f4efff,#fff)}
+html[data-theme="light"] .public-foot{border-color:#c9c1d1}
+html[data-theme="light"] .portfolio-public.cards .portfolio-hero{border-color:#c9c1d1;background:radial-gradient(circle at 0 0,#7b3ff214,transparent 58%),#fff}
+html[data-theme="light"] .portfolio-public.cards .public-projects article{border-color:#c9c1d1;background:linear-gradient(155deg,#fff,#f6f3f9 60%);box-shadow:inset 0 1px #7b3ff218}
