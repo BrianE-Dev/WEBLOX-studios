@@ -6,6 +6,58 @@
       "destination": "https://weblox-api.onrender.com/api/:path*"
     },
     {
+      "source": "/ventures",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ventures/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/services",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/services/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/studio",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/studio/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/insights",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/insights/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/careers",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/careers/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/contact",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/contact/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/sign-in",
+      "destination": "/sign-in.html"
+    },
+    {
       "source": "/internship/:path*",
       "destination": "/index.html"
     }
