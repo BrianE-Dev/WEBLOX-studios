@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import ThemeAwareLogo from './components/ThemeAwareLogo.jsx'
+import { authRequest } from './lib/staffAuth.js'
 
 const defaults = {
   staffEnabled: true,
@@ -19,6 +20,7 @@ export default function SignIn() {
   const [settings] = useState(readSettings)
   const [audience, setAudience] = useState('')
   const [notice, setNotice] = useState('')
+  const [loginBusy, setLoginBusy] = useState(false)
 
   useEffect(() => { document.documentElement.dataset.theme = localStorage.getItem('weblox-theme') || 'dark' }, [])
 
@@ -31,9 +33,26 @@ export default function SignIn() {
     setNotice('')
   }
 
-  const submit = (event) => {
+  const submit = async (event) => {
     event.preventDefault()
-    setNotice('Authentication service is not connected yet. Your password was not sent or saved. Connect a secure identity provider to enable sign in.')
+    const form = event.currentTarget
+    setNotice('')
+    setLoginBusy(true)
+    try {
+      const { account } = await authRequest('/login', {
+        method: 'POST',
+        body: JSON.stringify({ email: form.elements.email.value.trim().toLowerCase(), password: form.elements.password.value }),
+      })
+      if (account?.accountType !== 'intern') {
+        await authRequest('/logout', { method: 'POST' }).catch(() => {})
+        throw new Error('This account is not an intern account.')
+      }
+      location.assign('/intern-portal.html')
+    } catch (error) {
+      setNotice(error.message || 'Could not sign in.')
+    } finally {
+      setLoginBusy(false)
+    }
   }
 
   return (
@@ -57,7 +76,7 @@ export default function SignIn() {
         {audience === 'intern' && <form className="signin-form" onSubmit={submit}>
           <label>Registered email<input required type="email" name="email" autoComplete="username" placeholder="you@example.com" /></label>
           <label>Password<input required type="password" name="password" autoComplete="current-password" placeholder="Enter your password" /></label>
-          <button className="signin-submit" type="submit">Continue to workspace →</button>
+          <button className="signin-submit" type="submit" disabled={loginBusy}>{loginBusy ? 'Signing in…' : 'Continue to workspace →'}</button>
         </form>}
         {notice && <div className="signin-error" role="status">{notice}</div>}
         <div className="signin-note">Your password is private. The super admin can manage the sign-in page and registered staff details, but cannot view or change an individual password.</div>
@@ -66,3 +85,4 @@ export default function SignIn() {
     </main>
   )
 }
+
