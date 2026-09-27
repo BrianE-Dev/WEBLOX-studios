@@ -56,6 +56,7 @@ export default function MasterAdmin() {
   const [certificates, setCertificates] = useState([])
   const [certificateNotice, setCertificateNotice] = useState('')
   const [certificateBusy, setCertificateBusy] = useState(false)
+  const [certificateSignatures, setCertificateSignatures] = useState({ signature1Url: '', signature2Url: '' })
 
   useEffect(() => { document.documentElement.dataset.theme = localStorage.getItem('weblox-theme') || 'dark' }, [])
 
@@ -283,10 +284,30 @@ export default function MasterAdmin() {
         method: 'POST', body: JSON.stringify(Object.fromEntries(new FormData(form))),
       })
       form.reset()
+      setCertificateSignatures({ signature1Url: '', signature2Url: '' })
       setCertificateNotice(`Certificate issued. Credential ID: ${certificate.credentialId}`)
       await refreshCertificates()
     } catch (error) {
       setCertificateNotice(error.message || 'Could not issue the certificate.')
+    } finally {
+      setCertificateBusy(false)
+    }
+  }
+
+  const uploadCertificateSignature = async (event, field) => {
+    const file = event.currentTarget.files?.[0]
+    event.currentTarget.value = ''
+    if (!file) return
+    setCertificateBusy(true)
+    setCertificateNotice('')
+    try {
+      const image = await uploadDashboardImage(file)
+      const form = document.querySelector('.certificate-issue-form')
+      form.elements[field].value = image.url
+      setCertificateSignatures((current) => ({ ...current, [field]: image.url }))
+      setCertificateNotice('PNG signature uploaded and attached to the certificate form.')
+    } catch (error) {
+      setCertificateNotice(error.message || 'Could not upload this signature.')
     } finally {
       setCertificateBusy(false)
     }
@@ -365,8 +386,8 @@ export default function MasterAdmin() {
               <label>Program or track<input name="track" maxLength="120" placeholder="Software Engineering" required /></label>
               <label>Internship start date<input name="startDate" type="date" /></label>
               <label>Completion date<input name="completionDate" type="date" /></label>
-              <label>Signatory name<input name="signatoryName" maxLength="120" defaultValue="Chukwuemeka Nkama" /></label>
-              <label>Signatory title<input name="signatoryTitle" maxLength="120" defaultValue="Founder & Team Lead" /></label>
+              <fieldset className="wide certificate-signatory"><legend>First signatory</legend><label>Name<input name="signatory1Name" maxLength="120" defaultValue="Chukwuemeka Nkama" /></label><label>Title<input name="signatory1Title" maxLength="120" defaultValue="Founder & Team Lead" /></label><label className="wide">PNG signature<input type="file" accept="image/png" disabled={certificateBusy} onChange={(event) => uploadCertificateSignature(event, 'signature1Url')} /></label><input type="hidden" name="signature1Url" />{certificateSignatures.signature1Url && <img className="certificate-signature-preview" src={new URL(certificateSignatures.signature1Url, location.origin).href} alt="First signatory signature preview" />}</fieldset>
+              <fieldset className="wide certificate-signatory"><legend>Second signatory</legend><label>Name<input name="signatory2Name" maxLength="120" placeholder="Signatory name" /></label><label>Title<input name="signatory2Title" maxLength="120" placeholder="Signatory title" /></label><label className="wide">PNG signature<input type="file" accept="image/png" disabled={certificateBusy} onChange={(event) => uploadCertificateSignature(event, 'signature2Url')} /></label><input type="hidden" name="signature2Url" />{certificateSignatures.signature2Url && <img className="certificate-signature-preview" src={new URL(certificateSignatures.signature2Url, location.origin).href} alt="Second signatory signature preview" />}</fieldset>
               <label className="wide">Certificate statement<textarea name="description" rows="3" maxLength="500" defaultValue="For outstanding dedication, practical contribution, and successful completion of the WEBLOX Internship Program." /></label>
               <button className="button" type="submit" disabled={certificateBusy || !interns.length}>{certificateBusy ? 'Issuing certificate…' : 'Issue certificate'}</button>
             </form><Notice success={certificateNotice.startsWith('Certificate issued')}>{certificateNotice}</Notice>

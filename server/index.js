@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { createServer } from "node:http";
+import { readFile } from "node:fs/promises";
 import pg from "pg";
 import {
   randomBytes,
@@ -379,16 +380,40 @@ async function handler(req, res) {
       return send(res, 400, { error: "Enter the intern name, program or track, and valid dates." });
     const id = randomUUID();
     const credentialId = `WEBLOX-INT-${new Date().getFullYear()}-${randomUUID().slice(0, 8).toUpperCase()}`;
+    const signatureAsset = async (field) => {
+      const value = cleanText(body[field], 2048);
+      if (!value) return null;
+      if (!/^\/api\/media\/[0-9a-f-]{36}$/i.test(value)) throw new Error(`Choose a PNG from your uploaded files for ${field}.`);
+      const asset = await store.findOwnedDashboardImage(current.account.id, value.slice("/api/media/".length));
+      if (!asset || asset.contentType !== "image/png") throw new Error(`Choose an uploaded PNG for ${field}.`);
+      const storedAsset = await store.findDashboardImage(value.slice("/api/media/".length));
+      return { url: value, content: storedAsset.content };
+    };
+    let signature1, signature2, logo;
+    try {
+      [signature1, signature2, logo] = await Promise.all([
+        signatureAsset("signature1Url"), signatureAsset("signature2Url"),
+        readFile(new URL("../public/assets/weblox-logo-light.png", import.meta.url)),
+      ]);
+    } catch (error) {
+      if (error.code === "ENOENT") throw error;
+      return send(res, 400, { error: error.message || "Could not load certificate image assets." });
+    }
+    const imageAssets = { signature1: signature1?.content, signature2: signature2?.content, logo };
     const certificateData = {
       name, track, startDate, completionDate,
       description: cleanText(body.description, 500) || "For outstanding dedication, practical contribution, and successful completion of the WEBLOX Internship Program.",
       credentialId,
       issuedAt: new Date().toISOString().slice(0, 10),
-      signatoryName: cleanText(body.signatoryName, 120) || "Chukwuemeka Nkama",
-      signatoryTitle: cleanText(body.signatoryTitle, 120) || "Founder & Team Lead",
+      signatory1Name: cleanText(body.signatory1Name, 120) || "Chukwuemeka Nkama",
+      signatory1Title: cleanText(body.signatory1Title, 120) || "Founder & Team Lead",
+      signatory2Name: cleanText(body.signatory2Name, 120),
+      signatory2Title: cleanText(body.signatory2Title, 120),
+      signature1Url: signature1?.url || "",
+      signature2Url: signature2?.url || "",
     };
-    const pdf = createCertificatePdf(certificateData);
-    const imageSvg = createCertificateSvg({ certificateData }, allowedOrigin.replace(/\/$/, ""));
+    const pdf = createCertificatePdf(certificateData, imageAssets);
+    const imageSvg = createCertificateSvg({ certificateData }, allowedOrigin.replace(/\/$/, ""), imageAssets);
     const saved = await store.issueInternshipCertificate({
       id, credentialId, internAccountId: intern.id, issuedByAccountId: current.account.id,
       certificateData, pdf, imageSvg,
