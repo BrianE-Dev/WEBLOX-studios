@@ -55,10 +55,46 @@
     },
     {
       "source": "/sign-in",
-      "destination": "/sign-in.html"
+      "destination": "/index.html"
+    },
+    {
+      "source": "/sign-in.html",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/staff-sign-in",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/staff-admin",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/master-admin",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/staff-dashboard",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/staff-portfolio",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/intern-portal",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/portfolio",
+      "destination": "/index.html"
     },
     {
       "source": "/internship/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/:page.html",
       "destination": "/index.html"
     }
   ],

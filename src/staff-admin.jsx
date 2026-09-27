@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react'
-import { createRoot } from 'react-dom/client'
 import { authRequest, clearStaffSession, saveStaffSession } from './lib/staffAuth.js'
 
 async function adminRequest(path, options = {}) {
@@ -12,7 +11,7 @@ async function adminRequest(path, options = {}) {
 const fmt = (value) => value ? new Date(value).toLocaleString() : '—'
 const display = (value) => Array.isArray(value) ? value.join(', ') : value
 
-function StaffAdmin() {
+export default function StaffAdmin() {
   const [account, setAccount] = useState(null)
   const [loginReady, setLoginReady] = useState(false)
   const [activePage, setActivePage] = useState(() => ['overview', 'people', 'applicants', 'history', 'settings'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'overview')
@@ -274,5 +273,3 @@ function StaffAdmin() {
     </main>
   )
 }
-
-createRoot(document.getElementById('root')).render(<StaffAdmin />)

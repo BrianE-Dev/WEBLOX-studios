@@ -11,7 +11,7 @@ WEBLOX Studios is a multi-page company website and internal staff platform. It i
 - Staff portfolio editing and publishing.
 - A Node.js HTTP API backed by PostgreSQL.
 
-The frontend is built with Vite and React dependencies. Most current pages are separate HTML entry points whose behavior is implemented with browser JavaScript modules. The API runs as a separate Node process.
+The frontend is a single Vite and React application. React Router serves the homepage, public pages, portals, and admin tools from one HTML entry point. The API runs as a separate Node process.
 
 ## 2. Technology stack
 
@@ -25,20 +25,12 @@ The frontend is built with Vite and React dependencies. Most current pages are s
 
 | Path | Purpose |
 | --- | --- |
-| `index.html` | Public website entry point. |
-| `sign-in.html` | Public/client sign-in page. |
-| `portfolio.html` | Public staff portfolio renderer. Reads only published portfolio snapshots. |
-| `staff-sign-in.html` | Staff and intern sign-in/activation entry point. |
-| `staff-dashboard.html` | Staff home, profile, attendance, inbox, and announcements/reports. |
-| `staff-portfolio.html` | Staff portfolio builder. |
-| `staff-admin.html` | Staff administrator console for onboarding, directory, activity, and messaging. |
-| `master-admin.html` | Master administrator console for admins and organization-wide administration. |
-| `intern-portal.html` | Intern check-ins and workspace inbox. |
+| `index.html` | Single HTML entry point for all React Router pages. |
 | `src/main.jsx` | Main public React app bootstrap. |
-| `src/App.jsx` | Routes `/` to the maintainable React homepage and mounts the generated app for remaining public routes. |
+| `src/App.jsx` | React Router routes for the homepage, public pages, portals, and admin tools. |
 | `src/components/home/HomePage.jsx` | Public homepage sections, navigation, theme control, and project enquiry form. |
 | `src/components/home/HomePage.css` | Homepage header and enquiry form styles. |
-| `src/lib/recovered-app.js` | Generated React route bundle for the public routes outside the rebuilt homepage. |
+| `src/lib/recovered-app.js` | Generated React route bundle mounted for public routes still being maintained there. |
 | `src/portfolio.jsx` | React public portfolio renderer; reads only published portfolio snapshots. |
 | `src/sign-in.jsx` | React public workspace audience chooser. |
 | `src/sign-in.css` | Public sign-in chooser styles. |
@@ -63,8 +55,8 @@ The frontend is built with Vite and React dependencies. Most current pages are s
 | `server/migrate.js` | Applies ordered, versioned SQL migrations. |
 | `server/migrations/*.sql` | Database schema and incremental changes. |
 | `server/bootstrap-admin.js` | One-time first master administrator setup. |
-| `vite.config.js` | Vite build inputs and local `/api` proxy. |
-| `vercel.json` | Production `/api/*` rewrite to the hosted API service. |
+| `vite.config.js` | Vite single entry build and local `/api` proxy. |
+| `vercel.json` | Production `/api/*` proxy and SPA route rewrites. |
 | `.env.example` | Example local environment variables. |
 
 ## 4. Prerequisites
@@ -87,7 +79,7 @@ Useful npm scripts:
 | `npm run dev` | Start the Vite development server. The `/api` requests proxy to `http://localhost:3001`. |
 | `npm run server` | Start the Node API; it migrates the database before listening. |
 | `npm run admin:bootstrap -- "email" "Name"` | Create the first master administrator if none exists. |
-| `npm run build` | Build all configured HTML entries into `dist/`. |
+| `npm run build` | Build the single React application into `dist/`. |
 | `npm run preview` | Preview the Vite production build locally. |
 
 ## 5. Local development setup
@@ -123,7 +115,7 @@ Useful npm scripts:
    npm run admin:bootstrap -- "admin@example.com" "Administrator Name"
    ```
 
-   Save the generated one-time password immediately. It is only printed at creation time and is stored in the database as a salted password hash. Sign in to `/master-admin.html` and change it. The README currently mentions `/staff-admin.html`; the bootstrap creates a `master_admin` account, so use the master admin page for that account.
+   Save the generated one-time password immediately. It is only printed at creation time and is stored in the database as a salted password hash. Sign in to `/master-admin` and change it.
 
 ## 6. Environment variables
 

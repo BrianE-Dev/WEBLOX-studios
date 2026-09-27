@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import { createRoot } from 'react-dom/client'
 import { authRequest, clearStaffSession, saveStaffSession } from './lib/staffAuth.js'
 
 const params = new URLSearchParams(location.search)
 
-function StaffSignIn() {
+export default function StaffSignIn() {
   const [invite, setInvite] = useState(params.get('invite') || '')
   const [activating, setActivating] = useState(Boolean(params.get('invite')))
   const [email, setEmail] = useState(params.get('email') || '')
@@ -82,5 +81,3 @@ function StaffSignIn() {
     </main>
   )
 }
-
-createRoot(document.getElementById('root')).render(<StaffSignIn />)

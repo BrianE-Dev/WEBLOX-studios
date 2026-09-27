@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { createRoot } from 'react-dom/client'
 
 const defaults = {
   staffEnabled: true,
@@ -15,7 +14,7 @@ function readSettings() {
   catch { return defaults }
 }
 
-function SignIn() {
+export default function SignIn() {
   const [settings] = useState(readSettings)
   const [audience, setAudience] = useState('')
   const [notice, setNotice] = useState('')
@@ -66,5 +65,3 @@ function SignIn() {
     </main>
   )
 }
-
-createRoot(document.getElementById('root')).render(<SignIn />)

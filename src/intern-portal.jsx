@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
-import { createRoot } from 'react-dom/client'
 import { authRequest, clearStaffSession, staffRequest } from './lib/staffAuth.js'
 
-function InternPortal() {
+export default function InternPortal() {
   const [intern, setIntern] = useState(null)
   const [loginNotice, setLoginNotice] = useState('')
   const [loginBusy, setLoginBusy] = useState(false)
@@ -128,5 +127,3 @@ function InternPortal() {
     </main>
   )
 }
-
-createRoot(document.getElementById('root')).render(<InternPortal />)

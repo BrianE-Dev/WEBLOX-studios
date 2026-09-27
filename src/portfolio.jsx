@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { createRoot } from 'react-dom/client'
 
 const safeUrl = (value) => {
   try {
@@ -30,7 +29,7 @@ function TimelineSection({ eyebrow, title, records, primary, secondary }) {
   )
 }
 
-function PortfolioPage() {
+export default function PortfolioPage() {
   const [portfolio, setPortfolio] = useState(null)
   const [status, setStatus] = useState('loading')
 
@@ -105,5 +104,3 @@ function PortfolioPage() {
     </main>
   )
 }
-
-createRoot(document.getElementById('root')).render(<PortfolioPage />)

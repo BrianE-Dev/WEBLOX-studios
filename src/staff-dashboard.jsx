@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
-import { createRoot } from 'react-dom/client'
 import { authRequest, clearStaffSession, staffRequest } from './lib/staffAuth.js'
 
-function StaffDashboard() {
+export default function StaffDashboard() {
   const [staff, setStaff] = useState(null)
   const [page, setPage] = useState(() => ['overview', 'inbox'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'overview')
   const [theme, setTheme] = useState(() => localStorage.getItem('weblox-theme') || 'dark')
@@ -162,5 +161,3 @@ function StaffDashboard() {
     </main>
   )
 }
-
-createRoot(document.getElementById('root')).render(<StaffDashboard />)

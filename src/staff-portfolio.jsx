@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { createRoot } from 'react-dom/client'
 import { authRequest, clearStaffSession, staffRequest } from './lib/staffAuth.js'
 
 const defaultPortfolio = (account) => ({
@@ -89,7 +88,7 @@ function LivePreview({ draft }) {
   )
 }
 
-function StaffPortfolioBuilder() {
+export default function StaffPortfolioBuilder() {
   const [account, setAccount] = useState(null)
   const [draft, setDraft] = useState(() => defaultPortfolio(null))
   const [record, setRecord] = useState(null)
@@ -292,5 +291,3 @@ function StaffPortfolioBuilder() {
     </main>
   )
 }
-
-createRoot(document.getElementById('root')).render(<StaffPortfolioBuilder />)

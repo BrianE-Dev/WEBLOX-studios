@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react'
-import { createRoot } from 'react-dom/client'
 import { authRequest, clearStaffSession, saveStaffSession } from './lib/staffAuth.js'
 
 const pages = ['overview', 'people', 'applicants', 'history', 'settings', 'portfolio']
@@ -18,7 +17,7 @@ function Notice({ children, success = false }) {
   return <p className={`master-notice${success ? ' success' : ''}`} role="status">{children}</p>
 }
 
-function MasterAdmin() {
+export default function MasterAdmin() {
   const [account, setAccount] = useState(null)
   const [loginReady, setLoginReady] = useState(false)
   const [page, setPage] = useState(() => pages.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'overview')
@@ -290,5 +289,3 @@ function MasterAdmin() {
     </div>}
   </main>
 }
-
-createRoot(document.getElementById('root')).render(<MasterAdmin />)

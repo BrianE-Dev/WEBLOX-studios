@@ -8,7 +8,7 @@ The Node API uses PostgreSQL for accounts, invitations, sessions, enquiries, int
 1. Create a PostgreSQL login role and database, with the role as database owner.
 2. Copy `.env.example` to `.env` and set `DATABASE_URL` to the local connection string. Keep `.env` private; it is ignored by Git.
 3. Run `npm run server`. The API checks its database connection, applies migrations, and then listens on port 3001 (or the `PORT`/`API_PORT` environment variable when set).
-4. Create the first administrator once with `npm run admin:bootstrap -- "admin@example.com" "Admin name"`. Save the generated one-time password; it is not stored in plaintext. Sign in at `/staff-admin.html` and change it immediately.
+4. Create the first administrator once with `npm run admin:bootstrap -- "admin@example.com" "Admin name"`. Save the generated one-time password; it is not stored in plaintext. Sign in at `/master-admin` and change it immediately.
 5. In the staff administrator page, create invitations and send each one through a private channel. Staff activate the invitation and choose their own password.
 6. In another terminal, run `npm run dev` for the Vite app and API proxy.
 

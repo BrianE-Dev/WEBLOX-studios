@@ -7,17 +7,7 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      input: {
-        main: 'index.html',
-        masterAdmin: 'master-admin.html',
-        signIn: 'sign-in.html',
-        staffSignIn: 'staff-sign-in.html',
-        staffAdmin: 'staff-admin.html',
-        staffDashboard: 'staff-dashboard.html',
-        staffPortfolio: 'staff-portfolio.html',
-        internPortal: 'intern-portal.html',
-        portfolio: 'portfolio.html',
-      },
+      input: 'index.html',
     },
   },
 })
