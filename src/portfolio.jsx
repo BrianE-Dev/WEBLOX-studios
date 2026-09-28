@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import PortfolioPresentation from './components/PortfolioPresentation.jsx'
 import ThemeAwareLogo from './components/ThemeAwareLogo.jsx'
+import PageLoadingSkeleton from './components/PageLoadingSkeleton.jsx'
 
 export default function PortfolioPage() {
   const [portfolio, setPortfolio] = useState(null)
@@ -34,7 +35,7 @@ export default function PortfolioPage() {
 
   return <main className="portfolio-public">
     <a className="portfolio-brand" href="/"><ThemeAwareLogo /><span>WEBLOX <small>STAFF PORTFOLIO</small></span></a>
-    {status === 'loading' && <p className="portfolio-loading" role="status">Loading portfolio…</p>}
+    {status === 'loading' && <PageLoadingSkeleton label="Loading portfolio" />}
     {status === 'unavailable' && <div className="portfolio-unavailable" role="status"><span className="eyebrow">PORTFOLIO UNAVAILABLE</span><h1>This portfolio isn't available.</h1><p>It may be unpublished or the link may be incorrect.</p><a className="button secondary" href="/">Return to WEBLOX Studios</a></div>}
     {status === 'ready' && portfolio && <PortfolioPresentation portfolio={portfolio} />}
   </main>

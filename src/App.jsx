@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
 import HomePage from './components/home/HomePage.jsx'
 import InternPortal from './intern-portal.jsx'
 import InternshipPage from './internship-page.jsx'
+import InternshipApply from './internship-apply.jsx'
 import MasterAdmin from './master-admin.jsx'
 import PortfolioPage from './portfolio.jsx'
 import SignIn from './sign-in.jsx'
@@ -26,7 +27,7 @@ import './components/image-library.css'
 import './components/theme-aware-logo.css'
 
 const migratedPaths = new Set([
-  '/internship', '/sign-in', '/sign-in.html', '/staff-sign-in', '/staff-sign-in.html',
+  '/internship', '/internship/apply', '/sign-in', '/sign-in.html', '/staff-sign-in', '/staff-sign-in.html',
   '/staff-admin', '/staff-admin.html', '/master-admin', '/master-admin.html',
   '/staff-dashboard', '/staff-dashboard.html', '/staff-portfolio', '/staff-portfolio.html',
   '/intern-portal', '/intern-portal.html', '/portfolio', '/portfolio.html',
@@ -117,6 +118,8 @@ function AppRoutes() {
       <Route path="/index.html" element={<HomePage />} />
       <Route path="/internship" element={<InternshipPage />} />
       <Route path="/internship/" element={<InternshipPage />} />
+      <Route path="/internship/apply" element={<InternshipApply />} />
+      <Route path="/internship/apply" element={<InternshipApply />} />
       <Route path="/sign-in" element={<SignIn />} />
       <Route path="/sign-in.html" element={<SignIn />} />
       <Route path="/staff-sign-in" element={<StaffSignIn />} />

@@ -580,6 +580,8 @@ async function handler(req, res) {
       fields.map((field) => [field, String(body[field] || "").trim()]),
     );
     application.email = application.email.toLowerCase();
+    if (application.track !== "Digital Marketing" || application.duration !== "3 months")
+      return send(res, 400, { error: "Applications are currently open only for the three-month Digital Marketing internship." });
     if (fields.some((field) => !application[field]) || body.consent !== true)
       return send(res, 400, { error: "Complete all required fields and confirm the accuracy statement." });
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(application.email))

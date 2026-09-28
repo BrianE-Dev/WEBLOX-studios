@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import './HomePage.css'
 
+const homepageLoaderMinimum = 1200
+
 const primaryLinks = [
   ['Ventures', '/ventures'],
   ['Services', '/services'],
@@ -46,7 +48,7 @@ const insights = [
   ['Product Thinking', 'The care required to make complex developer tools feel clear and useful.'],
 ]
 
-function Arrow() { return <span aria-hidden="true">→</span> }
+function Arrow() { return <span className="ui-arrow" aria-hidden="true" /> }
 
 function SectionHeading({ eyebrow, title, copy }) {
   return <div className="heading"><span className="eyebrow">{eyebrow}</span><h2>{title}</h2>{copy && <p>{copy}</p>}</div>
@@ -67,7 +69,7 @@ function SiteHeader() {
   const closeMenu = () => setMenuOpen(false)
   return <header className="home-header">
     <div className="nav shell">
-      <a className="brand" href="/" aria-label="WEBLOX Studios home"><span className="mark"><img className="logo-dark" src="/assets/weblox-logo.png" alt="" /><img className="logo-light" src="/assets/weblox-logo-light.png" alt="" /></span><span>WEBLOX <em>STUDIOS</em></span></a>
+      <a className="brand" href="/" aria-label="WEBLOX Studios home"><span className="mark"><img className="logo-dark" src="/assets/logo-dark.png" alt="" /><img className="logo-light" src="/assets/logo-light.png" alt="" /></span><span>WEBLOX <em>STUDIOS</em></span></a>
       <nav aria-label="Primary">{primaryLinks.map(([label, href]) => <a key={href} href={href}>{label}</a>)}</nav>
       <div className="nav-actions"><ThemeToggle /><a className="button small" href="#enquiry">Let’s Build <Arrow /></a><a className="button small portal-signin-link" href="/sign-in">Sign in</a><button className="menu" type="button" aria-label={menuOpen ? 'Close navigation' : 'Open navigation'} aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>{menuOpen ? '×' : '☰'}</button></div>
     </div>
@@ -80,8 +82,8 @@ function TerminalPreview() {
     <div className="terminal-top"><span><i className="red" /><i className="yellow" /><i className="green" /> weblox-core-telemetry // live</span><b>CONNECTED</b></div>
     <div className="terminal-body">
       <div className="panel"><span>AI Core Pipeline</span><b>System online</b><small>Dynamic throughput · edge-ready</small></div>
-      <div className="panel"><small>VENTURE ENGINE STACK</small><p>● Signarol AI <em>ACTIVE</em></p><p>○ Venture pipeline <em>VALIDATING</em></p></div>
-      <pre><b>&gt;</b> weblox.deploy({'{'}<br />  engine: 'signarol',<br />  target: 'global'<br />{'}'})<br /><em>✓ Production checks passed</em></pre>
+      <div className="panel"><small>VENTURE ENGINE STACK</small><p><i className="terminal-status-dot" /> Signarol AI <em>ACTIVE</em></p><p><i className="terminal-status-ring" /> Venture pipeline <em>VALIDATING</em></p></div>
+      <pre><b>&gt;</b> weblox.deploy({'{'}<br />  engine: 'signarol',<br />  target: 'global'<br />{'}'})<br /><em><i className="terminal-check" /> Production checks passed</em></pre>
     </div>
   </aside>
 }
@@ -124,7 +126,7 @@ function ProjectEnquiry() {
 
 function SiteFooter() {
   return <footer><div className="shell"><div className="footer-grid">
-    <div><a className="brand" href="/"><span className="mark"><img className="logo-dark" src="/assets/weblox-logo.png" alt="" /><img className="logo-light" src="/assets/weblox-logo-light.png" alt="" /></span><span>WEBLOX <em>STUDIOS</em></span></a><p>We build powerful digital solutions that solve real problems. A frontier venture studio from Africa, engineered for the global.</p><small>ENGINEERED FOR LEVERAGE</small></div>
+    <div><a className="brand" href="/"><span className="mark"><img className="logo-dark" src="/assets/logo-dark.png" alt="" /><img className="logo-light" src="/assets/logo-light.png" alt="" /></span><span>WEBLOX <em>STUDIOS</em></span></a><p>We build powerful digital solutions that solve real problems. A frontier venture studio from Africa, engineered for the global.</p><small>ENGINEERED FOR LEVERAGE</small></div>
     <div><strong>Explore</strong><a href="/ventures">Ventures</a><a href="/services">Services</a><a href="/studio">Studio</a><a href="/insights">Insights</a></div>
     <div><strong>Company</strong><a href="/careers">Careers</a><a href="/internship">Internship</a><a href="#enquiry">Start a project</a><a href="mailto:studio@weblox.io">studio@weblox.io</a></div>
     <div className="status"><span><i /> All systems operational</span><small>Building from Africa.<br />Thinking globally.</small></div>
@@ -133,8 +135,14 @@ function SiteFooter() {
 
 export default function HomePage() {
   useEffect(() => {
+    const startedAt = Date.now()
+    window.webloxShowBrandedLoader?.()
     document.title = 'Technology venture studio | WEBLOX Studios'
     document.querySelector('meta[name="description"]')?.setAttribute('content', 'We build digital experiences and technology products that move businesses forward.')
+    const dismiss = () => window.webloxDismissBrandedLoader?.()
+    const remaining = homepageLoaderMinimum - (Date.now() - startedAt)
+    const timer = window.setTimeout(dismiss, Math.max(0, remaining))
+    return () => window.clearTimeout(timer)
   }, [])
 
   return <>

@@ -3,6 +3,7 @@ import { authRequest, clearStaffSession, saveStaffSession } from './lib/staffAut
 import ThemeSettings, { useThemePreference } from './components/ThemeSettings.jsx'
 import ImageLibrary from './components/ImageLibrary.jsx'
 import ThemeAwareLogo from './components/ThemeAwareLogo.jsx'
+import PageLoadingSkeleton from './components/PageLoadingSkeleton.jsx'
 
 async function adminRequest(path, options = {}) {
   const response = await fetch(path, { ...options, credentials: 'include', headers: { 'content-type': 'application/json', ...options.headers } })
@@ -71,6 +72,8 @@ export default function StaffAdmin() {
       saveStaffSession(current)
       setAccount(current)
       setLoginReady(true)
+      window.webloxShowBrandedLoader?.()
+      location.assign('/staff-admin.html')
     }).catch(() => {
       if (!active) return
       clearStaffSession()
@@ -241,7 +244,8 @@ export default function StaffAdmin() {
   const selectRecipients = (type) => setRecipientIds(type === 'none' ? [] : workspace.recipients.filter((person) => type === 'all' || person.accountType === type).map((person) => person.id))
   const toggleRecipient = (id) => setRecipientIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id])
 
-  if (!loginReady && !account) return null
+  if (!loginReady && !account) return <PageLoadingSkeleton label="Loading staff administration" />
+  window.webloxDismissBrandedLoader?.()
 
   return (
     <main className="admin-shell">

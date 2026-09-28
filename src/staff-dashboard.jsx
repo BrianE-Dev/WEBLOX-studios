@@ -3,6 +3,7 @@ import { authRequest, clearStaffSession, staffRequest } from './lib/staffAuth.js
 import ThemeSettings, { useThemePreference } from './components/ThemeSettings.jsx'
 import ImageLibrary from './components/ImageLibrary.jsx'
 import ThemeAwareLogo from './components/ThemeAwareLogo.jsx'
+import PageLoadingSkeleton from './components/PageLoadingSkeleton.jsx'
 
 export default function StaffDashboard() {
   const [staff, setStaff] = useState(null)
@@ -93,7 +94,8 @@ export default function StaffDashboard() {
     location.replace('/staff-sign-in.html')
   }
 
-  if (!staff) return null
+  if (!staff) return <PageLoadingSkeleton label="Loading staff dashboard" />
+  window.webloxDismissBrandedLoader?.()
 
   const unreadCount = inbox.filter((message) => !message.readAt).length
   const portfolioDraft = portfolio?.draft || {}

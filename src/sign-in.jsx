@@ -47,6 +47,7 @@ export default function SignIn() {
         await authRequest('/logout', { method: 'POST' }).catch(() => {})
         throw new Error('This account is not an intern account.')
       }
+      window.webloxShowBrandedLoader?.()
       location.assign('/intern-portal.html')
     } catch (error) {
       setNotice(error.message || 'Could not sign in.')

@@ -3,6 +3,7 @@ import { authRequest, clearStaffSession, saveStaffSession } from './lib/staffAut
 import ThemeSettings, { useThemePreference } from './components/ThemeSettings.jsx'
 import ImageLibrary from './components/ImageLibrary.jsx'
 import ThemeAwareLogo from './components/ThemeAwareLogo.jsx'
+import PageLoadingSkeleton from './components/PageLoadingSkeleton.jsx'
 import { absoluteImageUrl, uploadDashboardImage } from './lib/imageLibrary.js'
 
 const pages = ['overview', 'people', 'applicants', 'history', 'certificates', 'images', 'settings', 'portfolio']
@@ -152,6 +153,8 @@ export default function MasterAdmin() {
         throw new Error('This login is not a master administrator account.')
       }
       saveStaffSession(current); setAccount(current); setLoginReady(true)
+      window.webloxShowBrandedLoader?.()
+      location.assign('/master-admin.html')
     } catch (error) { setLoginNotice(error.message || 'Could not sign in.') }
     finally { setLoginBusy(false) }
   }
@@ -353,7 +356,8 @@ export default function MasterAdmin() {
     } catch (error) { setPasswordNotice(error.message || 'Could not update the password.') }
   }
 
-  if (!loginReady && !account) return null
+  if (!loginReady && !account) return <PageLoadingSkeleton label="Loading master administration" />
+  window.webloxDismissBrandedLoader?.()
 
   return <main className="master-shell">
     <header className="master-head"><div className="master-brand"><ThemeAwareLogo /><div><span className="eyebrow">WEBLOX · ADMINISTRATION</span><h1 className="master-title">Master admin</h1><p>Manage staff, interns, and administrator accounts.</p></div></div>{account && <div className="master-actions"><span className="eyebrow">{account.email}</span><button className="button secondary" type="button" onClick={loadAll}>Refresh</button><button className="button secondary" type="button" onClick={signOut}>Sign out</button></div>}</header>

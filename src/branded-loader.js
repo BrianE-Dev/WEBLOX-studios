@@ -1,5 +1,4 @@
 const loaderId = "weblox-branded-loader";
-const authLoaderKey = "weblox-auth-loader";
 const minimumLoaderDuration = 3500;
 let loaderShownAt = 0;
 let pendingDismissTimer;
@@ -15,7 +14,7 @@ function ensureLoader() {
   loader.setAttribute("aria-live", "polite");
   loader.setAttribute("aria-label", "Loading WEBLOX");
   loader.innerHTML =
-    '<img src="/assets/weblox-logo.png" alt="WEBLOX Studios" />';
+    '<img class="loader-logo-dark" src="/assets/mini-logo-dark.png" alt="WEBLOX Studios" /><img class="loader-logo-light" src="/assets/mini-logo-light.png" alt="WEBLOX Studios" />';
   document.body.prepend(loader);
   return loader;
 }
@@ -53,17 +52,3 @@ export function dismissBrandedLoader() {
 window.webloxShowBrandedLoader = showBrandedLoader;
 window.webloxDismissBrandedLoader = dismissBrandedLoader;
 
-function dismissInitialLoader() {
-  if (document.getElementById(loaderId)) {
-    loaderShownAt = Date.now();
-    requestAnimationFrame(dismissBrandedLoader);
-  }
-}
-
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", dismissInitialLoader, {
-    once: true,
-  });
-} else {
-  dismissInitialLoader();
-}

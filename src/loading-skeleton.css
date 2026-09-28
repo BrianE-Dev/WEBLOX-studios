@@ -121,6 +121,19 @@ html[data-theme="light"] .page-loading-skeleton span {
   animation: weblox-loader-halo 2s ease-out infinite;
 }
 
+.page-loading-skeleton[aria-hidden="true"] {
+  pointer-events: none;
+}
+
+.screen-loading-skeleton {
+  width: min(100% - 32px, 1100px);
+  margin: 48px auto;
+}
+
+.screen-loading-skeleton .page-loading-skeleton {
+  width: 100%;
+}
+
 .weblox-branded-loader img {
   position: relative;
   width: min(190px, 42vw);
@@ -147,6 +160,10 @@ html[data-theme="light"] .page-loading-skeleton span {
     filter: drop-shadow(0 0 9px #d1bcff66);
   }
 }
+
+.weblox-branded-loader .loader-logo-light { display: none; }
+html[data-theme="light"] .weblox-branded-loader .loader-logo-dark { display: none; }
+html[data-theme="light"] .weblox-branded-loader .loader-logo-light { display: block; }
 
 @keyframes weblox-loader-halo {
   0% { opacity: 0.52; transform: scale(0.82); }

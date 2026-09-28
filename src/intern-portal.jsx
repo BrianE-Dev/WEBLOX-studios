@@ -4,6 +4,7 @@ import ThemeSettings, { useThemePreference } from './components/ThemeSettings.js
 import ImageLibrary from './components/ImageLibrary.jsx'
 import ThemeAwareLogo from './components/ThemeAwareLogo.jsx'
 import { uploadDashboardImage } from './lib/imageLibrary.js'
+import PageLoadingSkeleton from './components/PageLoadingSkeleton.jsx'
 
 function getInternTitle(role) {
   const value = String(role || '').trim()
@@ -13,6 +14,7 @@ function getInternTitle(role) {
 
 export default function InternPortal() {
   const [intern, setIntern] = useState(null)
+  const [sessionChecked, setSessionChecked] = useState(false)
   const [loginNotice, setLoginNotice] = useState('')
   const [loginBusy, setLoginBusy] = useState(false)
   const [checkins, setCheckins] = useState([])
@@ -53,7 +55,8 @@ export default function InternPortal() {
       if (!active) return
       if (account?.accountType === 'intern') setIntern(account)
       else clearStaffSession()
-    }).catch(() => clearStaffSession())
+      setSessionChecked(true)
+    }).catch(() => { clearStaffSession(); setSessionChecked(true) })
     return () => { active = false }
   }, [])
 
@@ -77,7 +80,8 @@ export default function InternPortal() {
         await authRequest('/logout', { method: 'POST' }).catch(() => {})
         throw new Error('This account is not an intern account.')
       }
-      setIntern(account)
+      window.webloxShowBrandedLoader?.()
+      location.assign('/intern-portal.html')
     } catch (error) {
       setLoginNotice(error.message || 'Could not sign in.')
     } finally {
@@ -182,6 +186,8 @@ export default function InternPortal() {
   }
 
   return (
+    !sessionChecked ? <PageLoadingSkeleton label="Loading intern portal" /> :
+    (window.webloxDismissBrandedLoader?.(),
     <main className={`intern-shell${intern ? ' has-sidebar' : ''}`}>
       {!intern ? (
         <section className="intern-card intern-login"><a className="intern-brand" href="/"><ThemeAwareLogo /> WEBLOX STUDIOS</a><span className="eyebrow">WEBLOX INTERNSHIP PROGRAM</span><h1>Intern sign in</h1><p>Use the email and temporary password provided by your administrator.</p>
@@ -230,6 +236,6 @@ export default function InternPortal() {
           </div>
         </>
       )}
-    </main>
+    </main>)
   )
 }
