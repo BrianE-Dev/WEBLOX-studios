@@ -1,16 +1,20 @@
 import { useEffect, useState } from 'react'
 
-const loaderIntentKey = 'weblox-loader-active'
+const loaderIntentKey = 'weblox-loader-target'
 const loaderEvent = 'weblox-loader-change'
 
-function updateLoaderIntent(active) {
-  if (active) sessionStorage.setItem(loaderIntentKey, '1')
+function updateLoaderIntent(active, targetPath = window.location.pathname) {
+  if (active) sessionStorage.setItem(loaderIntentKey, new URL(targetPath, window.location.origin).pathname)
   else sessionStorage.removeItem(loaderIntentKey)
   window.dispatchEvent(new Event(loaderEvent))
 }
 
-export function showWebloxLoader() {
-  updateLoaderIntent(true)
+function isLoaderRequestedFor(pathname) {
+  return sessionStorage.getItem(loaderIntentKey) === pathname
+}
+
+export function showWebloxLoader(targetPath) {
+  updateLoaderIntent(true, targetPath)
 }
 
 export function dismissWebloxLoader() {
@@ -45,15 +49,15 @@ export default function WebloxLoader({ fullscreen = true, label }) {
 export function WebloxLoaderHost() {
   const [visible, setVisible] = useState(() => {
     const path = window.location.pathname
-    return sessionStorage.getItem(loaderIntentKey) === '1' || path === '/' || path === '/index.html'
+    return isLoaderRequestedFor(path) || path === '/' || path === '/index.html'
   })
 
   useEffect(() => {
-    const syncLoader = () => setVisible(sessionStorage.getItem(loaderIntentKey) === '1')
+    const syncLoader = () => setVisible(isLoaderRequestedFor(window.location.pathname))
     window.addEventListener(loaderEvent, syncLoader)
     window.webloxShowBrandedLoader = showWebloxLoader
     window.webloxDismissBrandedLoader = dismissWebloxLoader
-    if ((window.location.pathname === '/' || window.location.pathname === '/index.html') && sessionStorage.getItem(loaderIntentKey) !== '1') {
+    if ((window.location.pathname === '/' || window.location.pathname === '/index.html') && !isLoaderRequestedFor(window.location.pathname)) {
       setVisible(false)
     }
     return () => {

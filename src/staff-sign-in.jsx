@@ -53,7 +53,7 @@ export default function StaffSignIn() {
         throw new Error('This account uses the staff administrator page.')
       }
       saveStaffSession(account)
-      window.webloxShowBrandedLoader?.()
+      window.webloxShowBrandedLoader?.('/staff-dashboard.html')
       location.replace('/staff-dashboard.html')
     } catch (error) {
       clearStaffSession()
