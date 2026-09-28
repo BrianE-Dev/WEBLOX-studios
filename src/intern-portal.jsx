@@ -25,6 +25,7 @@ export default function InternPortal() {
   const [portalError, setPortalError] = useState('')
   const [busySlot, setBusySlot] = useState('')
   const [page, setPage] = useState('dashboard')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [theme, setTheme] = useThemePreference()
   const [photoBusy, setPhotoBusy] = useState(false)
   const [passwordBusy, setPasswordBusy] = useState(false)
@@ -199,7 +200,9 @@ export default function InternPortal() {
         </section>
       ) : (
         <>
-          <aside className="intern-sidebar">
+          <aside className={`intern-sidebar${sidebarOpen ? ' is-open' : ''}`}>
+            <button className="dashboard-sidebar-toggle" type="button" aria-expanded={sidebarOpen} aria-controls="internSidebarContent" onClick={() => setSidebarOpen((open) => !open)}>{sidebarOpen ? 'Hide dashboard menu' : 'Show dashboard menu'}<span aria-hidden="true">{sidebarOpen ? '−' : '+'}</span></button>
+            <div className="dashboard-sidebar-content" id="internSidebarContent">
             <a className="intern-brand" href="/"><ThemeAwareLogo /> <span>WEBLOX<small>INTERNSHIP PORTAL</small></span></a>
             <div className="intern-profile">
               <div className="intern-avatar">{intern.profilePhotoUrl ? <img src={intern.profilePhotoUrl} alt={`${intern.name}'s profile`} /> : <span>{intern.name?.trim()?.[0]?.toUpperCase() || 'I'}</span>}</div>
@@ -209,11 +212,12 @@ export default function InternPortal() {
               {intern.profilePhotoUrl && <button type="button" className="intern-remove-photo" disabled={photoBusy} onClick={removeProfilePhoto}>Remove photo</button>}
             </div>
             <nav className="intern-side-nav" aria-label="Intern dashboard navigation">
-              <button className={page === 'dashboard' ? 'active' : ''} type="button" onClick={() => setPage('dashboard')}><span>⌂</span>Dashboard</button>
-              <button className={page === 'images' ? 'active' : ''} type="button" onClick={() => setPage('images')}><span>▤</span>My files</button>
-              <button className={page === 'settings' ? 'active' : ''} type="button" onClick={() => setPage('settings')}><span>⚙</span>Settings</button>
+              <button className={page === 'dashboard' ? 'active' : ''} type="button" onClick={() => { setPage('dashboard'); setSidebarOpen(false) }}><span>⌂</span>Dashboard</button>
+              <button className={page === 'images' ? 'active' : ''} type="button" onClick={() => { setPage('images'); setSidebarOpen(false) }}><span>▤</span>My files</button>
+              <button className={page === 'settings' ? 'active' : ''} type="button" onClick={() => { setPage('settings'); setSidebarOpen(false) }}><span>⚙</span>Settings</button>
             </nav>
             <button className="intern-signout" type="button" onClick={signOut}>Sign out <span>↗</span></button>
+            </div>
           </aside>
           <div className="intern-main-content">
           <header className="intern-card intern-head"><div><span className="eyebrow">{internTitle.toUpperCase()} · WEBLOX INTERNSHIP PROGRAM</span><h1>{page === 'images' ? `${internTitle} Files` : page === 'settings' ? `${internTitle} Settings` : `${internTitle} Dashboard`}</h1><p>{intern.name}</p></div></header>

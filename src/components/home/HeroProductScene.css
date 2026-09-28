@@ -11,10 +11,13 @@
 
 .hero-product-scene {
   position: absolute;
-  inset: -12px;
-  z-index: 0;
-  overflow: hidden;
-  opacity: 0.42;
+  top: -126px;
+  right: -8px;
+  z-index: 2;
+  width: 132px;
+  height: 132px;
+  overflow: visible;
+  opacity: 0.92;
   pointer-events: none;
 }
 

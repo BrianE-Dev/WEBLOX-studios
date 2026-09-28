@@ -19,6 +19,7 @@ export default function StaffAdmin() {
   const [account, setAccount] = useState(null)
   const [loginReady, setLoginReady] = useState(false)
   const [activePage, setActivePage] = useState(() => ['overview', 'people', 'applicants', 'history', 'images', 'settings'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'overview')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [loginNotice, setLoginNotice] = useState('')
   const [loginBusy, setLoginBusy] = useState(false)
   const [attendance, setAttendance] = useState(null)
@@ -101,6 +102,7 @@ export default function StaffAdmin() {
   const showPage = (page) => {
     const next = ['overview', 'people', 'applicants', 'history', 'images', 'settings'].includes(page) ? page : 'overview'
     setActivePage(next)
+    setSidebarOpen(false)
     if (location.hash !== `#${next}`) history.replaceState(null, '', `#${next}`)
     if (next === 'applicants') refreshApplications().catch((error) => setLoginNotice(error.message))
     if (next === 'history') refreshWorkspace().catch((error) => setMessageNotice(error.message))
@@ -254,9 +256,12 @@ export default function StaffAdmin() {
     <main className="admin-shell">
       <header className="admin-head"><ThemeAwareLogo /><div><span className="eyebrow">WEBLOX · STAFF ACCESS</span><h1 className="admin-title">Staff administrator</h1><p>Invite staff and manage account access.</p></div>{account && <div className="admin-actions"><button className="button secondary" type="button" onClick={signOut}>Sign out</button></div>}</header>
       {!account ? <section className="admin-card"><h2>Administrator sign in</h2><p>Use the administrator account created by the local bootstrap command.</p><form className="admin-form" onSubmit={signIn}><label className="wide">Email address<input name="email" type="email" autoComplete="username" required /></label><label className="wide">Password<input name="password" type="password" autoComplete="current-password" required /></label><button className="button wide" type="submit" disabled={loginBusy}>{loginBusy ? 'Signing in…' : 'Sign in'}</button></form>{loginNotice && <div className="admin-notice" role="alert">{loginNotice}</div>}</section> : <div className="admin-layout">
-        <aside className="admin-sidebar"><div className="admin-profile"><span className="eyebrow">SIGNED IN AS</span><strong>{account.name || 'Administrator'}</strong><small>{account.email}</small></div>
+        <aside className={`admin-sidebar${sidebarOpen ? ' is-open' : ''}`}>
+          <button className="dashboard-sidebar-toggle" type="button" aria-expanded={sidebarOpen} aria-controls="staffAdminSidebarContent" onClick={() => setSidebarOpen((open) => !open)}>{sidebarOpen ? 'Hide dashboard menu' : 'Show dashboard menu'}<span aria-hidden="true">{sidebarOpen ? '−' : '+'}</span></button>
+          <div className="dashboard-sidebar-content" id="staffAdminSidebarContent"><div className="admin-profile"><span className="eyebrow">SIGNED IN AS</span><strong>{account.name || 'Administrator'}</strong><small>{account.email}</small></div>
           <nav aria-label="Staff admin navigation">{[['overview', 'Overview'], ['people', 'People'], ['applicants', 'Applicants'], ['history', 'History'], ['images', 'Image library'], ['settings', 'Settings']].map(([page, label]) => <a key={page} href={`#${page}`} className={activePage === page ? 'active' : ''} aria-current={activePage === page ? 'page' : undefined} onClick={(event) => { event.preventDefault(); showPage(page) }}>{label}</a>)}</nav>
           <section aria-label="Attendance"><span className="eyebrow">TODAY’S ATTENDANCE</span><p className="admin-notice">{attendance ? `In: ${attendance.clockInAt ? new Date(attendance.clockInAt).toLocaleTimeString() : '—'} · Out: ${attendance.clockOutAt ? new Date(attendance.clockOutAt).toLocaleTimeString() : '—'}` : attendanceError || 'Loading attendance…'}</p><div className="admin-clock"><button className="button" type="button" onClick={() => updateAttendance('clock_in')}>Clock in</button><button className="button secondary" type="button" onClick={() => updateAttendance('clock_out')}>Clock out</button></div>{attendanceNotice && <p className="admin-notice success" role="status">{attendanceNotice}</p>}{attendanceError && <p className="admin-notice" role="alert">{attendanceError}</p>}</section>
+          </div>
         </aside>
         <div className="admin-main">
           {activePage === 'overview' && <section className="admin-page-section"><section className="admin-card"><span className="eyebrow">OVERVIEW</span><h2>Workspace overview</h2><p>Use the sidebar to review applicants, manage people, view message history, and update your account settings.</p><div className="admin-summary-grid"><article><b>{staff.filter((person) => person.activated && person.active).length}</b><span>Active staff</span></article><article><b>{interns.filter((person) => person.active).length}</b><span>Active interns</span></article><article><b>{applications.length}</b><span>Applications</span></article></div></section></section>}

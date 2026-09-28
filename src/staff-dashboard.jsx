@@ -8,6 +8,7 @@ import PageLoadingSkeleton from './components/PageLoadingSkeleton.jsx'
 export default function StaffDashboard() {
   const [staff, setStaff] = useState(null)
   const [page, setPage] = useState(() => ['overview', 'inbox', 'images', 'settings'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'overview')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [theme, setTheme] = useThemePreference()
   const [attendance, setAttendance] = useState(null)
   const [attendanceLoaded, setAttendanceLoaded] = useState(false)
@@ -65,6 +66,7 @@ export default function StaffDashboard() {
     }
     const selected = ['overview', 'inbox', 'images', 'settings'].includes(nextPage) ? nextPage : 'overview'
     setPage(selected)
+    setSidebarOpen(false)
     if (location.hash !== `#${selected}`) history.replaceState(null, '', `#${selected}`)
     if (selected === 'inbox') loadInbox()
   }
@@ -114,7 +116,9 @@ export default function StaffDashboard() {
         </div>
       </header>
 
-      <aside id="staffSidebar" className="dash-panel">
+      <aside id="staffSidebar" className={`dash-panel${sidebarOpen ? ' is-open' : ''}`}>
+        <button className="dashboard-sidebar-toggle" type="button" aria-expanded={sidebarOpen} aria-controls="staffSidebarContent" onClick={() => setSidebarOpen((open) => !open)}>{sidebarOpen ? 'Hide dashboard menu' : 'Show dashboard menu'}<span aria-hidden="true">{sidebarOpen ? '−' : '+'}</span></button>
+        <div className="dashboard-sidebar-content" id="staffSidebarContent">
         <div className="dash-sidebar-profile">
           <span className="eyebrow">SIGNED IN AS</span>
           <strong>{staff.name || 'Staff member'}</strong>
@@ -137,6 +141,7 @@ export default function StaffDashboard() {
           {attendanceNotice && <p className="dash-notice" role="status">{attendanceNotice}</p>}
           {attendanceError && <p className="dash-error" role="alert">{attendanceError}</p>}
         </section>
+        </div>
       </aside>
 
       <section className="dash-hero">
