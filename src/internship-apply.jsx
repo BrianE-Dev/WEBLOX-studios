@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import ThemeAwareLogo from './components/ThemeAwareLogo.jsx'
 import { submitInternshipApplication } from './lib/internshipApi.js'
 import './internship-page.css'
@@ -6,6 +6,25 @@ import './internship-page.css'
 export default function InternshipApply() {
   const [status, setStatus] = useState('idle')
   const [message, setMessage] = useState('')
+  const [tracks, setTracks] = useState([])
+  const [tracksStatus, setTracksStatus] = useState('loading')
+
+  useEffect(() => {
+    let active = true
+    fetch('/api/internship-tracks')
+      .then(async (response) => {
+        const data = await response.json()
+        if (!response.ok) throw new Error(data.error || 'Could not load internship tracks.')
+        return data.tracks || []
+      })
+      .then((items) => {
+        if (!active) return
+        setTracks(items)
+        setTracksStatus(items.some((track) => track.isSelectable) ? 'ready' : 'empty')
+      })
+      .catch(() => { if (active) setTracksStatus('error') })
+    return () => { active = false }
+  }, [])
 
   const submit = async (event) => {
     event.preventDefault()
@@ -23,12 +42,12 @@ export default function InternshipApply() {
   return <main className="internship-page">
     <header className="internship-nav"><a href="/" className="internship-brand"><ThemeAwareLogo /><b>WEBLOX <small>STUDIOS</small></b></a><a className="button secondary" href="/internship">Back to internship</a></header>
     <section className="internship-section">
-      <div className="internship-section-heading"><div><span className="eyebrow">CURRENTLY OPEN · THREE MONTHS</span><h1>Apply for Digital Marketing</h1></div><p>Applications are currently open only for the Digital Marketing track. The internship program runs for three months.</p></div>
-      {status === 'success' ? <article className="internship-card"><h2>Application received</h2><p>Thank you for applying to the three-month Digital Marketing internship. The WEBLOX team will review your application.</p></article> : <form className="internship-application-form" onSubmit={submit}>
+      <div className="internship-section-heading"><div><span className="eyebrow">INTERNSHIP APPLICATION · THREE MONTHS</span><h1>Apply for an internship</h1></div><p>Choose a track and tell us how you can contribute to practical WEBLOX studio work. The program runs for three months.</p></div>
+      {status === 'success' ? <article className="internship-card"><h2>Application received</h2><p>Thank you for applying to the WEBLOX internship. The team will review your application.</p></article> : <form className="internship-application-form" onSubmit={submit}>
         <label>Full name<input name="fullName" autoComplete="name" required /></label>
         <label>Email address<input name="email" type="email" autoComplete="email" required /></label>
         <label>Phone number<input name="phone" type="tel" autoComplete="tel" required /></label>
-        <label>Internship track<input value="Digital Marketing" readOnly /><input type="hidden" name="track" value="Digital Marketing" /></label>
+        <label>Preferred Internship Track<select name="track" required disabled={tracksStatus !== 'ready'} defaultValue=""><option value="" disabled>Select a track</option>{tracks.map((track) => <option key={track.id} value={track.name} disabled={!track.isSelectable}>{track.name}</option>)}</select>{tracksStatus === 'error' && <small role="alert">Internship tracks could not be loaded. Refresh the page to try again.</small>}{tracksStatus === 'empty' && <small>Applications are currently closed for all tracks.</small>}</label>
         <label>Program duration<input value="3 months" readOnly /><input type="hidden" name="duration" value="3 months" /></label>
         <label>Current background<input name="background" required placeholder="Student, recent graduate, career starter…" /></label>
         <label className="wide">Relevant skills<textarea name="skills" rows="4" required /></label>

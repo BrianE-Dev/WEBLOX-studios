@@ -92,6 +92,48 @@ export function createPostgresStore(pool) {
       return rows[0];
     },
 
+    async listInternshipTracks() {
+      const { rows } = await pool.query(
+        `SELECT id, name, is_selectable AS "isSelectable", sort_order AS "sortOrder"
+         FROM internship_tracks ORDER BY sort_order, id`,
+      );
+      return rows;
+    },
+
+    async isInternshipTrackSelectable(name) {
+      const { rowCount } = await pool.query(
+        `SELECT 1 FROM internship_tracks WHERE lower(name) = lower($1) AND is_selectable = true`,
+        [name.trim()],
+      );
+      return rowCount > 0;
+    },
+
+    async createInternshipTrack(name, isSelectable) {
+      const { rows } = await pool.query(
+        `INSERT INTO internship_tracks (name, is_selectable, sort_order)
+         VALUES ($1, $2, COALESCE((SELECT max(sort_order) + 10 FROM internship_tracks), 10))
+         ON CONFLICT (lower(name)) DO NOTHING
+         RETURNING id, name, is_selectable AS "isSelectable", sort_order AS "sortOrder"`,
+        [name, isSelectable],
+      );
+      return rows[0] ?? null;
+    },
+
+    async setInternshipTrackSelectable(id, isSelectable) {
+      const { rows } = await pool.query(
+        `UPDATE internship_tracks SET is_selectable = $2
+         WHERE id = $1
+         RETURNING id, name, is_selectable AS "isSelectable", sort_order AS "sortOrder"`,
+        [id, isSelectable],
+      );
+      return rows[0] ?? null;
+    },
+
+    async deleteInternshipTrack(id) {
+      const { rowCount } = await pool.query('DELETE FROM internship_tracks WHERE id = $1', [id]);
+      return rowCount > 0;
+    },
+
     async listInternshipApplications() {
       const { rows } = await pool.query(
         `SELECT id, payload, created_at AS "createdAt"

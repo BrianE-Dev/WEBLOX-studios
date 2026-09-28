@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { SiteFooter, SiteHeader } from './components/home/HomePage.jsx'
 
 const benefits = [
@@ -6,9 +7,12 @@ const benefits = [
   ['03', 'Studio Environment', 'See how product, engineering, growth, and operations work together.'],
   ['04', 'Portfolio & Experience', 'Leave with documented evidence of professional contribution.'],
 ]
-const tracks = [
-  ['Digital Marketing', 'Plan content, support campaigns, track results, and review engagement metrics.'],
-]
+const trackDescriptions = {
+  'Software Engineering': 'Build, test, and improve reliable software for practical product and venture needs.',
+  'UI/UX / Product Design': 'Shape useful product experiences through research, clear flows, and thoughtful interface design.',
+  'Digital Marketing': 'Plan content, support campaigns, track results, and review engagement metrics.',
+  'Business / Operations': 'Improve the systems, research, and operations that help studio ventures move forward.',
+}
 const steps = ['Apply', 'Review', 'Onboard', 'Work', 'Check in', 'Grow', 'Complete']
 
 function CertificateSample() {
@@ -31,14 +35,24 @@ function CertificateSample() {
 }
 
 export default function InternshipPage() {
+  const [tracks, setTracks] = useState([])
+  useEffect(() => {
+    let active = true
+    fetch('/api/internship-tracks')
+      .then((response) => response.ok ? response.json() : Promise.reject())
+      .then((data) => { if (active) setTracks((data.tracks || []).filter((track) => track.isSelectable)) })
+      .catch(() => {})
+    return () => { active = false }
+  }, [])
+
   return <main className="internship-page">
     <SiteHeader ctaHref="/internship/apply" activeHref="/internship" />
-    <section className="internship-hero"><div><span className="eyebrow">WEBLOX INTERNSHIP PROGRAM</span><h1>Build. Learn. <em>Ship.</em></h1><p>A three-month Digital Marketing internship for emerging professionals contributing to real studio work.</p><div className="internship-actions"><a className="button" href="/internship/apply">Apply for Internship <span>↗</span></a><a className="button secondary" href="#work">See how it works <span>↓</span></a></div></div><div className="internship-hero-console"><div><i /><i /><i /><span>WEBLOX CORE INTERNSHIP · LIVE</span><b>CONNECTED</b></div><small>AI CORE PIPELINE</small><strong>System online</strong><code>Practical work · reviewed growth<br />Internship contribution active</code><small>PROGRAM TRACK</small><strong>Digital Marketing</strong><code>◈ Content & campaigns <b>ACTIVE</b><br />◈ Venture Studio <b>IN PROGRESS</b></code></div></section>
+    <section className="internship-hero"><div><span className="eyebrow">WEBLOX INTERNSHIP PROGRAM</span><h1>Build. Learn. <em>Ship.</em></h1><p>A three-month program for emerging professionals contributing to practical studio work across product, technology, design, growth, and operations.</p><div className="internship-actions"><a className="button" href="/internship/apply">Apply for Internship <span>↗</span></a><a className="button secondary" href="#work">See how it works <span>↓</span></a></div></div><div className="internship-hero-console"><div><i /><i /><i /><span>WEBLOX CORE INTERNSHIP · LIVE</span><b>CONNECTED</b></div><small>STUDIO WORKFLOW</small><strong>System online</strong><code>Practical work · reviewed growth<br />Internship contribution active</code><small>PROGRAM TRACKS</small><strong>{tracks.length ? `${tracks.length} open ${tracks.length === 1 ? 'track' : 'tracks'}` : 'Track options'}</strong><code>◈ Practical contribution <b>ACTIVE</b><br />◈ Venture Studio <b>IN PROGRESS</b></code></div></section>
     <section className="internship-section" id="work"><div className="internship-section-heading"><div><span className="eyebrow">WHY WEBLOX</span><h2>Learn inside the work.</h2></div><p>The program is designed around practical contribution — not simulated classroom exercises.</p></div><div className="internship-card-grid">{benefits.map(([number, title, copy]) => <article key={number}><small>{number}</small><h3>{title}</h3><p>{copy}</p></article>)}</div></section>
-    <section className="internship-section internship-shade"><div className="internship-section-heading"><div><span className="eyebrow">CURRENTLY OPEN · THREE MONTHS</span><h2>Digital Marketing internship</h2></div><p>Applications are currently open only for the Digital Marketing track. The program runs for three months.</p></div><div className="internship-card-grid">{tracks.map(([title, copy], index) => <article key={title}><small>0{index + 1}</small><h3>{title}</h3><p>{copy}</p></article>)}</div></section>
+    <section className="internship-section internship-shade"><div className="internship-section-heading"><div><span className="eyebrow">CURRENTLY OPEN · THREE MONTHS</span><h2>Internship tracks</h2></div><p>Explore the tracks currently accepting applications. The program runs for three months.</p></div><div className="internship-tracks-layout"><div className="internship-card-grid">{tracks.length ? tracks.map((track, index) => <article key={track.id}><small>{String(index + 1).padStart(2, '0')}</small><h3>{track.name}</h3><p>{trackDescriptions[track.name] || 'Contribute to practical studio work and help build products that solve real problems.'}</p></article>) : <article><h3>Track applications are currently closed</h3><p>Please check back later for available internship opportunities.</p></article>}</div><a className="internship-track-ad-link" href="#internship-apply" aria-label="Apply for the WEBLOX internship"><img className="internship-track-ad" src="/assets/internship-marketing-ad.png" alt="Digital Marketing Internship at WEBLOX Studios. Click to apply." loading="lazy" decoding="async" /></a></div></section>
     <section className="internship-section" id="process"><div className="internship-section-heading"><div><span className="eyebrow">WORKING WITH US</span><h2>How the internship works.</h2></div><p>A clear path from application to practical, reviewed contribution.</p></div><div className="internship-steps">{steps.map((step, index) => <article key={step}><b>{String(index + 1).padStart(2, '0')}</b><h3>{step}</h3><p>{['Submit an application and share your experience.', 'We review your application and fit.', 'Selected interns receive program onboarding.', 'Contribute to practical studio work.', 'Share regular progress and check-ins.', 'Receive feedback and keep building.', 'Complete your work and receive a certificate.'][index]}</p></article>)}</div><div className="internship-review-grid"><article><span className="eyebrow">DAILY REVIEW</span><h3>Twice-a-day check-in.</h3><p>Morning: set your focus. Evening: send a clear end-of-day update.</p></article><article><span className="eyebrow">PROGRESS REVIEW</span><h3>Weekly performance feedback.</h3><p>Weekly evaluations cover attendance, task completion, quality of work, communication, initiative, and collaboration.</p></article></div></section>
     <CertificateSample />
-    <section className="internship-apply"><div><span className="eyebrow">APPLICATIONS</span><h2>Apply for the WEBLOX<br /> Internship Program</h2><p>Ready to contribute to real work and build practical experience? Complete the application form and tell us where you can add value at WEBLOX.</p><a className="button" href="/internship/apply">Apply for Internship <span>↗</span></a><small>Applications are reviewed by the WEBLOX team.</small></div></section>
+    <section className="internship-apply" id="internship-apply"><div><span className="eyebrow">APPLICATIONS</span><h2>Apply for the WEBLOX<br /> Internship Program</h2><p>Ready to contribute to real work and build practical experience? Complete the application form and tell us where you can add value at WEBLOX.</p><a className="button" href="/internship/apply">Apply for Internship <span>↗</span></a><small>Applications are reviewed by the WEBLOX team.</small></div></section>
     <SiteFooter />
   </main>
 }

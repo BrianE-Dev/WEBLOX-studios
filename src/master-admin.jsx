@@ -7,7 +7,7 @@ import PageLoadingSkeleton from './components/PageLoadingSkeleton.jsx'
 import { absoluteImageUrl, uploadDashboardImage } from './lib/imageLibrary.js'
 import './master-online.css'
 
-const pages = ['overview', 'people', 'applicants', 'history', 'certificates', 'images', 'settings', 'portfolio']
+const pages = ['overview', 'people', 'applicants', 'tracks', 'history', 'certificates', 'images', 'settings', 'portfolio']
 const fmt = (value) => value ? new Date(value).toLocaleString() : '—'
 const date = (value) => value ? new Date(value).toLocaleDateString() : '—'
 const splitList = (value) => String(value || '').split(',').map((item) => item.trim()).filter(Boolean)
@@ -40,6 +40,9 @@ export default function MasterAdmin() {
   const [interns, setInterns] = useState([])
   const [admins, setAdmins] = useState([])
   const [applications, setApplications] = useState([])
+  const [internshipTracks, setInternshipTracks] = useState([])
+  const [trackNotice, setTrackNotice] = useState({ text: '', success: false })
+  const [trackBusy, setTrackBusy] = useState('')
   const [activity, setActivity] = useState({ staffActivity: [], internCheckins: [], audit: [] })
   const [workspace, setWorkspace] = useState({ recipients: [], sentMessages: [] })
   const [attendance, setAttendance] = useState(null)
@@ -76,6 +79,7 @@ export default function MasterAdmin() {
   const refreshInterns = useCallback(async () => setInterns((await adminRequest('/api/admin/interns')).interns), [])
   const refreshAdmins = useCallback(async () => setAdmins((await adminRequest('/api/admin/admins')).admins), [])
   const refreshApplicants = useCallback(async () => setApplications((await adminRequest('/api/admin/internship-applications')).applications), [])
+  const refreshInternshipTracks = useCallback(async () => setInternshipTracks((await adminRequest('/api/admin/internship-tracks')).tracks), [])
   const refreshCertificates = useCallback(async () => setCertificates((await adminRequest('/api/admin/certificates')).certificates), [])
   const refreshActivity = useCallback(async () => {
     const data = await adminRequest('/api/admin/activity')
@@ -105,10 +109,10 @@ export default function MasterAdmin() {
   }, [])
 
   const loadAll = useCallback(async () => {
-    const results = await Promise.allSettled([refreshStaff(), refreshInterns(), refreshAdmins(), refreshApplicants(), refreshActivity(), refreshWorkspace(), loadMasterPortfolio(), refreshCertificates()])
+    const results = await Promise.allSettled([refreshStaff(), refreshInterns(), refreshAdmins(), refreshApplicants(), refreshInternshipTracks(), refreshActivity(), refreshWorkspace(), loadMasterPortfolio(), refreshCertificates()])
     const error = results.find((result) => result.status === 'rejected')
     if (error) setNotice({ text: error.reason?.message || 'Some administrator data could not be loaded.', success: false })
-  }, [refreshStaff, refreshInterns, refreshAdmins, refreshApplicants, refreshActivity, refreshWorkspace, loadMasterPortfolio, refreshCertificates])
+  }, [refreshStaff, refreshInterns, refreshAdmins, refreshApplicants, refreshInternshipTracks, refreshActivity, refreshWorkspace, loadMasterPortfolio, refreshCertificates])
 
   useEffect(() => {
     let active = true
@@ -136,9 +140,9 @@ export default function MasterAdmin() {
     let active = true
     loadAll().then(() => { if (!active) return })
     adminRequest('/api/staff/attendance').then((result) => { if (active) setAttendance(result.attendance) }).catch((error) => { if (active) setAttendanceNotice(error.message) })
-    const timer = setInterval(() => Promise.allSettled([refreshStaff(), refreshInterns(), refreshAdmins(), refreshApplicants(), refreshActivity()]), 30_000)
+    const timer = setInterval(() => Promise.allSettled([refreshStaff(), refreshInterns(), refreshAdmins(), refreshApplicants(), refreshInternshipTracks(), refreshActivity()]), 30_000)
     return () => { active = false; clearInterval(timer) }
-  }, [account, loadAll, refreshStaff, refreshInterns, refreshAdmins, refreshApplicants, refreshActivity])
+  }, [account, loadAll, refreshStaff, refreshInterns, refreshAdmins, refreshApplicants, refreshInternshipTracks, refreshActivity])
 
   useEffect(() => {
     if (!account) return undefined
@@ -162,6 +166,7 @@ export default function MasterAdmin() {
     setSidebarOpen(false)
     if (location.hash !== `#${next}`) history.replaceState(null, '', `#${next}`)
     if (next === 'applicants') refreshApplicants().catch((error) => setNotice({ text: error.message, success: false }))
+    if (next === 'tracks') refreshInternshipTracks().catch((error) => setTrackNotice({ text: error.message, success: false }))
     if (next === 'history') refreshWorkspace().catch((error) => setMessageNotice(error.message))
     if (matchMedia('(max-width: 800px)').matches) requestAnimationFrame(() => document.querySelector('.master-pages')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
   }
@@ -301,6 +306,57 @@ export default function MasterAdmin() {
     }
   }
 
+  const addInternshipTrack = async (event) => {
+    event.preventDefault()
+    const form = event.currentTarget
+    setTrackBusy('new')
+    setTrackNotice({ text: '', success: false })
+    try {
+      const { track } = await adminRequest('/api/admin/internship-tracks', {
+        method: 'POST',
+        body: JSON.stringify({ name: form.elements.name.value.trim(), isSelectable: form.elements.isSelectable.checked }),
+      })
+      setInternshipTracks((items) => [...items, track])
+      form.reset()
+      setTrackNotice({ text: `${track.name} added.`, success: true })
+    } catch (error) {
+      setTrackNotice({ text: error.message || 'Could not add this track.', success: false })
+    } finally {
+      setTrackBusy('')
+    }
+  }
+
+  const setInternshipTrackAvailability = async (track, isSelectable) => {
+    setTrackBusy(String(track.id))
+    setTrackNotice({ text: '', success: false })
+    try {
+      const { track: updated } = await adminRequest(`/api/admin/internship-tracks/${track.id}`, {
+        method: 'PATCH', body: JSON.stringify({ isSelectable }),
+      })
+      setInternshipTracks((items) => items.map((item) => item.id === updated.id ? updated : item))
+      setTrackNotice({ text: `${updated.name} ${isSelectable ? 'opened for' : 'closed to'} applications.`, success: true })
+    } catch (error) {
+      setTrackNotice({ text: error.message || 'Could not update this track.', success: false })
+    } finally {
+      setTrackBusy('')
+    }
+  }
+
+  const removeInternshipTrack = async (track) => {
+    if (!window.confirm(`Remove ${track.name} from the internship track list? Existing applications will be kept.`)) return
+    setTrackBusy(String(track.id))
+    setTrackNotice({ text: '', success: false })
+    try {
+      await adminRequest(`/api/admin/internship-tracks/${track.id}`, { method: 'DELETE' })
+      setInternshipTracks((items) => items.filter((item) => item.id !== track.id))
+      setTrackNotice({ text: `${track.name} removed. Existing applications were kept.`, success: true })
+    } catch (error) {
+      setTrackNotice({ text: error.message || 'Could not remove this track.', success: false })
+    } finally {
+      setTrackBusy('')
+    }
+  }
+
   const issueCertificate = async (event) => {
     event.preventDefault()
     setCertificateBusy(true)
@@ -387,7 +443,7 @@ export default function MasterAdmin() {
     {!account ? <section className="master-card"><h2>Administrator sign in</h2><p>Sign in with your backend administrator email and password.</p><form className="master-form" onSubmit={signIn}><label className="wide">Email address<input name="email" type="email" autoComplete="username" required /></label><label className="wide">Password<input name="password" type="password" autoComplete="current-password" required /></label><button className="button wide" type="submit" disabled={loginBusy}>{loginBusy ? 'Signing in…' : 'Sign in'}</button></form><Notice>{loginNotice}</Notice></section> : <div id="masterConsole">
       <aside className={`master-card master-sidebar${sidebarOpen ? ' is-open' : ''}`}>
         <button className="dashboard-sidebar-toggle" type="button" aria-expanded={sidebarOpen} aria-controls="masterAdminSidebarContent" onClick={() => setSidebarOpen((open) => !open)}>{sidebarOpen ? 'Hide dashboard menu' : 'Show dashboard menu'}<span aria-hidden="true">{sidebarOpen ? '−' : '+'}</span></button>
-        <div className="dashboard-sidebar-content" id="masterAdminSidebarContent"><span className="eyebrow">ADMIN PROFILE</span><h2>{account.name || 'Administrator'}</h2><p>{account.email}</p><nav aria-label="Master admin navigation">{[['overview', 'Overview'], ['people', 'People'], ['applicants', 'Applicants'], ['history', 'History'], ['certificates', 'Certificates'], ['images', 'Image library'], ['settings', 'Settings'], ['portfolio', 'My portfolio']].map(([key, label]) => <a key={key} href={`#${key}`} className={page === key ? 'active' : ''} aria-current={page === key ? 'page' : undefined} onClick={(event) => { event.preventDefault(); showPage(key) }}>{label}</a>)}</nav><section><span className="eyebrow">TODAY’S ATTENDANCE</span><p className="master-attendance-status">{attendance ? `In: ${attendance.clockInAt ? new Date(attendance.clockInAt).toLocaleTimeString() : '—'} · Out: ${attendance.clockOutAt ? new Date(attendance.clockOutAt).toLocaleTimeString() : '—'}` : attendanceNotice || 'Loading attendance…'}</p><div className="master-attendance"><button className="button" type="button" onClick={() => updateAttendance('clock_in')}>Clock in</button><button className="button secondary" type="button" onClick={() => updateAttendance('clock_out')}>Clock out</button></div><Notice>{attendanceNotice}</Notice></section></div>
+        <div className="dashboard-sidebar-content" id="masterAdminSidebarContent"><span className="eyebrow">ADMIN PROFILE</span><h2>{account.name || 'Administrator'}</h2><p>{account.email}</p><nav aria-label="Master admin navigation">{[['overview', 'Overview'], ['people', 'People'], ['applicants', 'Applicants'], ['tracks', 'Internship tracks'], ['history', 'History'], ['certificates', 'Certificates'], ['images', 'Image library'], ['settings', 'Settings'], ['portfolio', 'My portfolio']].map(([key, label]) => <a key={key} href={`#${key}`} className={page === key ? 'active' : ''} aria-current={page === key ? 'page' : undefined} onClick={(event) => { event.preventDefault(); showPage(key) }}>{label}</a>)}</nav><section><span className="eyebrow">TODAY’S ATTENDANCE</span><p className="master-attendance-status">{attendance ? `In: ${attendance.clockInAt ? new Date(attendance.clockInAt).toLocaleTimeString() : '—'} · Out: ${attendance.clockOutAt ? new Date(attendance.clockOutAt).toLocaleTimeString() : '—'}` : attendanceNotice || 'Loading attendance…'}</p><div className="master-attendance"><button className="button" type="button" onClick={() => updateAttendance('clock_in')}>Clock in</button><button className="button secondary" type="button" onClick={() => updateAttendance('clock_out')}>Clock out</button></div><Notice>{attendanceNotice}</Notice></section></div>
       </aside>
       <div className="master-pages">
         {page === 'overview' && <section className="master-card"><span className="eyebrow">OVERVIEW</span><h2>Master admin overview</h2><p>Review internship applicants, manage people, check sent reports, and build your portfolio.</p><div className="master-summary-grid"><article><b>{staff.filter((person) => person.activated && person.active).length}</b><span>Active staff</span></article><article><b>{onlineStaff === null ? '—' : onlineStaff.length}</b><span>Staff online · active within 6 min</span></article><article><b>{interns.filter((person) => person.active).length}</b><span>Active interns</span></article><article><b>{applications.length}</b><span>Applications</span></article><article><b>{admins.length}</b><span>Administrators</span></article></div><div className="master-online-list" aria-live="polite"><span>Staff online now</span>{onlineStaff === null ? <p>Online staff could not be loaded.</p> : onlineStaff.length ? <ul>{onlineStaff.map((person) => <li key={person.id}>{person.name}</li>)}</ul> : <p>No staff are online right now.</p>}</div>{notice.text && <Notice success={notice.success}>{notice.text}</Notice>}</section>}
@@ -399,6 +455,10 @@ export default function MasterAdmin() {
         </>}
 
         {page === 'applicants' && <section className="master-card"><span className="eyebrow">INTERNSHIP APPLICANTS</span><h2>Applicant submissions</h2><div className="master-list">{applications.length ? applications.map((app) => <article className="master-row" key={app.id}><div><b>{app.fullName}</b><small>{app.email} · {app.phone} · {app.track} · Received {fmt(app.createdAt)}</small>{[['Background', app.background], ['Background details', app.backgroundDetails], ['Skills', app.skills], ['Motivation', app.motivation], ['Availability', `${app.startDate || ''} · ${app.duration || ''} · ${app.availability || ''}`], ['Contribution', app.contribution]].filter(([, value]) => value).map(([label, value]) => <small key={label}>{label}: {Array.isArray(value) ? value.join(', ') : value}</small>)}<div>{[['Portfolio', app.portfolioUrl], ['GitHub', app.githubUrl], ['LinkedIn', app.linkedinUrl]].filter(([, url]) => /^https?:\/\//i.test(url || '')).map(([label, url]) => <a key={label} href={url} target="_blank" rel="noopener noreferrer">{label} </a>)}</div>{app.resume?.name && <button className="button secondary" type="button" onClick={() => downloadResume(app)}>Download CV · {app.resume.name}</button>}</div></article>) : <p>No internship applications have been received yet.</p>}</div></section>}
+
+        {page === 'tracks' && <>
+          <section className="master-card"><span className="eyebrow">INTERNSHIP TRACKS</span><h2>Manage application options</h2><p>Selectable tracks are open on the public application form. Turn a track off to keep it visible but greyed out. Removing a track deletes it from the form; submitted applications remain unchanged.</p><form className="master-form master-track-form" onSubmit={addInternshipTrack}><label>New track name<input name="name" maxLength="100" placeholder="e.g. Data Science / AI" required /></label><label className="master-track-add-toggle"><input name="isSelectable" type="checkbox" /> Open for applications immediately</label><button className="button" type="submit" disabled={trackBusy === 'new'}>{trackBusy === 'new' ? 'Adding…' : 'Add track'}</button></form><Notice success={trackNotice.success}>{trackNotice.text}</Notice><div className="master-list">{internshipTracks.length ? internshipTracks.map((track) => <article className="master-row master-track-row" key={track.id}><div><b>{track.name}</b><small>{track.isSelectable ? 'Applicants can select this track.' : 'Shown in the application list but currently unavailable.'}</small></div><label className="master-track-toggle"><input type="checkbox" checked={track.isSelectable} disabled={trackBusy === String(track.id)} onChange={(event) => setInternshipTrackAvailability(track, event.target.checked)} /><span>{track.isSelectable ? 'Selectable' : 'Disabled'}</span></label><button className="button secondary master-danger" type="button" disabled={trackBusy === String(track.id)} onClick={() => removeInternshipTrack(track)}>Remove</button></article>) : <p>No internship tracks are configured.</p>}</div></section>
+        </>}
 
         {page === 'history' && <>
           <section className="master-card"><span className="eyebrow">MESSAGE HISTORY</span><h2>Sent announcements and reports</h2><div className="master-list">{workspace.sentMessages?.length ? workspace.sentMessages.map((item) => <article className="master-row" key={item.id}><div><b>{item.type === 'announcement' ? 'ANNOUNCEMENT' : 'WEEKLY REPORT'} · {item.subject}</b><small>Sent by {item.senderName}{item.senderEmail ? ` (${item.senderEmail})` : ''} · {fmt(item.createdAt)} · {item.recipientCount} recipients</small></div></article>) : <p>No messages have been sent.</p>}</div></section>

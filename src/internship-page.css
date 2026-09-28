@@ -3,9 +3,12 @@
 
 /* Keep the internship public pages on the site's shared type scale. */
 .internship-page{font-size:16px;line-height:1.65}
+.internship-tracks-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.9fr);align-items:stretch;gap:20px}.internship-tracks-layout .internship-card-grid{grid-template-columns:1fr}.internship-track-ad{display:block;width:100%;height:100%;min-height:280px;max-height:460px;object-fit:cover;object-position:center;border:1px solid var(--internship-edge);border-radius:10px;box-shadow:0 12px 32px #321c5414}
+.internship-application-form select{width:100%;padding:11px;border:1px solid var(--internship-edge);border-radius:8px;background:var(--internship-card);color:var(--internship-ink);font:inherit}.internship-application-form select:disabled{opacity:.7}.internship-application-form select option:disabled{color:#999}
 .internship-page .eyebrow{font-size:11px}
 .internship-page .internship-brand{font-size:16px}
 .internship-page .internship-brand small{font-size:9px}
+.internship-track-ad{ }
 .internship-page .internship-nav nav a{font-size:10px}
 .internship-page .internship-nav .button,.internship-page .internship-actions .button{font-size:12px}
 .internship-page .internship-hero h1{font-size:clamp(42px,5.1vw,64px)}
@@ -62,3 +65,7 @@
   .internship-page .internship-steps article:nth-child(4n)::before{display:block}
   .internship-page .internship-steps article:nth-child(2n)::before{display:none}
 }
+
+@media(max-width:800px){.internship-tracks-layout{grid-template-columns:1fr 1fr;gap:12px}.internship-tracks-layout .internship-card-grid{grid-template-columns:1fr}.internship-track-ad{min-height:240px}}
+@media(max-width:520px){.internship-tracks-layout{grid-template-columns:1fr}.internship-tracks-layout .internship-card-grid{grid-template-columns:1fr}.internship-track-ad{height:auto;min-height:0;max-height:none;object-fit:contain}}
+.internship-track-ad-link{display:block;border-radius:10px;outline-offset:4px;cursor:pointer}.internship-track-ad-link:focus-visible{outline:2px solid var(--internship-purple)}.internship-track-ad-link .internship-track-ad{transition:transform .2s ease,box-shadow .2s ease}.internship-track-ad-link:hover .internship-track-ad{transform:translateY(-2px);box-shadow:0 16px 38px #321c5428}.internship-apply{scroll-margin-top:24px}

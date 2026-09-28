@@ -271,7 +271,7 @@ async function handler(req, res) {
   res.setHeader("vary", "Origin");
   if (req.method === "OPTIONS") {
     res.writeHead(204, {
-      "access-control-allow-methods": "GET,POST,DELETE,OPTIONS",
+      "access-control-allow-methods": "GET,POST,PATCH,DELETE,OPTIONS",
       "access-control-allow-headers": "content-type",
     });
     return res.end();
@@ -280,6 +280,9 @@ async function handler(req, res) {
   const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
   if (req.method === "GET" && url.pathname === "/api/health")
     return send(res, 200, { status: "ok", database: "connected" });
+
+  if (req.method === "GET" && url.pathname === "/api/internship-tracks")
+    return send(res, 200, { tracks: await store.listInternshipTracks() });
 
   const publicImageRoute = url.pathname.match(/^\/api\/media\/([0-9a-f-]{36})$/i);
   if (req.method === "GET" && publicImageRoute) {
@@ -580,10 +583,12 @@ async function handler(req, res) {
       fields.map((field) => [field, String(body[field] || "").trim()]),
     );
     application.email = application.email.toLowerCase();
-    if (application.track !== "Digital Marketing" || application.duration !== "3 months")
-      return send(res, 400, { error: "Applications are currently open only for the three-month Digital Marketing internship." });
+    if (application.duration !== "3 months")
+      return send(res, 400, { error: "The internship program duration must be three months." });
     if (fields.some((field) => !application[field]) || body.consent !== true)
       return send(res, 400, { error: "Complete all required fields and confirm the accuracy statement." });
+    if (!await store.isInternshipTrackSelectable(application.track))
+      return send(res, 400, { error: "Choose an internship track that is currently open for applications." });
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(application.email))
       return send(res, 400, { error: "Enter a valid email address." });
     const resume = body.resume;
@@ -725,6 +730,43 @@ async function handler(req, res) {
     if (!current || !isAdministrator(current.account))
       return send(res, 403, { error: "Administrator access is required." });
     return send(res, 200, { applications: await store.listInternshipApplications() });
+  }
+
+  if (url.pathname === "/api/admin/internship-tracks") {
+    const current = await currentSession(req);
+    if (!current || current.account.accountType !== "master_admin")
+      return send(res, 403, { error: "Master administrator access is required." });
+    if (req.method === "GET")
+      return send(res, 200, { tracks: await store.listInternshipTracks() });
+    if (req.method === "POST") {
+      const body = await readBody(req);
+      const name = String(body.name || "").trim();
+      if (!name || name.length > 100)
+        return send(res, 400, { error: "Track name must be between 1 and 100 characters." });
+      if (body.isSelectable !== undefined && typeof body.isSelectable !== "boolean")
+        return send(res, 400, { error: "Choose whether applications are open for this track." });
+      const track = await store.createInternshipTrack(name, body.isSelectable === true);
+      if (!track) return send(res, 409, { error: "An internship track with that name already exists." });
+      return send(res, 201, { track });
+    }
+  }
+
+  const internshipTrackMatch = url.pathname.match(/^\/api\/admin\/internship-tracks\/(\d+)$/);
+  if (internshipTrackMatch && ["PATCH", "DELETE"].includes(req.method)) {
+    const current = await currentSession(req);
+    if (!current || current.account.accountType !== "master_admin")
+      return send(res, 403, { error: "Master administrator access is required." });
+    if (req.method === "PATCH") {
+      const body = await readBody(req);
+      if (typeof body.isSelectable !== "boolean")
+        return send(res, 400, { error: "Choose whether applications are open for this track." });
+      const track = await store.setInternshipTrackSelectable(internshipTrackMatch[1], body.isSelectable);
+      if (!track) return send(res, 404, { error: "Internship track not found." });
+      return send(res, 200, { track });
+    }
+    if (!await store.deleteInternshipTrack(internshipTrackMatch[1]))
+      return send(res, 404, { error: "Internship track not found." });
+    return send(res, 200, { ok: true });
   }
 
   const applicantResumeMatch = url.pathname.match(/^\/api\/admin\/internship-applications\/(\d+)\/resume$/);
