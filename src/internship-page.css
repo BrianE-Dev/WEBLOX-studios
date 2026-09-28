@@ -48,3 +48,17 @@
 .internship-page .certificate-details .certificate-detail-note{font-size:12px}
 
 .internship-page .internship-hero-console>div span{font-size:10px}.internship-page .internship-hero-console>div b{font-size:9px}.internship-page .internship-hero-console>small{font-size:11px}.internship-page .internship-hero-console>code{font-size:11px}.internship-page .certificate-details>div small,.internship-page .certificate-details .certificate-sample-label{font-size:9px}.internship-page .certificate-details code{font-size:12px}.internship-page .certificate-details .certificate-detail-note{font-size:13px}
+
+/* Internship steps use the connected number tiles from the studio lifecycle. */
+.internship-page .internship-steps{column-gap:15px;row-gap:34px}
+.internship-page .internship-steps article{position:relative;min-width:0}
+.internship-page .internship-steps article::before{position:absolute;z-index:0;top:42px;left:42px;width:calc(100% + 15px);height:1px;background:var(--internship-purple);content:""}
+.internship-page .internship-steps article:last-child::before{display:none}
+.internship-page .internship-steps article>b{position:relative;z-index:1;width:84px;height:84px;border:1px solid #a259ff;border-radius:15px;background:var(--internship-card);box-shadow:0 8px 22px #7b3ff226;font:600 18px var(--mono)}
+@media(max-width:800px){
+  .internship-page .internship-steps article:nth-child(4n)::before{display:none}
+}
+@media(max-width:520px){
+  .internship-page .internship-steps article:nth-child(4n)::before{display:block}
+  .internship-page .internship-steps article:nth-child(2n)::before{display:none}
+}
