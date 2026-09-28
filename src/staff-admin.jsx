@@ -106,6 +106,7 @@ export default function StaffAdmin() {
     if (location.hash !== `#${next}`) history.replaceState(null, '', `#${next}`)
     if (next === 'applicants') refreshApplications().catch((error) => setLoginNotice(error.message))
     if (next === 'history') refreshWorkspace().catch((error) => setMessageNotice(error.message))
+    if (matchMedia('(max-width: 800px)').matches) requestAnimationFrame(() => document.querySelector('.admin-main')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
   }
 
   const signIn = async (event) => {

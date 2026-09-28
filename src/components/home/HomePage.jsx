@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import HeroProductScene from './HeroProductScene.jsx'
+import { setPageSeo } from '../../lib/seo.js'
 import './HomePage.css'
 
 const primaryLinks = [
@@ -12,9 +13,9 @@ const primaryLinks = [
 ]
 
 const principles = [
-  ['Innovation', 'Modern technology applied to meaningful systemic challenges.'],
-  ['Quality', 'Product craftsmanship, thoughtful systems, and rigorous execution.'],
-  ['Impact', 'Commercially useful digital products with room to grow.'],
+  ['Innovation', 'Modern technology applied deliberately to real problems and meaningful opportunities.'],
+  ['Quality', 'Thoughtful systems, product craftsmanship, and rigorous execution at every layer.'],
+  ['Impact', 'Digital products designed to deliver practical value, support growth, and create lasting opportunities.'],
 ]
 
 const services = [
@@ -43,7 +44,7 @@ const organization = [
 
 const insights = [
   ['AI & Engineering', 'Building evaluation systems that make technical interviews more signal-rich.'],
-  ['Venture Strategy', 'Why products built from Africa can be designed for global markets from day one.'],
+  ['Venture Strategy', 'How to design digital products for global markets from day one.'],
   ['Product Thinking', 'The care required to make complex developer tools feel clear and useful.'],
 ]
 
@@ -125,28 +126,31 @@ function ProjectEnquiry() {
 
 function SiteFooter() {
   return <footer><div className="shell"><div className="footer-grid">
-    <div><a className="brand" href="/"><span className="mark"><img className="logo-dark" src="/assets/logo-dark.png" alt="" /><img className="logo-light" src="/assets/logo-light.png" alt="" /></span><span>WEBLOX <em>STUDIOS</em></span></a><p>We build powerful digital solutions that solve real problems. A frontier venture studio from Africa, engineered for the global.</p><small>ENGINEERED FOR LEVERAGE</small></div>
+    <div><a className="brand" href="/"><span className="mark"><img className="logo-dark" src="/assets/logo-dark.png" alt="" /><img className="logo-light" src="/assets/logo-light.png" alt="" /></span><span>WEBLOX <em>STUDIOS</em></span></a><p>A technology venture studio building, launching, and scaling digital products for global markets.</p><small>ENGINEERED FOR LEVERAGE</small></div>
     <div><strong>Explore</strong><a href="/ventures">Ventures</a><a href="/services">Services</a><a href="/studio">Studio</a><a href="/insights">Insights</a></div>
     <div><strong>Company</strong><a href="/careers">Careers</a><a href="/internship">Internship</a><a href="#enquiry">Start a project</a><a href="mailto:studio@weblox.io">studio@weblox.io</a></div>
-    <div className="status"><span><i /> All systems operational</span><small>Building from Africa.<br />Thinking globally.</small></div>
-  </div><div className="copyright">© 2026 WEBLOX Studios. Built for the world.</div></div></footer>
+    <div className="status"><span><i /> All systems operational</span><small>Building products with purpose.<br />Engineering for lasting value.</small></div>
+  </div><div className="copyright">© 2026 WEBLOX Studios. Ideas into products. Products into ventures.</div></div></footer>
 }
 
 export default function HomePage() {
   useEffect(() => {
-    document.title = 'Technology venture studio | WEBLOX Studios'
-    document.querySelector('meta[name="description"]')?.setAttribute('content', 'We build digital experiences and technology products that move businesses forward.')
+    setPageSeo({
+      title: 'WEBLOX Studios | Technology Venture Studio',
+      description: 'WEBLOX Studios builds, launches, and scales digital products for global markets. Thoughtful systems, decisive execution, and engineering for lasting value.',
+      path: '/',
+    })
   }, [])
 
   return <>
     <SiteHeader />
     <main>
       <section className="hero shell">
-        <div><span className="chip"><i /> TECHNOLOGY VENTURE STUDIO</span><h1><strong>We build digital experiences and technology products that move businesses forward.</strong></h1><p>We build high-quality websites, web applications, mobile apps, and digital products that help businesses turn ideas into reliable digital experiences.</p><div className="actions"><a className="button" href="#enquiry">Start a Project <Arrow /></a><a className="button secondary" href="/ventures">Explore Our Work</a></div><div className="metrics"><span><b>100%</b>Custom-built</span><span><b>6 weeks</b>Idea to MVP</span><span><b>Day 1</b>Scalable architecture</span></div></div>
+        <div><span className="chip"><i /> TECHNOLOGY VENTURE STUDIO</span><h1><strong>We build, launch, and scale digital products for global markets.</strong></h1><p>WEBLOX Studios turns ideas into useful products through thoughtful engineering, decisive execution, and systems built to grow.</p><div className="actions"><a className="button" href="#enquiry">Start a Project <Arrow /></a><a className="button secondary" href="/ventures">Explore Our Work</a></div><div className="metrics"><span><b>100%</b>Custom-built</span><span><b>6 weeks</b>Idea to MVP</span><span><b>Day 1</b>Scalable architecture</span></div></div>
         <div className="hero-visual"><HeroProductScene /><TerminalPreview /></div>
       </section>
 
-      <section className="band"><div className="shell"><SectionHeading eyebrow="Architectural Principles" title="From Africa. Built for the world." copy="We build powerful digital solutions that solve real problems." /><div className="cards three">{principles.map(([title, copy], index) => <article className="card" key={title}><span className="num">0{index + 1}</span><h3>{title}</h3><p>{copy}</p><small>● ENGINEERED FOR LEVERAGE</small></article>)}</div></div></section>
+      <section className="band"><div className="shell"><SectionHeading eyebrow="Architectural Principles" title="Built for real problems. Engineered for lasting value." copy="We build digital products with the technology, precision, and discipline required to create meaningful value and scale beyond the initial idea." /><div className="cards three">{principles.map(([title, copy], index) => <article className="card" key={title}><span className="num">0{index + 1}</span><h3>{title}</h3><p>{copy}</p><small>● ENGINEERED FOR LEVERAGE</small></article>)}</div></div></section>
 
       <section className="section shell"><SectionHeading eyebrow="Venture Spotlight" title="Featured Venture: Signarol" copy="An AI-powered coding interview intelligence platform." /><article className="venture"><div><span className="chip">AI MVP</span><h3>SIGNAROL</h3><p>Technical interview intelligence and live coding evaluation built to help teams make better hiring decisions.</p><a className="button secondary" href="/ventures/signarol">View Signarol <Arrow /></a></div><div className="code"><small>signarol_eval_worker.py</small><pre><b>import</b> signarol_kernel<br /><br /><b>def</b> evaluate(candidate):<br />  telemetry = engine.run(candidate)<br />  <b>return</b> telemetry.score()</pre><span>● Analysis ready <em>Passed checks</em></span></div></article></section>
 

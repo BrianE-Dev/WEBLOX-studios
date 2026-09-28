@@ -5,6 +5,7 @@ import ImageLibrary from './components/ImageLibrary.jsx'
 import ThemeAwareLogo from './components/ThemeAwareLogo.jsx'
 import PageLoadingSkeleton from './components/PageLoadingSkeleton.jsx'
 import { absoluteImageUrl, uploadDashboardImage } from './lib/imageLibrary.js'
+import './master-online.css'
 
 const pages = ['overview', 'people', 'applicants', 'history', 'certificates', 'images', 'settings', 'portfolio']
 const fmt = (value) => value ? new Date(value).toLocaleString() : '—'
@@ -35,6 +36,7 @@ export default function MasterAdmin() {
   const [loginNotice, setLoginNotice] = useState('')
   const [loginBusy, setLoginBusy] = useState(false)
   const [staff, setStaff] = useState([])
+  const [onlineStaff, setOnlineStaff] = useState(null)
   const [interns, setInterns] = useState([])
   const [admins, setAdmins] = useState([])
   const [applications, setApplications] = useState([])
@@ -63,6 +65,14 @@ export default function MasterAdmin() {
   useEffect(() => { document.documentElement.dataset.theme = localStorage.getItem('weblox-theme') || 'dark' }, [])
 
   const refreshStaff = useCallback(async () => setStaff((await adminRequest('/api/admin/staff')).staff), [])
+  const refreshOnlineStaff = useCallback(async () => {
+    try {
+      const result = await adminRequest('/api/admin/staff/online')
+      setOnlineStaff(result.staff || [])
+    } catch {
+      setOnlineStaff(null)
+    }
+  }, [])
   const refreshInterns = useCallback(async () => setInterns((await adminRequest('/api/admin/interns')).interns), [])
   const refreshAdmins = useCallback(async () => setAdmins((await adminRequest('/api/admin/admins')).admins), [])
   const refreshApplicants = useCallback(async () => setApplications((await adminRequest('/api/admin/internship-applications')).applications), [])
@@ -131,6 +141,13 @@ export default function MasterAdmin() {
   }, [account, loadAll, refreshStaff, refreshInterns, refreshAdmins, refreshApplicants, refreshActivity])
 
   useEffect(() => {
+    if (!account) return undefined
+    refreshOnlineStaff()
+    const timer = setInterval(refreshOnlineStaff, 180_000)
+    return () => clearInterval(timer)
+  }, [account, refreshOnlineStaff])
+
+  useEffect(() => {
     const sync = () => setPage(pages.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'overview')
     addEventListener('hashchange', sync)
     return () => removeEventListener('hashchange', sync)
@@ -146,6 +163,7 @@ export default function MasterAdmin() {
     if (location.hash !== `#${next}`) history.replaceState(null, '', `#${next}`)
     if (next === 'applicants') refreshApplicants().catch((error) => setNotice({ text: error.message, success: false }))
     if (next === 'history') refreshWorkspace().catch((error) => setMessageNotice(error.message))
+    if (matchMedia('(max-width: 800px)').matches) requestAnimationFrame(() => document.querySelector('.master-pages')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
   }
 
   const signIn = async (event) => {
@@ -372,7 +390,7 @@ export default function MasterAdmin() {
         <div className="dashboard-sidebar-content" id="masterAdminSidebarContent"><span className="eyebrow">ADMIN PROFILE</span><h2>{account.name || 'Administrator'}</h2><p>{account.email}</p><nav aria-label="Master admin navigation">{[['overview', 'Overview'], ['people', 'People'], ['applicants', 'Applicants'], ['history', 'History'], ['certificates', 'Certificates'], ['images', 'Image library'], ['settings', 'Settings'], ['portfolio', 'My portfolio']].map(([key, label]) => <a key={key} href={`#${key}`} className={page === key ? 'active' : ''} aria-current={page === key ? 'page' : undefined} onClick={(event) => { event.preventDefault(); showPage(key) }}>{label}</a>)}</nav><section><span className="eyebrow">TODAY’S ATTENDANCE</span><p className="master-attendance-status">{attendance ? `In: ${attendance.clockInAt ? new Date(attendance.clockInAt).toLocaleTimeString() : '—'} · Out: ${attendance.clockOutAt ? new Date(attendance.clockOutAt).toLocaleTimeString() : '—'}` : attendanceNotice || 'Loading attendance…'}</p><div className="master-attendance"><button className="button" type="button" onClick={() => updateAttendance('clock_in')}>Clock in</button><button className="button secondary" type="button" onClick={() => updateAttendance('clock_out')}>Clock out</button></div><Notice>{attendanceNotice}</Notice></section></div>
       </aside>
       <div className="master-pages">
-        {page === 'overview' && <section className="master-card"><span className="eyebrow">OVERVIEW</span><h2>Master admin overview</h2><p>Review internship applicants, manage people, check sent reports, and build your portfolio.</p><div className="master-summary-grid"><article><b>{staff.filter((person) => person.activated && person.active).length}</b><span>Active staff</span></article><article><b>{interns.filter((person) => person.active).length}</b><span>Active interns</span></article><article><b>{applications.length}</b><span>Applications</span></article><article><b>{admins.length}</b><span>Administrators</span></article></div>{notice.text && <Notice success={notice.success}>{notice.text}</Notice>}</section>}
+        {page === 'overview' && <section className="master-card"><span className="eyebrow">OVERVIEW</span><h2>Master admin overview</h2><p>Review internship applicants, manage people, check sent reports, and build your portfolio.</p><div className="master-summary-grid"><article><b>{staff.filter((person) => person.activated && person.active).length}</b><span>Active staff</span></article><article><b>{onlineStaff === null ? '—' : onlineStaff.length}</b><span>Staff online · active within 6 min</span></article><article><b>{interns.filter((person) => person.active).length}</b><span>Active interns</span></article><article><b>{applications.length}</b><span>Applications</span></article><article><b>{admins.length}</b><span>Administrators</span></article></div><div className="master-online-list" aria-live="polite"><span>Staff online now</span>{onlineStaff === null ? <p>Online staff could not be loaded.</p> : onlineStaff.length ? <ul>{onlineStaff.map((person) => <li key={person.id}>{person.name}</li>)}</ul> : <p>No staff are online right now.</p>}</div>{notice.text && <Notice success={notice.success}>{notice.text}</Notice>}</section>}
 
         {page === 'people' && <>
           <section className="master-card"><span className="eyebrow">ALL STAFF</span><h2>Staff accounts</h2><p>Review onboarded team members and update their directory details.</p><div className="master-list">{staff.length ? staff.map((person) => <article className="master-row" key={person.id || person.email}><div><b>{person.name || person.email}</b><small>{[person.email, person.role, person.jobType || '—', person.gender || 'Gender undisclosed', `Added ${date(person.createdAt)} by ${person.createdByName || 'Unknown'}${person.createdByEmail ? ` (${person.createdByEmail})` : ''}`, person.activated ? person.active ? 'ACTIVE' : 'DISABLED' : 'INVITATION PENDING'].join(' · ')}</small></div>{person.activated && <span className="master-state">{person.active ? 'ACTIVE' : 'DISABLED'}</span>}<button className="button secondary" type="button" onClick={() => editPerson(person, 'staff')}>Edit</button>{person.activated ? <button className={`button secondary${person.active ? ' master-danger' : ''}`} type="button" onClick={() => updatePerson(person, 'staff', person.active ? 'remove' : 'restore')}>{person.active ? 'Disable' : 'Restore access'}</button> : <button className="button secondary master-danger" type="button" onClick={() => updatePerson(person, 'staff', 'remove')}>Remove invitation</button>}</article>) : <p>No staff have been onboarded yet.</p>}</div></section>

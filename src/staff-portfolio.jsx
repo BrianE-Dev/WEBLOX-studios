@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { authRequest, clearStaffSession, staffRequest } from './lib/staffAuth.js'
+import { authRequest, clearStaffSession, staffRequest, startStaffPresence } from './lib/staffAuth.js'
 import { absoluteImageUrl, uploadDashboardImage } from './lib/imageLibrary.js'
 import PortfolioPresentation from './components/PortfolioPresentation.jsx'
 
@@ -141,6 +141,8 @@ export default function StaffPortfolioBuilder() {
     load()
     return () => { active = false; clearTimeout(autosaveTimer.current) }
   }, [])
+
+  useEffect(() => account ? startStaffPresence() : undefined, [account])
 
   const saveDraft = useCallback(async () => {
     if (!ready || !account) return null

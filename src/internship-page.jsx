@@ -40,10 +40,10 @@ export default function InternshipPage() {
     <CertificateSample />
     <section className="internship-apply"><div><span className="eyebrow">APPLICATIONS</span><h2>Apply for the WEBLOX<br /> Internship Program</h2><p>Ready to contribute to real work and build practical experience? Complete the application form and tell us where you can add value at WEBLOX.</p><a className="button" href="/internship/apply">Apply for Internship <span>↗</span></a><small>Applications are reviewed by the WEBLOX team.</small></div></section>
     <footer className="internship-site-footer"><div className="shell"><div className="footer-grid">
-      <div><a className="brand" href="/"><span className="mark"><img className="logo-dark" src="/assets/logo-dark.png" alt="" /><img className="logo-light" src="/assets/logo-light.png" alt="" /></span><span>WEBLOX <em>STUDIOS</em></span></a><p>We build powerful digital solutions that solve real problems. A frontier venture studio from Africa, engineered for the global.</p><small>ENGINEERED FOR LEVERAGE</small></div>
+      <div><a className="brand" href="/"><span className="mark"><img className="logo-dark" src="/assets/logo-dark.png" alt="" /><img className="logo-light" src="/assets/logo-light.png" alt="" /></span><span>WEBLOX <em>STUDIOS</em></span></a><p>A technology venture studio building, launching, and scaling digital products for global markets.</p><small>ENGINEERED FOR LEVERAGE</small></div>
       <div><strong>Explore</strong><a href="/ventures">Ventures</a><a href="/services">Services</a><a href="/studio">Studio</a><a href="/insights">Insights</a></div>
       <div><strong>Company</strong><a href="/careers">Careers</a><a href="/internship">Internship</a><a href="/#enquiry">Start a project</a><a href="mailto:studio@weblox.io">studio@weblox.io</a></div>
-      <div className="status"><span><i /> All systems operational</span><small>Building from Africa.<br />Thinking globally.</small></div>
-    </div><div className="copyright">© 2026 WEBLOX Studios. Built for the world.</div></div></footer>
+      <div className="status"><span><i /> All systems operational</span><small>Building products with purpose.<br />Engineering for lasting value.</small></div>
+    </div><div className="copyright">© 2026 WEBLOX Studios. Ideas into products. Products into ventures.</div></div></footer>
   </main>
 }

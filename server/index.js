@@ -1076,6 +1076,23 @@ async function handler(req, res) {
       },
     );
   }
+
+  if (req.method === "POST" && url.pathname === "/api/staff/presence") {
+    const current = await currentSession(req);
+    if (!current || current.account.accountType !== "staff")
+      return send(res, 403, { error: "An active staff session is required." });
+    await store.recordStaffPresence(current.account.id, current.tokenHash);
+    return send(res, 200, { ok: true });
+  }
+
+  if (req.method === "GET" && url.pathname === "/api/admin/staff/online") {
+    const current = await currentSession(req);
+    if (!current || current.account.accountType !== "master_admin")
+      return send(res, 403, { error: "Master administrator access is required." });
+    const staff = await store.listOnlineStaff();
+    return send(res, 200, { staff, count: staff.length, activeWindowSeconds: 360 });
+  }
+
   return send(res, 404, { error: "Not found." });
 }
 

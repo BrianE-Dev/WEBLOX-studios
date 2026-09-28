@@ -22,6 +22,26 @@ export async function staffRequest(path, options = {}) {
   return data
 }
 
+export function startStaffPresence() {
+  let stopped = false
+  let pending = false
+  const heartbeat = async () => {
+    if (stopped || pending) return
+    pending = true
+    try { await staffRequest('/api/staff/presence', { method: 'POST', body: '{}' }) } catch {}
+    finally { pending = false }
+  }
+  heartbeat()
+  const timer = setInterval(heartbeat, 180_000)
+  const onVisibilityChange = () => { if (document.visibilityState === 'visible') heartbeat() }
+  document.addEventListener('visibilitychange', onVisibilityChange)
+  return () => {
+    stopped = true
+    clearInterval(timer)
+    document.removeEventListener('visibilitychange', onVisibilityChange)
+  }
+}
+
 export function saveStaffSession(account) {
   sessionStorage.setItem(sessionKey, JSON.stringify(account))
 }

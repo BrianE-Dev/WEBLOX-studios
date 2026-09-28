@@ -32,6 +32,12 @@ export default function InternPortal() {
   const [passwordNotice, setPasswordNotice] = useState('')
   const internTitle = getInternTitle(intern?.role)
 
+  const showInternPage = (next) => {
+    setPage(next)
+    setSidebarOpen(false)
+    if (matchMedia('(max-width: 800px)').matches) requestAnimationFrame(() => document.querySelector('.intern-main-content')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+  }
+
   const loadCheckins = useCallback(async () => {
     const { checkins: entries } = await staffRequest('/api/intern/me/checkins')
     setCheckins(entries)
@@ -212,9 +218,9 @@ export default function InternPortal() {
               {intern.profilePhotoUrl && <button type="button" className="intern-remove-photo" disabled={photoBusy} onClick={removeProfilePhoto}>Remove photo</button>}
             </div>
             <nav className="intern-side-nav" aria-label="Intern dashboard navigation">
-              <button className={page === 'dashboard' ? 'active' : ''} type="button" onClick={() => { setPage('dashboard'); setSidebarOpen(false) }}><span>⌂</span>Dashboard</button>
-              <button className={page === 'images' ? 'active' : ''} type="button" onClick={() => { setPage('images'); setSidebarOpen(false) }}><span>▤</span>My files</button>
-              <button className={page === 'settings' ? 'active' : ''} type="button" onClick={() => { setPage('settings'); setSidebarOpen(false) }}><span>⚙</span>Settings</button>
+              <button className={page === 'dashboard' ? 'active' : ''} type="button" onClick={() => showInternPage('dashboard')}><span>⌂</span>Dashboard</button>
+              <button className={page === 'images' ? 'active' : ''} type="button" onClick={() => showInternPage('images')}><span>▤</span>My files</button>
+              <button className={page === 'settings' ? 'active' : ''} type="button" onClick={() => showInternPage('settings')}><span>⚙</span>Settings</button>
             </nav>
             <button className="intern-signout" type="button" onClick={signOut}>Sign out <span>↗</span></button>
             </div>

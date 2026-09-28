@@ -12,6 +12,7 @@ import StaffAdmin from './staff-admin.jsx'
 import StaffDashboard from './staff-dashboard.jsx'
 import StaffPortfolioBuilder from './staff-portfolio.jsx'
 import StaffSignIn from './staff-sign-in.jsx'
+import { setPageSeo } from './lib/seo.js'
 import './intern-portal.css'
 import './internship-page.css'
 import './master-admin.css'
@@ -75,6 +76,7 @@ function RouteMetadata() {
   const { pathname } = useLocation()
 
   useEffect(() => {
+    const pathKey = pathname.replace(/\/+$/, '') || '/'
     const labels = {
       '/internship': 'WEBLOX Internship Program | WEBLOX Studios',
       '/': 'WEBLOX Studios — Technology venture studio',
@@ -96,7 +98,15 @@ function RouteMetadata() {
       '/portfolio': 'Portfolio | WEBLOX Studios',
       '/portfolio.html': 'Portfolio | WEBLOX Studios',
     }
-    if (labels[pathname]) document.title = labels[pathname]
+    const descriptions = {
+      '/': 'WEBLOX Studios builds, launches, and scales digital products for global markets. Thoughtful systems, decisive execution, and engineering for lasting value.',
+      '/index.html': 'WEBLOX Studios builds, launches, and scales digital products for global markets. Thoughtful systems, decisive execution, and engineering for lasting value.',
+      '/internship': 'Build practical experience through real studio work, structured mentorship, and hands-on contribution in the WEBLOX Internship Program.',
+    }
+    if (labels[pathKey]) {
+      if (descriptions[pathKey]) setPageSeo({ title: pathKey === '/' || pathKey === '/index.html' ? 'WEBLOX Studios | Technology Venture Studio' : labels[pathKey], description: descriptions[pathKey], path: pathKey === '/index.html' ? '/' : pathKey })
+      else document.title = labels[pathKey]
+    }
 
     let referrer = document.querySelector('meta[name="referrer"]')
     if (!referrer) {

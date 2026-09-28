@@ -587,6 +587,27 @@ export function createPostgresStore(pool) {
       await pool.query("DELETE FROM auth_sessions WHERE account_id = $1 AND token_hash <> $2", [accountId, exceptTokenHash]);
     },
 
+    async recordStaffPresence(accountId, tokenHash) {
+      await pool.query(
+        `INSERT INTO staff_presence (token_hash, account_id, last_seen_at)
+         VALUES ($1, $2, now())
+         ON CONFLICT (token_hash) DO UPDATE SET last_seen_at = now()`,
+        [tokenHash, accountId],
+      );
+    },
+
+    async listOnlineStaff() {
+      const { rows } = await pool.query(
+        `SELECT DISTINCT a.id, COALESCE(NULLIF(a.name, ''), a.email) AS name
+         FROM staff_presence p
+         JOIN accounts a ON a.id = p.account_id
+         WHERE a.account_type = 'staff' AND a.active = true
+           AND p.last_seen_at >= now() - INTERVAL '6 minutes'
+         ORDER BY name`,
+      );
+      return rows;
+    },
+
     async getPortfolio(accountId) {
       const { rows } = await pool.query(
         `SELECT account_id AS "accountId", public_slug AS slug, status, draft, published,

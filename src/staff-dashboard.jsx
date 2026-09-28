@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { authRequest, clearStaffSession, staffRequest } from './lib/staffAuth.js'
+import { authRequest, clearStaffSession, staffRequest, startStaffPresence } from './lib/staffAuth.js'
 import ThemeSettings, { useThemePreference } from './components/ThemeSettings.jsx'
 import ImageLibrary from './components/ImageLibrary.jsx'
 import ThemeAwareLogo from './components/ThemeAwareLogo.jsx'
@@ -42,6 +42,8 @@ export default function StaffDashboard() {
     if (staff) window.webloxDismissBrandedLoader?.()
   }, [staff])
 
+  useEffect(() => staff ? startStaffPresence() : undefined, [staff])
+
   const loadInbox = useCallback(async () => {
     try {
       const { messages } = await staffRequest('/api/workspace/inbox')
@@ -69,6 +71,7 @@ export default function StaffDashboard() {
     setSidebarOpen(false)
     if (location.hash !== `#${selected}`) history.replaceState(null, '', `#${selected}`)
     if (selected === 'inbox') loadInbox()
+    if (matchMedia('(max-width: 800px)').matches) requestAnimationFrame(() => document.getElementById(selected)?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
   }
 
   const updateAttendance = async (action) => {
