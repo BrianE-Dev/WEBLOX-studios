@@ -72,8 +72,6 @@ export default function StaffAdmin() {
       saveStaffSession(current)
       setAccount(current)
       setLoginReady(true)
-      window.webloxShowBrandedLoader?.()
-      location.assign('/staff-admin.html')
     }).catch(() => {
       if (!active) return
       clearStaffSession()
@@ -81,6 +79,10 @@ export default function StaffAdmin() {
     })
     return () => { active = false }
   }, [])
+
+  useEffect(() => {
+    if (loginReady) window.webloxDismissBrandedLoader?.()
+  }, [loginReady])
 
   useEffect(() => {
     if (!account) return undefined
@@ -119,6 +121,8 @@ export default function StaffAdmin() {
       saveStaffSession(current)
       setAccount(current)
       setLoginReady(true)
+      window.webloxShowBrandedLoader?.()
+      location.assign('/staff-admin.html')
     } catch (error) {
       setLoginNotice(error.message || 'Could not sign in.')
     } finally {
@@ -245,7 +249,6 @@ export default function StaffAdmin() {
   const toggleRecipient = (id) => setRecipientIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id])
 
   if (!loginReady && !account) return <PageLoadingSkeleton label="Loading staff administration" />
-  window.webloxDismissBrandedLoader?.()
 
   return (
     <main className="admin-shell">

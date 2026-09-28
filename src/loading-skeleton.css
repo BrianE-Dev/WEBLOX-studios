@@ -99,29 +99,6 @@ html[data-theme="light"] .page-loading-skeleton span {
   }
 }
 
-.weblox-branded-loader {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: grid;
-  place-items: center;
-  background: #0e0e11;
-  color-scheme: dark;
-  opacity: 1;
-  transition: opacity 240ms ease;
-}
-
-.weblox-branded-loader::before {
-  position: absolute;
-  width: 180px;
-  height: 180px;
-  border-radius: 50%;
-  background: #7b3ff21a;
-  box-shadow: 0 0 32px 12px #7b3ff233, 0 0 64px 20px #7b3ff21a;
-  content: "";
-  animation: weblox-loader-halo 2s ease-out infinite;
-}
-
 .page-loading-skeleton[aria-hidden="true"] {
   pointer-events: none;
 }
@@ -135,55 +112,116 @@ html[data-theme="light"] .page-loading-skeleton span {
   width: 100%;
 }
 
-.weblox-branded-loader img {
+.weblox-loader {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 12px;
+  color: var(--text);
+  font-family: 'Plus Jakarta Sans', Inter, Arial, sans-serif;
+}
+
+.weblox-loader-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  min-height: 100dvh;
+  background: var(--bg);
+}
+
+.weblox-loader-inline {
   position: relative;
-  width: min(190px, 42vw);
-  height: auto;
-  filter: drop-shadow(0 0 5px #b78aff55);
-  animation: weblox-loader-float 3.2s cubic-bezier(.4, 0, .2, 1) infinite;
+  min-height: 148px;
+  padding: 24px;
 }
 
-.weblox-branded-loader.is-hidden {
-  pointer-events: none;
-  opacity: 0;
+.weblox-loader-brand {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
 }
 
-@keyframes weblox-loader-float {
-  0%, 100% { transform: translateY(0) rotate(-1deg); }
-  50% { transform: translateY(-8px) rotate(1deg); }
+.weblox-loader-mark {
+  position: relative;
+  width: 84px;
+  height: 84px;
 }
 
-.weblox-branded-loader::after {
+.weblox-loader-mark img {
   position: absolute;
-  width: min(220px, 52vw);
-  aspect-ratio: 1;
-  border: 1px solid #7b3ff244;
-  border-left-color: transparent;
-  border-right-color: transparent;
-  border-radius: 50%;
-  content: "";
-  animation: weblox-loader-orbit 2.8s linear infinite;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  animation: weblox-mark-form 2.2s cubic-bezier(.2, .72, .24, 1) infinite;
 }
 
-@keyframes weblox-loader-orbit {
-  to { transform: rotate(360deg); }
+.weblox-loader-mark .loader-mark-light { display: none; }
+html[data-theme="light"] .weblox-loader-mark .loader-mark-dark { display: none; }
+html[data-theme="light"] .weblox-loader-mark .loader-mark-light { display: block; }
+
+.weblox-loader-modules {
+  position: absolute;
+  inset: -14px;
+  width: calc(100% + 28px);
+  height: calc(100% + 28px);
+  overflow: visible;
+  fill: none;
+  stroke: var(--p);
+  stroke-width: 1.5;
+  stroke-linecap: square;
 }
 
-.weblox-branded-loader .loader-logo-light { display: none; }
-html[data-theme="light"] .weblox-branded-loader .loader-logo-dark { display: none; }
-html[data-theme="light"] .weblox-branded-loader .loader-logo-light { display: block; }
-html[data-theme="light"] .weblox-branded-loader { background: #f5f3f8; color-scheme: light; }
+.loader-module {
+  opacity: 0;
+  animation: weblox-module-assemble 2.2s cubic-bezier(.2, .72, .24, 1) infinite;
+}
 
-@keyframes weblox-loader-halo {
-  0% { opacity: 0.52; transform: scale(0.82); }
-  100% { opacity: 0; transform: scale(1.3); }
+.loader-module-top-left { --module-x: 7px; --module-y: 7px; }
+.loader-module-top-right { --module-x: -7px; --module-y: 7px; }
+.loader-module-bottom-right { --module-x: -7px; --module-y: -7px; }
+.loader-module-bottom-left { --module-x: 7px; --module-y: -7px; }
+
+.weblox-loader-wordmark {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .16em;
+}
+
+.weblox-loader-wordmark span {
+  color: var(--muted);
+  font: 500 8px var(--mono);
+  letter-spacing: .12em;
+}
+
+.weblox-loader-label {
+  color: var(--muted);
+  font: 10px var(--mono);
+}
+
+@keyframes weblox-module-assemble {
+  0%, 14%, 84%, 100% { opacity: .25; transform: translate(var(--module-x), var(--module-y)); }
+  38%, 63% { opacity: 1; transform: translate(0, 0); }
+}
+
+@keyframes weblox-mark-form {
+  0%, 28%, 78%, 100% { opacity: .76; transform: scale(.96); }
+  40%, 62% { opacity: 1; transform: scale(1); }
+  68% { opacity: .96; transform: scale(1.012); }
+}
+
+@media (max-width: 520px) {
+  .weblox-loader-mark { width: 72px; height: 72px; }
+  .weblox-loader-modules { inset: -12px; width: calc(100% + 24px); height: calc(100% + 24px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .weblox-branded-loader,
-  .weblox-branded-loader::before,
-  .weblox-branded-loader img {
-    animation: none;
-    transition: none;
-  }
+  .weblox-loader-mark img,
+  .loader-module { animation: none; }
+  .loader-module { opacity: 1; transform: none; }
+  .page-loading-skeleton span { animation: none; }
 }

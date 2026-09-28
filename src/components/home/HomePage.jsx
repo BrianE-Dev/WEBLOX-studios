@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
+import HeroProductScene from './HeroProductScene.jsx'
 import './HomePage.css'
-
-const homepageLoaderMinimum = 1200
 
 const primaryLinks = [
   ['Ventures', '/ventures'],
@@ -135,14 +134,8 @@ function SiteFooter() {
 
 export default function HomePage() {
   useEffect(() => {
-    const startedAt = Date.now()
-    window.webloxShowBrandedLoader?.()
     document.title = 'Technology venture studio | WEBLOX Studios'
     document.querySelector('meta[name="description"]')?.setAttribute('content', 'We build digital experiences and technology products that move businesses forward.')
-    const dismiss = () => window.webloxDismissBrandedLoader?.()
-    const remaining = homepageLoaderMinimum - (Date.now() - startedAt)
-    const timer = window.setTimeout(dismiss, Math.max(0, remaining))
-    return () => window.clearTimeout(timer)
   }, [])
 
   return <>
@@ -150,7 +143,7 @@ export default function HomePage() {
     <main>
       <section className="hero shell">
         <div><span className="chip"><i /> TECHNOLOGY VENTURE STUDIO</span><h1><strong>We build digital experiences and technology products that move businesses forward.</strong></h1><p>We build high-quality websites, web applications, mobile apps, and digital products that help businesses turn ideas into reliable digital experiences.</p><div className="actions"><a className="button" href="#enquiry">Start a Project <Arrow /></a><a className="button secondary" href="/ventures">Explore Our Work</a></div><div className="metrics"><span><b>100%</b>Custom-built</span><span><b>6 weeks</b>Idea to MVP</span><span><b>Day 1</b>Scalable architecture</span></div></div>
-        <TerminalPreview />
+        <div className="hero-visual"><HeroProductScene /><TerminalPreview /></div>
       </section>
 
       <section className="band"><div className="shell"><SectionHeading eyebrow="Architectural Principles" title="From Africa. Built for the world." copy="We build powerful digital solutions that solve real problems." /><div className="cards three">{principles.map(([title, copy], index) => <article className="card" key={title}><span className="num">0{index + 1}</span><h3>{title}</h3><p>{copy}</p><small>● ENGINEERED FOR LEVERAGE</small></article>)}</div></div></section>

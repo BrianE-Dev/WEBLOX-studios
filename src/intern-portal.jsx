@@ -61,6 +61,10 @@ export default function InternPortal() {
   }, [])
 
   useEffect(() => {
+    if (sessionChecked) window.webloxDismissBrandedLoader?.()
+  }, [sessionChecked])
+
+  useEffect(() => {
     if (!intern) return
     setPortalError('')
     Promise.all([loadCheckins(), loadInbox(), loadCertificates()]).catch((error) => setPortalError(error.message || 'Could not load your workspace.'))
@@ -187,7 +191,6 @@ export default function InternPortal() {
 
   return (
     !sessionChecked ? <PageLoadingSkeleton label="Loading intern portal" /> :
-    (window.webloxDismissBrandedLoader?.(),
     <main className={`intern-shell${intern ? ' has-sidebar' : ''}`}>
       {!intern ? (
         <section className="intern-card intern-login"><a className="intern-brand" href="/"><ThemeAwareLogo /> WEBLOX STUDIOS</a><span className="eyebrow">WEBLOX INTERNSHIP PROGRAM</span><h1>Intern sign in</h1><p>Use the email and temporary password provided by your administrator.</p>
@@ -236,6 +239,6 @@ export default function InternPortal() {
           </div>
         </>
       )}
-    </main>)
+    </main>
   )
 }

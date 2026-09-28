@@ -117,6 +117,10 @@ export default function MasterAdmin() {
   }, [])
 
   useEffect(() => {
+    if (loginReady) window.webloxDismissBrandedLoader?.()
+  }, [loginReady])
+
+  useEffect(() => {
     if (!account) return undefined
     let active = true
     loadAll().then(() => { if (!active) return })
@@ -357,7 +361,6 @@ export default function MasterAdmin() {
   }
 
   if (!loginReady && !account) return <PageLoadingSkeleton label="Loading master administration" />
-  window.webloxDismissBrandedLoader?.()
 
   return <main className="master-shell">
     <header className="master-head"><div className="master-brand"><ThemeAwareLogo /><div><span className="eyebrow">WEBLOX · ADMINISTRATION</span><h1 className="master-title">Master admin</h1><p>Manage staff, interns, and administrator accounts.</p></div></div>{account && <div className="master-actions"><span className="eyebrow">{account.email}</span><button className="button secondary" type="button" onClick={loadAll}>Refresh</button><button className="button secondary" type="button" onClick={signOut}>Sign out</button></div>}</header>

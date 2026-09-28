@@ -37,6 +37,10 @@ export default function StaffDashboard() {
     return () => { current = false }
   }, [])
 
+  useEffect(() => {
+    if (staff) window.webloxDismissBrandedLoader?.()
+  }, [staff])
+
   const loadInbox = useCallback(async () => {
     try {
       const { messages } = await staffRequest('/api/workspace/inbox')
@@ -95,7 +99,6 @@ export default function StaffDashboard() {
   }
 
   if (!staff) return <PageLoadingSkeleton label="Loading staff dashboard" />
-  window.webloxDismissBrandedLoader?.()
 
   const unreadCount = inbox.filter((message) => !message.readAt).length
   const portfolioDraft = portfolio?.draft || {}

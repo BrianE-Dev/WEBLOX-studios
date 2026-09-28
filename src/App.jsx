@@ -4,6 +4,7 @@ import HomePage from './components/home/HomePage.jsx'
 import InternPortal from './intern-portal.jsx'
 import InternshipPage from './internship-page.jsx'
 import InternshipApply from './internship-apply.jsx'
+import { WebloxLoaderHost } from './components/WebloxLoader.jsx'
 import MasterAdmin from './master-admin.jsx'
 import PortfolioPage from './portfolio.jsx'
 import SignIn from './sign-in.jsx'
@@ -112,6 +113,7 @@ function RouteMetadata() {
 
 function AppRoutes() {
   return <>
+    <WebloxLoaderHost />
     <RouteMetadata />
     <Routes>
       <Route path="/" element={<HomePage />} />
