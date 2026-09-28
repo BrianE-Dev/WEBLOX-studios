@@ -50,6 +50,16 @@ const insights = [
 
 function Arrow() { return <span className="ui-arrow" aria-hidden="true" /> }
 
+function useSiteTheme() {
+  const [theme, setTheme] = useState(() => localStorage.getItem('weblox-theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'))
+  useEffect(() => {
+    const syncTheme = () => setTheme(document.documentElement.dataset.theme || localStorage.getItem('weblox-theme') || 'dark')
+    window.addEventListener('weblox-theme-change', syncTheme)
+    return () => window.removeEventListener('weblox-theme-change', syncTheme)
+  }, [])
+  return theme
+}
+
 function SectionHeading({ eyebrow, title, copy }) {
   return <div className="heading"><span className="eyebrow">{eyebrow}</span><h2>{title}</h2>{copy && <p>{copy}</p>}</div>
 }
@@ -59,19 +69,21 @@ function ThemeToggle() {
   useEffect(() => {
     document.documentElement.dataset.theme = theme
     localStorage.setItem('weblox-theme', theme)
+    window.dispatchEvent(new Event('weblox-theme-change'))
   }, [theme])
   const next = theme === 'dark' ? 'light' : 'dark'
   return <button className="theme-toggle" type="button" onClick={() => setTheme(next)} aria-label={`Switch to ${next} mode`} title={`Switch to ${next} mode`}>{theme === 'dark' ? '☀' : '◐'}</button>
 }
 
-function SiteHeader() {
+export function SiteHeader({ ctaHref = '#enquiry', activeHref = '' } = {}) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const theme = useSiteTheme()
   const closeMenu = () => setMenuOpen(false)
   return <header className="home-header">
     <div className="nav shell">
-      <a className="brand" href="/" aria-label="WEBLOX Studios home"><span className="mark"><img className="logo-dark" src="/assets/logo-dark.png" alt="" /><img className="logo-light" src="/assets/logo-light.png" alt="" /></span><span>WEBLOX <em>STUDIOS</em></span></a>
-      <nav aria-label="Primary">{primaryLinks.map(([label, href]) => <a key={href} href={href}>{label}</a>)}</nav>
-      <div className="nav-actions"><ThemeToggle /><a className="button small" href="#enquiry">Let’s Build <Arrow /></a><a className="button small portal-signin-link" href="/sign-in">Sign in</a><button className="menu" type="button" aria-label={menuOpen ? 'Close navigation' : 'Open navigation'} aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>{menuOpen ? '×' : '☰'}</button></div>
+      <a className="brand" href="/" aria-label="WEBLOX Studios home"><span className="mark"><img src={theme === 'light' ? '/assets/logo-light-small.png' : '/assets/logo-dark-small.png'} width="34" height="34" alt="" /></span><span>WEBLOX <em>STUDIOS</em></span></a>
+      <nav aria-label="Primary">{primaryLinks.map(([label, href]) => <a key={href} className={href === activeHref ? 'active' : undefined} href={href}>{label}</a>)}</nav>
+      <div className="nav-actions"><ThemeToggle /><a className="button small" href={ctaHref}>Let’s Build <Arrow /></a><a className="button small portal-signin-link" href="/sign-in">Sign in</a><button className="menu" type="button" aria-label={menuOpen ? 'Close navigation' : 'Open navigation'} aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>{menuOpen ? '×' : '☰'}</button></div>
     </div>
     {menuOpen && <nav className="mobile-nav" aria-label="Mobile navigation">{primaryLinks.map(([label, href]) => <a key={href} href={href} onClick={closeMenu}>{label}</a>)}<a href="/sign-in" onClick={closeMenu}>Sign in</a></nav>}
   </header>
@@ -124,11 +136,12 @@ function ProjectEnquiry() {
   </section>
 }
 
-function SiteFooter() {
+export function SiteFooter() {
+  const theme = useSiteTheme()
   return <footer><div className="shell"><div className="footer-grid">
-    <div><a className="brand" href="/"><span className="mark"><img className="logo-dark" src="/assets/logo-dark.png" alt="" /><img className="logo-light" src="/assets/logo-light.png" alt="" /></span><span>WEBLOX <em>STUDIOS</em></span></a><p>A technology venture studio building, launching, and scaling digital products for global markets.</p><small>ENGINEERED FOR LEVERAGE</small></div>
+    <div><a className="brand" href="/"><span className="mark"><img src={theme === 'light' ? '/assets/logo-light-small.png' : '/assets/logo-dark-small.png'} width="34" height="34" alt="" /></span><span>WEBLOX <em>STUDIOS</em></span></a><p>A technology venture studio building, launching, and scaling digital products for global markets.</p><small>ENGINEERED FOR LEVERAGE</small></div>
     <div><strong>Explore</strong><a href="/ventures">Ventures</a><a href="/services">Services</a><a href="/studio">Studio</a><a href="/insights">Insights</a></div>
-    <div><strong>Company</strong><a href="/careers">Careers</a><a href="/internship">Internship</a><a href="#enquiry">Start a project</a><a href="mailto:studio@weblox.io">studio@weblox.io</a></div>
+    <div><strong>Company</strong><a href="/careers">Careers</a><a href="/internship">Internship</a><a href="/#enquiry">Start a project</a><a href="mailto:studio@weblox.io">studio@weblox.io</a></div>
     <div className="status"><span><i /> All systems operational</span><small>Building products with purpose.<br />Engineering for lasting value.</small></div>
   </div><div className="copyright">© 2026 WEBLOX Studios. Ideas into products. Products into ventures.</div></div></footer>
 }

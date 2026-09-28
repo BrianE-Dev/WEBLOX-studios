@@ -157,10 +157,6 @@ html[data-theme="light"] .page-loading-skeleton span {
   animation: weblox-mark-form 2.2s cubic-bezier(.2, .72, .24, 1) infinite;
 }
 
-.weblox-loader-mark .loader-mark-light { display: none; }
-html[data-theme="light"] .weblox-loader-mark .loader-mark-dark { display: none; }
-html[data-theme="light"] .weblox-loader-mark .loader-mark-light { display: block; }
-
 .weblox-loader-modules {
   position: absolute;
   inset: -14px;

@@ -18,12 +18,17 @@ export function dismissWebloxLoader() {
 }
 
 export default function WebloxLoader({ fullscreen = true, label }) {
+  const [theme, setTheme] = useState(() => document.documentElement.dataset.theme || 'dark')
   const className = `weblox-loader${fullscreen ? ' weblox-loader-fullscreen' : ' weblox-loader-inline'}`
+  useEffect(() => {
+    const syncTheme = () => setTheme(document.documentElement.dataset.theme || 'dark')
+    window.addEventListener('weblox-theme-change', syncTheme)
+    return () => window.removeEventListener('weblox-theme-change', syncTheme)
+  }, [])
   return <div className={className} role="status" aria-label={label || 'Loading WEBLOX Studios'}>
     <div className="weblox-loader-brand" aria-hidden="true">
       <div className="weblox-loader-mark">
-        <img src="/assets/mini-logo-dark.png" className="loader-mark-dark" alt="" />
-        <img src="/assets/mini-logo-light.png" className="loader-mark-light" alt="" />
+        <img src={theme === 'light' ? '/assets/mini-logo-light-small.png' : '/assets/mini-logo-dark-small.png'} alt="" width={theme === 'light' ? 84 : 80} height={theme === 'light' ? 68 : 84} />
         <svg className="weblox-loader-modules" viewBox="0 0 112 112" focusable="false">
           <path className="loader-module loader-module-top-left" d="M19 31V19h12" />
           <path className="loader-module loader-module-top-right" d="M81 19h12v12" />

@@ -126,7 +126,7 @@ export default function HeroProductScene() {
             if (color) mesh.material.color.set(color)
           })
           if (markRef.current) {
-            markRef.current.src = isLight ? '/assets/mini-logo-light.png' : '/assets/mini-logo-dark.png'
+            markRef.current.src = isLight ? '/assets/mini-logo-light-small.png' : '/assets/mini-logo-dark-small.png'
           }
         }
         updateTheme()
@@ -228,6 +228,6 @@ export default function HeroProductScene() {
   }, [])
 
   return <div ref={hostRef} className="hero-product-scene" aria-hidden="true">
-    <img ref={markRef} className="hero-product-mark" src="/assets/mini-logo-dark.png" alt="" />
+    <img ref={markRef} className="hero-product-mark" src="/assets/mini-logo-dark-small.png" width="80" height="84" loading="lazy" decoding="async" alt="" />
   </div>
 }
