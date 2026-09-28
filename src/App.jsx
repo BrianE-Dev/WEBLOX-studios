@@ -119,7 +119,6 @@ function AppRoutes() {
       <Route path="/internship" element={<InternshipPage />} />
       <Route path="/internship/" element={<InternshipPage />} />
       <Route path="/internship/apply" element={<InternshipApply />} />
-      <Route path="/internship/apply" element={<InternshipApply />} />
       <Route path="/sign-in" element={<SignIn />} />
       <Route path="/sign-in.html" element={<SignIn />} />
       <Route path="/staff-sign-in" element={<StaffSignIn />} />
