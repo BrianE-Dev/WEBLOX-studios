@@ -1,8 +1,23 @@
 import { useEffect, useRef } from 'react'
 import './HeroProductScene.css'
 
+const cycleDuration = 2200
+const assembleDuration = 500
+const separateStart = 1350
+const separateDuration = 550
+
+function easeInOut(value) {
+  const progress = Math.max(0, Math.min(1, value))
+  return progress * progress * (3 - 2 * progress)
+}
+
+function mix(from, to, progress) {
+  return from + (to - from) * progress
+}
+
 export default function HeroProductScene() {
   const hostRef = useRef(null)
+  const markRef = useRef(null)
 
   useEffect(() => {
     const host = hostRef.current
@@ -18,9 +33,8 @@ export default function HeroProductScene() {
     let visibilityListener
     let motionListener
     let themeObserver
-    let meshes = []
-    let materials = []
-    let geometries = []
+    const geometries = []
+    const materials = []
 
     const stop = () => {
       if (animationFrame !== null) cancelAnimationFrame(animationFrame)
@@ -42,9 +56,6 @@ export default function HeroProductScene() {
         renderer.dispose()
         renderer.domElement.remove()
       }
-      meshes = []
-      materials = []
-      geometries = []
     }
 
     let canvas
@@ -76,43 +87,47 @@ export default function HeroProductScene() {
         const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 30)
         camera.position.z = 5.5
 
-        const boxSizes = [
-          [0.34, 0.34, 0.34],
-          [0.24, 0.42, 0.24],
-          [0.44, 0.24, 0.24],
-          [0.26, 0.26, 0.42],
-        ]
-        const placements = [
-          { x: -1.05, y: 0.48, z: 0, phase: 0.2, drift: 0.035, turn: 0.025 },
-          { x: -0.28, y: -0.38, z: -0.2, phase: 1.7, drift: 0.045, turn: 0 },
-          { x: 0.48, y: 0.32, z: 0.1, phase: 3.1, drift: 0.03, turn: 0.018 },
-          { x: 1.02, y: -0.48, z: -0.15, phase: 4.6, drift: 0.04, turn: 0 },
-        ]
-        const tokenNames = ['--p', '--p2', '--muted', '--edge']
+        const assembly = new THREE.Group()
+        scene.add(assembly)
 
-        placements.forEach((placement, index) => {
-          const geometry = new THREE.BoxGeometry(...boxSizes[index])
+        const moduleTargets = [
+          { x: -0.78, y: 0.5, color: '--p' },
+          { x: 0.78, y: 0.5, color: '--p2' },
+          { x: -0.78, y: -0.5, color: '--p2' },
+          { x: 0.78, y: -0.5, color: '--p' },
+        ]
+        const moduleOffsets = [
+          { x: -1.55, y: 1.05 },
+          { x: 1.55, y: 1.05 },
+          { x: -1.55, y: -1.05 },
+          { x: 1.55, y: -1.05 },
+        ]
+        const modules = moduleTargets.map((target, index) => {
+          const geometry = new THREE.BoxGeometry(0.16, 0.16, 0.08)
           const material = new THREE.MeshBasicMaterial({
             color: 0xffffff,
             transparent: true,
-            opacity: 0.72,
+            opacity: 0.9,
             depthWrite: false,
           })
           const mesh = new THREE.Mesh(geometry, material)
-          mesh.position.set(placement.x, placement.y, placement.z)
-          mesh.userData = placement
-          scene.add(mesh)
+          mesh.userData = { target, offset: moduleOffsets[index] }
+          assembly.add(mesh)
           geometries.push(geometry)
           materials.push(material)
-          meshes.push(mesh)
+          return mesh
         })
 
         const updateTheme = () => {
           const styles = getComputedStyle(document.documentElement)
-          materials.forEach((material, index) => {
-            const color = styles.getPropertyValue(tokenNames[index]).trim()
-            if (color) material.color.set(color)
+          const isLight = document.documentElement.dataset.theme === 'light'
+          modules.forEach((mesh) => {
+            const color = styles.getPropertyValue(mesh.userData.target.color).trim()
+            if (color) mesh.material.color.set(color)
           })
+          if (markRef.current) {
+            markRef.current.src = isLight ? '/assets/mini-logo-light.png' : '/assets/mini-logo-dark.png'
+          }
         }
         updateTheme()
         themeObserver = new MutationObserver(updateTheme)
@@ -132,15 +147,46 @@ export default function HeroProductScene() {
         }
         resize()
 
+        let cycleStart = null
         const draw = (time) => {
           animationFrame = null
           if (cancelled || document.hidden) return
-          const motion = time * 0.00022
-          meshes.forEach((mesh) => {
-            const { y, phase, drift, turn } = mesh.userData
-            mesh.position.y = y + Math.sin(motion + phase) * drift
-            if (turn) mesh.rotation.z = Math.sin(motion * 0.6 + phase) * turn
+          if (cycleStart === null) cycleStart = time
+          const elapsed = (time - cycleStart) % cycleDuration
+          let assemblyProgress = 0
+          if (elapsed < assembleDuration) {
+            assemblyProgress = easeInOut(elapsed / assembleDuration)
+          } else if (elapsed < separateStart) {
+            assemblyProgress = 1
+          } else if (elapsed < separateStart + separateDuration) {
+            assemblyProgress = 1 - easeInOut((elapsed - separateStart) / separateDuration)
+          }
+
+          modules.forEach((mesh) => {
+            const { target, offset } = mesh.userData
+            mesh.position.set(
+              mix(offset.x, target.x, assemblyProgress),
+              mix(offset.y, target.y, assemblyProgress),
+              0,
+            )
           })
+
+          const reveal = easeInOut(elapsed / assembleDuration)
+          const fade = 1 - easeInOut((elapsed - separateStart) / 420)
+          if (markRef.current) {
+            markRef.current.style.opacity = String(0.88 * reveal * fade)
+          }
+
+          let pulse = 1
+          if (elapsed >= 900 && elapsed < separateStart) {
+            const pulseProgress = (elapsed - 900) / (separateStart - 900)
+            pulse = 1 + Math.sin(pulseProgress * Math.PI) * 0.035
+          }
+          assembly.scale.setScalar(pulse)
+          if (markRef.current) {
+            markRef.current.style.transform = `translate(-50%, -50%) scale(${pulse})`
+          }
+
           try {
             renderer.render(scene, camera)
           } catch {
@@ -181,5 +227,7 @@ export default function HeroProductScene() {
     return cleanup
   }, [])
 
-  return <div ref={hostRef} className="hero-product-scene" aria-hidden="true" />
+  return <div ref={hostRef} className="hero-product-scene" aria-hidden="true">
+    <img ref={markRef} className="hero-product-mark" src="/assets/mini-logo-dark.png" alt="" />
+  </div>
 }
