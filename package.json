@@ -14,6 +14,7 @@
     "@resvg/resvg-js": "^2.6.2",
     "@vitejs/plugin-react": "latest",
     "dotenv": "^18.0.3",
+    "lucide-react": "^1.48.0",
     "pg": "^8.23.0",
     "react": "latest",
     "react-dom": "latest",

@@ -5,6 +5,7 @@ import ImageLibrary from './components/ImageLibrary.jsx'
 import ThemeAwareLogo from './components/ThemeAwareLogo.jsx'
 import { uploadDashboardImage } from './lib/imageLibrary.js'
 import PageLoadingSkeleton from './components/PageLoadingSkeleton.jsx'
+import DashboardNavIcon from './components/DashboardNavIcon.jsx'
 
 function getInternTitle(role) {
   const value = String(role || '').trim()
@@ -218,9 +219,9 @@ export default function InternPortal() {
               {intern.profilePhotoUrl && <button type="button" className="intern-remove-photo" disabled={photoBusy} onClick={removeProfilePhoto}>Remove photo</button>}
             </div>
             <nav className="intern-side-nav" aria-label="Intern dashboard navigation">
-              <button className={page === 'dashboard' ? 'active' : ''} type="button" onClick={() => showInternPage('dashboard')}><span>⌂</span>Dashboard</button>
-              <button className={page === 'images' ? 'active' : ''} type="button" onClick={() => showInternPage('images')}><span>▤</span>My files</button>
-              <button className={page === 'settings' ? 'active' : ''} type="button" onClick={() => showInternPage('settings')}><span>⚙</span>Settings</button>
+              <button className={page === 'dashboard' ? 'active' : ''} type="button" onClick={() => showInternPage('dashboard')}><DashboardNavIcon name="dashboard" />Dashboard</button>
+              <button className={page === 'images' ? 'active' : ''} type="button" onClick={() => showInternPage('images')}><DashboardNavIcon name="images" />My files</button>
+              <button className={page === 'settings' ? 'active' : ''} type="button" onClick={() => showInternPage('settings')}><DashboardNavIcon name="settings" />Settings</button>
             </nav>
             <button className="intern-signout" type="button" onClick={signOut}>Sign out <span>↗</span></button>
             </div>

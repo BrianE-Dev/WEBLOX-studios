@@ -4,6 +4,7 @@ import ThemeSettings, { useThemePreference } from './components/ThemeSettings.js
 import ImageLibrary from './components/ImageLibrary.jsx'
 import ThemeAwareLogo from './components/ThemeAwareLogo.jsx'
 import PageLoadingSkeleton from './components/PageLoadingSkeleton.jsx'
+import DashboardNavIcon from './components/DashboardNavIcon.jsx'
 
 async function adminRequest(path, options = {}) {
   const response = await fetch(path, { ...options, credentials: 'include', headers: { 'content-type': 'application/json', ...options.headers } })
@@ -260,7 +261,7 @@ export default function StaffAdmin() {
         <aside className={`admin-sidebar${sidebarOpen ? ' is-open' : ''}`}>
           <button className="dashboard-sidebar-toggle" type="button" aria-expanded={sidebarOpen} aria-controls="staffAdminSidebarContent" onClick={() => setSidebarOpen((open) => !open)}>{sidebarOpen ? 'Hide dashboard menu' : 'Show dashboard menu'}<span aria-hidden="true">{sidebarOpen ? '−' : '+'}</span></button>
           <div className="dashboard-sidebar-content" id="staffAdminSidebarContent"><div className="admin-profile"><span className="eyebrow">SIGNED IN AS</span><strong>{account.name || 'Administrator'}</strong><small>{account.email}</small></div>
-          <nav aria-label="Staff admin navigation">{[['overview', 'Overview'], ['people', 'People'], ['applicants', 'Applicants'], ['history', 'History'], ['images', 'Image library'], ['settings', 'Settings']].map(([page, label]) => <a key={page} href={`#${page}`} className={activePage === page ? 'active' : ''} aria-current={activePage === page ? 'page' : undefined} onClick={(event) => { event.preventDefault(); showPage(page) }}>{label}</a>)}</nav>
+          <nav aria-label="Staff admin navigation">{[['overview', 'Overview'], ['people', 'People'], ['applicants', 'Applicants'], ['history', 'History'], ['images', 'Image library'], ['settings', 'Settings']].map(([page, label]) => <a key={page} href={`#${page}`} className={activePage === page ? 'active' : ''} aria-current={activePage === page ? 'page' : undefined} onClick={(event) => { event.preventDefault(); showPage(page) }}><DashboardNavIcon name={page} />{label}</a>)}</nav>
           <section aria-label="Attendance"><span className="eyebrow">TODAY’S ATTENDANCE</span><p className="admin-notice">{attendance ? `In: ${attendance.clockInAt ? new Date(attendance.clockInAt).toLocaleTimeString() : '—'} · Out: ${attendance.clockOutAt ? new Date(attendance.clockOutAt).toLocaleTimeString() : '—'}` : attendanceError || 'Loading attendance…'}</p><div className="admin-clock"><button className="button" type="button" onClick={() => updateAttendance('clock_in')}>Clock in</button><button className="button secondary" type="button" onClick={() => updateAttendance('clock_out')}>Clock out</button></div>{attendanceNotice && <p className="admin-notice success" role="status">{attendanceNotice}</p>}{attendanceError && <p className="admin-notice" role="alert">{attendanceError}</p>}</section>
           </div>
         </aside>

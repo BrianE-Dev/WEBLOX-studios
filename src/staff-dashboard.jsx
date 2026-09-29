@@ -4,6 +4,7 @@ import ThemeSettings, { useThemePreference } from './components/ThemeSettings.js
 import ImageLibrary from './components/ImageLibrary.jsx'
 import ThemeAwareLogo from './components/ThemeAwareLogo.jsx'
 import PageLoadingSkeleton from './components/PageLoadingSkeleton.jsx'
+import DashboardNavIcon from './components/DashboardNavIcon.jsx'
 
 export default function StaffDashboard() {
   const [staff, setStaff] = useState(null)
@@ -128,11 +129,11 @@ export default function StaffDashboard() {
           <small>{staff.role} · {staff.email}</small>
         </div>
         <nav className="dash-nav" aria-label="Staff dashboard navigation">
-          <button className={page === 'overview' ? 'active' : ''} aria-current={page === 'overview' ? 'page' : undefined} type="button" onClick={() => showPage('overview')}>Overview</button>
-          <button className={page === 'inbox' ? 'active' : ''} aria-current={page === 'inbox' ? 'page' : undefined} type="button" onClick={() => showPage('inbox')}>Inbox <span className={`inbox-unread${unreadCount ? '' : ' hidden'}`} aria-label={`${unreadCount} unread messages`}>{unreadCount > 99 ? '99+' : unreadCount}</span></button>
-          <button type="button" onClick={() => showPage('portfolio')}>Portfolio builder</button>
-          <button className={page === 'images' ? 'active' : ''} aria-current={page === 'images' ? 'page' : undefined} type="button" onClick={() => showPage('images')}>Image library</button>
-          <button className={page === 'settings' ? 'active' : ''} aria-current={page === 'settings' ? 'page' : undefined} type="button" onClick={() => showPage('settings')}>Settings</button>
+          <button className={page === 'overview' ? 'active' : ''} aria-current={page === 'overview' ? 'page' : undefined} type="button" onClick={() => showPage('overview')}><DashboardNavIcon name="overview" />Overview</button>
+          <button className={page === 'inbox' ? 'active' : ''} aria-current={page === 'inbox' ? 'page' : undefined} type="button" onClick={() => showPage('inbox')}><DashboardNavIcon name="inbox" />Inbox <span className={`inbox-unread${unreadCount ? '' : ' hidden'}`} aria-label={`${unreadCount} unread messages`}>{unreadCount > 99 ? '99+' : unreadCount}</span></button>
+          <button className={page === 'portfolio' ? 'active' : ''} aria-current={page === 'portfolio' ? 'page' : undefined} type="button" onClick={() => showPage('portfolio')}><DashboardNavIcon name="portfolio" />Portfolio builder</button>
+          <button className={page === 'images' ? 'active' : ''} aria-current={page === 'images' ? 'page' : undefined} type="button" onClick={() => showPage('images')}><DashboardNavIcon name="images" />Image library</button>
+          <button className={page === 'settings' ? 'active' : ''} aria-current={page === 'settings' ? 'page' : undefined} type="button" onClick={() => showPage('settings')}><DashboardNavIcon name="settings" />Settings</button>
         </nav>
         <section className="dash-attendance" aria-label="Attendance">
           <span className="eyebrow">TODAY’S ATTENDANCE</span>
