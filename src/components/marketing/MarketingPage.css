@@ -1,0 +1,13 @@
+.services-list{display:grid;gap:24px}
+.service-row{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(220px,.85fr);align-items:center;gap:clamp(20px,5vw,64px)}
+.service-copy{min-height:220px;justify-content:center}
+.service-copy .num{margin-bottom:16px}
+.service-copy h3{margin-bottom:12px}
+.service-illustration{position:relative;display:grid;place-items:center;width:100%;min-height:210px;overflow:visible}
+.service-illustration-lines{display:block;width:min(100%,340px);height:auto;overflow:visible;filter:drop-shadow(0 0 16px #8e5bff22)}
+.service-illustration-icon{position:absolute;left:58%;top:50%;width:86px;height:86px;transform:translate(-50%,-50%);color:#d6bcff;filter:drop-shadow(0 0 16px #a259ff66)}
+.service-illustration-commerce .service-illustration-icon,.service-illustration-mobile .service-illustration-icon{color:#8ce4ff}
+.service-illustration-maintenance .service-illustration-icon,.service-illustration-redesign .service-illustration-icon{color:#c4a1ff}
+.service-illustration-automation .service-illustration-icon{color:#87e3ff}
+.service-illustration-security .service-illustration-icon{color:#a9f1d5}
+@media(max-width:700px){.service-row{grid-template-columns:minmax(0,1fr) 112px;gap:10px}.service-copy{min-height:200px;padding:18px}.service-copy .num{margin-bottom:12px}.service-copy h3{font-size:17px}.service-copy p{font-size:13px;line-height:1.5}.service-illustration{min-height:145px}.service-illustration-lines{width:150px;max-width:none}.service-illustration-icon{width:54px;height:54px}}

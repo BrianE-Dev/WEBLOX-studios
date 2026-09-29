@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import { ProjectEnquiry, SiteFooter, SiteHeader, services } from '../home/HomePage.jsx'
+import ServiceIllustration from './ServiceIllustration.jsx'
 import { setPageSeo } from '../../lib/seo.js'
+import './MarketingPage.css'
 
 const pageInfo = {
   '/ventures': ['Ventures', 'We build focused technology businesses around real opportunities.'],
@@ -42,7 +44,7 @@ function StandardMarketingPage({ path }) {
   const [title, copy] = pageInfo[path]
   return <><SiteHeader activeHref={path} ctaHref="/contact" /><main><section className="page shell">
     <PageHeading title={title} copy={copy} />
-      {path === '/services' ? <><img className="services-banner" src="/assets/weblox-services.svg" alt="WEBLOX Studios services: a purple six-card overview of web design, web applications, e-commerce, maintenance, redesign, and custom applications." loading="eager" decoding="async" /><div className="cards three">{services.map(([number, serviceTitle, serviceCopy]) => <article className="card service" key={number}><span className="num">{number}</span><h3>{serviceTitle}</h3><p>{serviceCopy}</p></article>)}</div></> : path === '/ventures' ? <VentureSpotlight /> : <ComingSoon copy={copy} />}
+      {path === '/services' ? <div className="services-list">{services.map(([number, serviceTitle, serviceCopy, illustration]) => <article className="service-row" key={number}><div className="service-copy card"><span className="num">{number}</span><h3>{serviceTitle}</h3><p>{serviceCopy}</p></div><ServiceIllustration kind={illustration} title={serviceTitle} /></article>)}</div> : path === '/ventures' ? <VentureSpotlight /> : <ComingSoon copy={copy} />}
   </section></main><SiteFooter /></>
 }
 

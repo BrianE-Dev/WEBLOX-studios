@@ -19,12 +19,15 @@ const principles = [
 ]
 
 export const services = [
-  ['01', 'Web Design', 'High-performance marketing websites engineered to communicate clearly, load quickly, and scale with your business.'],
-  ['02', 'Web Application Development', 'Custom platforms, internal tools, customer portals, and SaaS products built around real workflows.'],
-  ['03', 'E-commerce Websites', 'Conversion-minded storefronts with payments, inventory, and operations designed for growth.'],
-  ['04', 'Website Maintenance & Support', 'Reliable iteration, security upkeep, performance monitoring, and technical support after launch.'],
-  ['05', 'Website Redesign', 'A strategic rebuild for teams whose current site no longer reflects the quality of their work.'],
-  ['06', 'Custom Web Applications', 'Purpose-built digital products for complex business problems and ambitious new ventures.'],
+  ['01', 'Web Design', 'High-performance marketing websites engineered to communicate clearly, load quickly, and scale with your business.', 'design'],
+  ['02', 'Web Application Development', 'Custom platforms, internal tools, customer portals, and SaaS products built around real workflows.', 'web-app'],
+  ['03', 'E-commerce Websites', 'Conversion-minded storefronts with payments, inventory, and operations designed for growth.', 'commerce'],
+  ['04', 'Website Maintenance & Support', 'Reliable iteration, security upkeep, performance monitoring, and technical support after launch.', 'maintenance'],
+  ['05', 'Website Redesign', 'A strategic rebuild for teams whose current site no longer reflects the quality of their work.', 'redesign'],
+  ['06', 'Custom Web Applications', 'Purpose-built digital products for complex business problems and ambitious new ventures.', 'custom-app'],
+  ['07', 'Mobile App Development', 'Mobile experiences designed and built for the way your customers use iOS and Android devices.', 'mobile'],
+  ['08', 'AI Automation', 'Practical AI workflows that reduce repetitive work, connect your tools, and help teams move faster.', 'automation'],
+  ['09', 'Cybersecurity', 'Security-minded engineering, risk reviews, and safeguards that protect your products and users.', 'security'],
 ]
 
 const lifecycle = [
