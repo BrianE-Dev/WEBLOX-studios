@@ -27,3 +27,4 @@ html[data-theme="light"] .admin-welcome{background:radial-gradient(circle at 10%
 
 
 .admin-sidebar nav a.active{background:#7b3ff222;border:1px solid #a259ff55}.applicant-details{min-width:0}.applicant-details p{margin:8px 0;color:var(--muted);font-size:12px;overflow-wrap:anywhere}.applicant-details a{margin-right:10px;color:#d1bcff;font-size:12px}.applicant-card{align-items:flex-start}.applicant-card .button{margin-top:12px}
+.services-banner{display:block;width:100%;height:auto;margin:0 auto 28px;border:1px solid #a259ff;border-radius:12px;}

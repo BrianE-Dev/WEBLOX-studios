@@ -19,7 +19,7 @@ const principles = [
 ]
 
 const services = [
-  ['01', 'Website Design & Development', 'High-performance marketing websites engineered to communicate clearly, load quickly, and scale with your business.'],
+  ['01', 'Web Design', 'High-performance marketing websites engineered to communicate clearly, load quickly, and scale with your business.'],
   ['02', 'Web Application Development', 'Custom platforms, internal tools, customer portals, and SaaS products built around real workflows.'],
   ['03', 'E-commerce Websites', 'Conversion-minded storefronts with payments, inventory, and operations designed for growth.'],
   ['04', 'Website Maintenance & Support', 'Reliable iteration, security upkeep, performance monitoring, and technical support after launch.'],
