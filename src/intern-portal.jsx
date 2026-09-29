@@ -35,7 +35,6 @@ export default function InternPortal() {
 
   const showInternPage = (next) => {
     setPage(next)
-    setSidebarOpen(false)
     if (matchMedia('(max-width: 800px)').matches) requestAnimationFrame(() => document.querySelector('.intern-main-content')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
   }
 
@@ -208,7 +207,6 @@ export default function InternPortal() {
       ) : (
         <>
           <aside className={`intern-sidebar${sidebarOpen ? ' is-open' : ''}`}>
-            <button className="dashboard-sidebar-toggle" type="button" aria-expanded={sidebarOpen} aria-controls="internSidebarContent" onClick={() => setSidebarOpen((open) => !open)}>{sidebarOpen ? 'Hide dashboard menu' : 'Show dashboard menu'}<span aria-hidden="true">{sidebarOpen ? '−' : '+'}</span></button>
             <div className="dashboard-sidebar-content" id="internSidebarContent">
             <a className="intern-brand" href="/"><ThemeAwareLogo /> <span>WEBLOX<small>INTERNSHIP PORTAL</small></span></a>
             <div className="intern-profile">
@@ -219,9 +217,9 @@ export default function InternPortal() {
               {intern.profilePhotoUrl && <button type="button" className="intern-remove-photo" disabled={photoBusy} onClick={removeProfilePhoto}>Remove photo</button>}
             </div>
             <nav className="intern-side-nav" aria-label="Intern dashboard navigation">
-              <button className={page === 'dashboard' ? 'active' : ''} type="button" onClick={() => showInternPage('dashboard')}><DashboardNavIcon name="dashboard" />Dashboard</button>
-              <button className={page === 'images' ? 'active' : ''} type="button" onClick={() => showInternPage('images')}><DashboardNavIcon name="images" />My files</button>
-              <button className={page === 'settings' ? 'active' : ''} type="button" onClick={() => showInternPage('settings')}><DashboardNavIcon name="settings" />Settings</button>
+              <button className={page === 'dashboard' ? 'active' : ''} aria-label="Dashboard" title="Dashboard" type="button" onClick={() => { setSidebarOpen((open) => page === 'dashboard' ? !open : true); showInternPage('dashboard') }}><DashboardNavIcon name="dashboard" />Dashboard</button>
+              <button className={page === 'images' ? 'active' : ''} aria-label="My files" title="My files" type="button" onClick={() => { setSidebarOpen((open) => page === 'images' ? !open : true); showInternPage('images') }}><DashboardNavIcon name="images" />My files</button>
+              <button className={page === 'settings' ? 'active' : ''} aria-label="Settings" title="Settings" type="button" onClick={() => { setSidebarOpen((open) => page === 'settings' ? !open : true); showInternPage('settings') }}><DashboardNavIcon name="settings" />Settings</button>
             </nav>
             <button className="intern-signout" type="button" onClick={signOut}>Sign out <span>↗</span></button>
             </div>
