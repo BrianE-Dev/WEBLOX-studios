@@ -113,4 +113,4 @@ For each page, record: **Owner**, **content approver**, **content gathered**, **
 
 ## Notes and source of truth
 
-This document describes implemented code, not a product roadmap. Route wiring is in `src/App.jsx` and `src/lib/recovered-app.js`; public and portal interfaces are under `src/`; API behavior is in `server/index.js` and `server/store.js`; database changes are under `server/migrations/`. See [DOCUMENTATION.md](DOCUMENTATION.md) for setup, API, deployment, and operational details. If this summary conflicts with current code, verify the source files and update this inventory.
+This document describes implemented code, not a product roadmap. Route wiring is in `src/App.jsx`; public and portal interfaces are under `src/`; API behavior is in `server/index.js` and `server/store.js`; database changes are under `server/migrations/`. See [DOCUMENTATION.md](DOCUMENTATION.md) for setup, API, deployment, and operational details. If this summary conflicts with current code, verify the source files and update this inventory.

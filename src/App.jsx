@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
 import HomePage from './components/home/HomePage.jsx'
+import MarketingPage from './components/marketing/MarketingPage.jsx'
 import InternPortal from './intern-portal.jsx'
 import InternshipPage from './internship-page.jsx'
 import InternshipApply from './internship-apply.jsx'
@@ -28,49 +29,6 @@ import './staff-sign-in.css'
 import './theme-settings.css'
 import './components/image-library.css'
 import './components/theme-aware-logo.css'
-
-const migratedPaths = new Set([
-  '/internship', '/internship/apply', '/sign-in', '/sign-in.html', '/staff-sign-in', '/staff-sign-in.html',
-  '/staff-admin', '/staff-admin.html', '/master-admin', '/master-admin.html',
-  '/staff-dashboard', '/staff-dashboard.html', '/staff-portfolio', '/staff-portfolio.html',
-  '/intern-portal', '/intern-portal.html', '/portfolio', '/portfolio.html',
-])
-
-function LegacyPublicRoutes() {
-  const mountPoint = useRef(null)
-
-  useEffect(() => {
-    let active = true
-    let appRoot
-    import('./lib/recovered-app.js').then(({ mountRecoveredApp }) => {
-      if (active && mountPoint.current) appRoot = mountRecoveredApp(mountPoint.current)
-    }).catch((error) => {
-      if (mountPoint.current) mountPoint.current.textContent = 'The WEBLOX website could not be loaded.'
-      console.error('Could not load the public routes.', error)
-    })
-    return () => {
-      active = false
-      appRoot?.unmount()
-    }
-  }, [])
-
-  useEffect(() => {
-    const enterMigratedRoute = (event) => {
-      const link = event.target.closest?.('a[href]')
-      if (!link) return
-      const url = new URL(link.href, window.location.href)
-      if (url.origin === window.location.origin && migratedPaths.has(url.pathname)) {
-        event.preventDefault()
-        event.stopImmediatePropagation()
-        window.location.assign(url.pathname + url.search + url.hash)
-      }
-    }
-    document.addEventListener('click', enterMigratedRoute, true)
-    return () => document.removeEventListener('click', enterMigratedRoute, true)
-  }, [])
-
-  return <div ref={mountPoint} className="public-app-root" />
-}
 
 function RouteMetadata() {
   const { pathname } = useLocation()
@@ -129,6 +87,13 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/index.html" element={<HomePage />} />
+      <Route path="/ventures" element={<MarketingPage path="/ventures" />} />
+      <Route path="/ventures/signarol" element={<MarketingPage path="/ventures/signarol" />} />
+      <Route path="/services" element={<MarketingPage path="/services" />} />
+      <Route path="/studio" element={<MarketingPage path="/studio" />} />
+      <Route path="/careers" element={<MarketingPage path="/careers" />} />
+      <Route path="/insights" element={<MarketingPage path="/insights" />} />
+      <Route path="/contact" element={<MarketingPage path="/contact" />} />
       <Route path="/internship" element={<InternshipPage />} />
       <Route path="/internship/" element={<InternshipPage />} />
       <Route path="/internship/apply" element={<InternshipApply />} />
@@ -153,11 +118,5 @@ function AppRoutes() {
 }
 
 export default function App() {
-  const path = window.location.pathname
-  const publicLegacyPaths = new Set([
-    '/ventures', '/ventures/signarol', '/services', '/studio', '/careers',
-    '/internship/apply', '/internship/portal', '/insights', '/contact',
-  ])
-  if (publicLegacyPaths.has(path) || ['/ventures/', '/services/', '/studio/', '/careers/', '/insights/', '/contact/'].some((prefix) => path.startsWith(prefix))) return <LegacyPublicRoutes />
   return <BrowserRouter><AppRoutes /></BrowserRouter>
 }

@@ -18,7 +18,7 @@ const principles = [
   ['Impact', 'Digital products designed to deliver practical value, support growth, and create lasting opportunities.'],
 ]
 
-const services = [
+export const services = [
   ['01', 'Web Design', 'High-performance marketing websites engineered to communicate clearly, load quickly, and scale with your business.'],
   ['02', 'Web Application Development', 'Custom platforms, internal tools, customer portals, and SaaS products built around real workflows.'],
   ['03', 'E-commerce Websites', 'Conversion-minded storefronts with payments, inventory, and operations designed for growth.'],
@@ -100,7 +100,7 @@ function TerminalPreview() {
   </aside>
 }
 
-function ProjectEnquiry() {
+export function ProjectEnquiry() {
   const [status, setStatus] = useState({ kind: '', message: '' })
   const [busy, setBusy] = useState(false)
   const submit = async (event) => {
