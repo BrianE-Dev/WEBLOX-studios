@@ -449,15 +449,29 @@ export function createPostgresStore(pool) {
 
     async recordAttendance(accountId, action) {
       const column = action === "clock_in" ? "clock_in_at" : "clock_out_at";
-      const { rows } = await pool.query(
-        `INSERT INTO staff_attendance (account_id, attendance_date, ${column})
-         VALUES ($1, CURRENT_DATE, now())
-         ON CONFLICT (account_id, attendance_date) DO UPDATE
-           SET ${column} = EXCLUDED.${column}, updated_at = now()
-         RETURNING attendance_date AS date, clock_in_at AS "clockInAt", clock_out_at AS "clockOutAt"`,
-        [accountId],
-      );
-      return rows[0];
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+        const { rows } = await client.query(
+          `INSERT INTO staff_attendance (account_id, attendance_date, ${column})
+           VALUES ($1, CURRENT_DATE, now())
+           ON CONFLICT (account_id, attendance_date) DO UPDATE
+             SET ${column} = EXCLUDED.${column}, updated_at = now()
+           RETURNING attendance_date AS date, clock_in_at AS "clockInAt", clock_out_at AS "clockOutAt"`,
+          [accountId],
+        );
+        await client.query(
+          `INSERT INTO staff_attendance_events (account_id, action) VALUES ($1, $2)`,
+          [accountId, action],
+        );
+        await client.query("COMMIT");
+        return rows[0];
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      } finally {
+        client.release();
+      }
     },
 
     async getAttendance(accountId) {
@@ -474,10 +488,12 @@ export function createPostgresStore(pool) {
            NULL::date AS "attendanceDate", NULL::timestamptz AS "clockInAt", NULL::timestamptz AS "clockOutAt"
          FROM staff_signins s JOIN accounts a ON a.id = s.account_id WHERE a.account_type = 'staff'
          UNION ALL
-         SELECT a.name, a.email, 'attendance' AS "eventType", d.updated_at AS "occurredAt",
-           d.attendance_date AS "attendanceDate", d.clock_in_at AS "clockInAt", d.clock_out_at AS "clockOutAt"
-         FROM staff_attendance d JOIN accounts a ON a.id = d.account_id WHERE a.account_type = 'staff'
-         ORDER BY "occurredAt" DESC LIMIT 1000`,
+         SELECT a.name, a.email, e.action AS "eventType", e.occurred_at AS "occurredAt",
+           e.occurred_at::date AS "attendanceDate",
+           CASE WHEN e.action = 'clock_in' THEN e.occurred_at END AS "clockInAt",
+           CASE WHEN e.action = 'clock_out' THEN e.occurred_at END AS "clockOutAt"
+         FROM staff_attendance_events e JOIN accounts a ON a.id = e.account_id WHERE a.account_type = 'staff'
+         ORDER BY "occurredAt" DESC`,
       );
       return rows;
     },

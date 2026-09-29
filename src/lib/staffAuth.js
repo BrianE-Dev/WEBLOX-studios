@@ -28,17 +28,24 @@ export function startStaffPresence() {
   const heartbeat = async () => {
     if (stopped || pending) return
     pending = true
-    try { await staffRequest('/api/staff/presence', { method: 'POST', body: '{}' }) } catch {}
+    try {
+      await staffRequest('/api/staff/presence', { method: 'POST', body: '{}', keepalive: true })
+    } catch (error) {
+      console.warn('Could not update staff online status:', error.message)
+    }
     finally { pending = false }
   }
   heartbeat()
-  const timer = setInterval(heartbeat, 180_000)
+  const timer = setInterval(heartbeat, 60_000)
   const onVisibilityChange = () => { if (document.visibilityState === 'visible') heartbeat() }
+  const onPageShow = () => heartbeat()
   document.addEventListener('visibilitychange', onVisibilityChange)
+  window.addEventListener('pageshow', onPageShow)
   return () => {
     stopped = true
     clearInterval(timer)
     document.removeEventListener('visibilitychange', onVisibilityChange)
+    window.removeEventListener('pageshow', onPageShow)
   }
 }
 

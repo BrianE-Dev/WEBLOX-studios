@@ -11,3 +11,7 @@ html[data-theme="light"] .master-sidebar nav a{color:#5225a0;background:#f6f3f9}
   line-height: 1.4;
   overflow-wrap: anywhere;
 }
+.master-staff-invite-link{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end;margin-top:12px}
+.master-staff-invite-link label{grid-column:1/-1;color:#d1bcff;font:600 11px 'JetBrains Mono'}
+.master-staff-invite-link input{width:100%;min-width:0;font:11px 'JetBrains Mono'}
+@media(max-width:620px){.master-staff-invite-link{grid-template-columns:1fr}.master-staff-invite-link label{grid-column:auto}.master-staff-invite-link .button{width:100%}}

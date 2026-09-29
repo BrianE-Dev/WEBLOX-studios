@@ -39,6 +39,7 @@ export default function MasterAdmin() {
   const [loginBusy, setLoginBusy] = useState(false)
   const [staff, setStaff] = useState([])
   const [onlineStaff, setOnlineStaff] = useState(null)
+  const [onlineStaffError, setOnlineStaffError] = useState('')
   const [interns, setInterns] = useState([])
   const [admins, setAdmins] = useState([])
   const [applications, setApplications] = useState([])
@@ -49,6 +50,8 @@ export default function MasterAdmin() {
   const [workspace, setWorkspace] = useState({ recipients: [], sentMessages: [] })
   const [attendance, setAttendance] = useState(null)
   const [attendanceNotice, setAttendanceNotice] = useState('')
+  const [staffInvite, setStaffInvite] = useState(null)
+  const [staffInviteNotice, setStaffInviteNotice] = useState('')
   const [notice, setNotice] = useState({ text: '', success: false })
   const [messageNotice, setMessageNotice] = useState('')
   const [selectedRecipients, setSelectedRecipients] = useState([])
@@ -76,8 +79,10 @@ export default function MasterAdmin() {
     try {
       const result = await adminRequest('/api/admin/staff/online')
       setOnlineStaff(result.staff || [])
+      setOnlineStaffError('')
     } catch {
       setOnlineStaff(null)
+      setOnlineStaffError('Online staff could not be loaded. Check the server session and try Refresh.')
     }
   }, [])
   const refreshInterns = useCallback(async () => setInterns((await adminRequest('/api/admin/interns')).interns), [])
@@ -153,8 +158,10 @@ export default function MasterAdmin() {
   useEffect(() => {
     if (!account) return undefined
     refreshOnlineStaff()
-    const timer = setInterval(refreshOnlineStaff, 30_000)
-    return () => clearInterval(timer)
+    const timer = setInterval(refreshOnlineStaff, 15_000)
+    const onFocus = () => refreshOnlineStaff()
+    window.addEventListener('focus', onFocus)
+    return () => { clearInterval(timer); window.removeEventListener('focus', onFocus) }
   }, [account, refreshOnlineStaff])
 
   useEffect(() => {
@@ -217,6 +224,32 @@ export default function MasterAdmin() {
       await onSuccess?.()
       setNotice({ text: successText, success: true })
     } catch (error) { setNotice({ text: error.message || 'Request failed.', success: false }) }
+  }
+
+  const inviteStaff = async (event) => {
+    event.preventDefault()
+    const form = event.currentTarget
+    setStaffInvite(null)
+    setStaffInviteNotice('')
+    try {
+      const result = await adminRequest('/api/admin/staff/invitations', { method: 'POST', body: JSON.stringify(Object.fromEntries(new FormData(form))) })
+      setStaffInvite(result.inviteUrl)
+      setStaffInviteNotice('Staff invitation created. Share this link with the new staff member; it expires in 48 hours.')
+      form.reset()
+      await refreshStaff()
+    } catch (error) {
+      setStaffInviteNotice(error.message || 'Could not create the staff invitation.')
+    }
+  }
+
+  const copyStaffInvite = async () => {
+    if (!staffInvite) return
+    try {
+      await navigator.clipboard.writeText(staffInvite)
+      setStaffInviteNotice('Invitation link copied.')
+    } catch {
+      setStaffInviteNotice('Copy failed. Select and copy the invitation link below.')
+    }
   }
 
   const updatePerson = async (person, type, action) => {
@@ -504,9 +537,10 @@ export default function MasterAdmin() {
         <div className="dashboard-sidebar-content" id="masterAdminSidebarContent"><span className="eyebrow">ADMIN PROFILE</span><h2>{account.name || 'Administrator'}</h2><p>{account.email}</p><nav aria-label="Master admin navigation">{[['overview', 'Overview'], ['people', 'People'], ['applicants', 'Applicants'], ['tracks', 'Internship tracks'], ['history', 'History'], ['certificates', 'Certificates'], ['images', 'Image library'], ['settings', 'Settings'], ['portfolio', 'My portfolio']].map(([key, label]) => <a key={key} href={`#${key}`} className={page === key ? 'active' : ''} aria-current={page === key ? 'page' : undefined} onClick={(event) => { event.preventDefault(); showPage(key) }}><DashboardNavIcon name={key} />{label}</a>)}</nav><section><span className="eyebrow">TODAY’S ATTENDANCE</span><p className="master-attendance-status">{attendance ? `In: ${attendance.clockInAt ? new Date(attendance.clockInAt).toLocaleTimeString() : '—'} · Out: ${attendance.clockOutAt ? new Date(attendance.clockOutAt).toLocaleTimeString() : '—'}` : attendanceNotice || 'Loading attendance…'}</p><div className="master-attendance"><button className="button" type="button" onClick={() => updateAttendance('clock_in')}>Clock in</button><button className="button secondary" type="button" onClick={() => updateAttendance('clock_out')}>Clock out</button></div><Notice>{attendanceNotice}</Notice></section></div>
       </aside>
       <div className="master-pages">
-        {page === 'overview' && <section className="master-card"><span className="eyebrow">OVERVIEW</span><h2>Master admin overview</h2><p>Review internship applicants, manage people, check sent reports, and build your portfolio.</p><div className="master-summary-grid"><article><b>{staff.filter((person) => person.activated && person.active).length}</b><span>Active staff</span></article><article><b>{onlineStaff === null ? '—' : onlineStaff.length}</b><span>Staff online now</span></article><article><b>{interns.filter((person) => person.active).length}</b><span>Active interns</span></article><article><b>{applications.length}</b><span>Applications</span></article><article><b>{admins.length}</b><span>Administrators</span></article></div><div className="master-online-list" aria-live="polite"><span>Staff online now</span>{onlineStaff === null ? <p>Online staff could not be loaded.</p> : onlineStaff.length ? <ul>{onlineStaff.map((person) => <li key={person.id}>{person.name}</li>)}</ul> : <p>No staff are online right now.</p>}</div>{notice.text && <Notice success={notice.success}>{notice.text}</Notice>}</section>}
+        {page === 'overview' && <section className="master-card"><span className="eyebrow">OVERVIEW</span><h2>Master admin overview</h2><p>Review internship applicants, manage people, check sent reports, and build your portfolio.</p><div className="master-summary-grid"><article><b>{staff.filter((person) => person.activated && person.active).length}</b><span>Active staff</span></article><article><b>{onlineStaff === null ? '—' : onlineStaff.length}</b><span>Staff online now</span></article><article><b>{interns.filter((person) => person.active).length}</b><span>Active interns</span></article><article><b>{applications.length}</b><span>Applications</span></article><article><b>{admins.length}</b><span>Administrators</span></article></div><div className="master-online-list" aria-live="polite"><span>Staff online now</span>{onlineStaff === null ? <p>{onlineStaffError || 'Loading online staff…'}</p> : onlineStaff.length ? <ul>{onlineStaff.map((person) => <li key={person.id}>{person.name}</li>)}</ul> : <p>No staff are online right now.</p>}</div>{notice.text && <Notice success={notice.success}>{notice.text}</Notice>}</section>}
 
         {page === 'people' && <>
+          <section className="master-card"><span className="eyebrow">STAFF ONBOARDING</span><h2>Invite a staff member</h2><p>Create a secure, single-use setup link. The new staff member uses it to set their own password.</p><form className="master-form" onSubmit={inviteStaff}><label>Full name<input name="name" maxLength="120" autoComplete="name" required /></label><label>Email address<input name="email" type="email" maxLength="254" autoComplete="email" required /></label><label>Staff role<input name="role" maxLength="80" placeholder="Software Engineer" required /></label><label>Job type<select name="jobType" required defaultValue="Full-time"><option>Full-time</option><option>Part-time</option><option>Contract</option><option>Internship</option></select></label><label>Gender<select name="gender" defaultValue=""><option value="">Select gender</option><option>Male</option><option>Female</option></select></label><button className="button" type="submit">Create staff invitation</button></form>{staffInviteNotice && <Notice success={Boolean(staffInvite)}>{staffInviteNotice}</Notice>}{staffInvite && <div className="master-staff-invite-link"><label htmlFor="staffInviteUrl">Staff setup link</label><input id="staffInviteUrl" readOnly value={staffInvite} onFocus={(event) => event.currentTarget.select()} /><button className="button secondary" type="button" onClick={copyStaffInvite}>Copy link</button></div>}</section>
           <section className="master-card"><span className="eyebrow">ALL STAFF</span><h2>Staff accounts</h2><p>Review onboarded team members and update their directory details.</p><div className="master-list">{staff.length ? staff.map((person) => <article className="master-row" key={person.id || person.email}><div><b>{person.name || person.email}</b><small>{[person.email, person.role, person.jobType || '—', person.gender || 'Gender undisclosed', `Added ${date(person.createdAt)} by ${person.createdByName || 'Unknown'}${person.createdByEmail ? ` (${person.createdByEmail})` : ''}`, person.activated ? person.active ? 'ACTIVE' : 'DISABLED' : 'INVITATION PENDING'].join(' · ')}</small></div>{person.activated && <span className="master-state">{person.active ? 'ACTIVE' : 'DISABLED'}</span>}<button className="button secondary" type="button" onClick={() => editPerson(person, 'staff')}>Edit</button>{person.activated ? <button className={`button secondary${person.active ? ' master-danger' : ''}`} type="button" onClick={() => updatePerson(person, 'staff', person.active ? 'remove' : 'restore')}>{person.active ? 'Disable' : 'Restore access'}</button> : <button className="button secondary master-danger" type="button" onClick={() => updatePerson(person, 'staff', 'remove')}>Remove invitation</button>}</article>) : <p>No staff have been onboarded yet.</p>}</div></section>
           <section className="master-card"><span className="eyebrow">INTERNSHIP PROGRAM</span><h2>Onboard an intern</h2><p>Create an intern workspace account for a future program participant. Share the temporary password privately. Intern check-ins are submitted at <a href="/intern-portal.html">the intern portal</a>.</p><form className="master-form" onSubmit={(event) => submitForm(event, '/api/admin/interns', async () => { await refreshInterns() }, 'Intern onboarded. Share the temporary password securely.')}><label>Full name<input name="name" maxLength="120" required /></label><label>Email address<input name="email" type="email" maxLength="254" required /></label><label>Program or track<input name="role" maxLength="80" defaultValue="Intern" required /></label><label>Gender<select name="gender"><option value="">Select gender</option><option>Male</option><option>Female</option></select></label><label>Job type<select name="jobType" required><option>Internship</option><option>Part-time</option><option>Full-time</option><option>Contract</option></select></label><label className="wide">Temporary password<input name="password" type="password" minLength="8" autoComplete="new-password" required /></label><button className="button" type="submit">Onboard intern</button></form>{notice.text && <Notice success={notice.success}>{notice.text}</Notice>}<div className="master-list">{interns.length ? interns.map((person) => <article className="master-row" key={person.id}><div><b>{person.name}</b><small>{[person.email, person.role, person.jobType, person.gender || 'Gender undisclosed', `Added ${date(person.createdAt)} by ${person.createdByName || 'Unknown'}`].join(' · ')}</small></div><span className="master-state">{person.active ? 'ACTIVE' : 'DISABLED'}</span><button className="button secondary" type="button" onClick={() => editPerson(person, 'intern')}>Edit</button><button className="button secondary" type="button" onClick={() => updatePerson(person, 'intern', person.active ? 'remove' : 'restore')}>{person.active ? 'Disable' : 'Restore access'}</button></article>) : <p>No interns onboarded yet.</p>}</div></section>
           <section className="master-card"><span className="eyebrow">STAFF ADMINISTRATORS</span><h2>Add an administrator account</h2><p>Create a backend account directly. The password is stored as a salted hash. Share the login details securely with the administrator.</p><form className="master-form" onSubmit={(event) => submitForm(event, '/api/admin/admins', refreshAdmins, 'Administrator account created.')}><label>Full name<input name="name" maxLength="120" autoComplete="name" required /></label><label>Email address<input name="email" type="email" maxLength="254" autoComplete="email" required /></label><label className="wide">Temporary password<input name="password" type="password" minLength="8" autoComplete="new-password" required /><small>At least 8 characters. The new administrator can sign in immediately.</small></label><button className="button" type="submit">Add administrator</button></form>{notice.text && <Notice success={notice.success}>{notice.text}</Notice>}<h2>Current administrators</h2><div className="master-list">{admins.length ? admins.map((person) => <article className="master-row" key={person.id}><div><b>{person.name}</b><small>{person.email} · {person.gender || 'Gender undisclosed'} · Added {date(person.createdAt)}</small></div><span className="master-state">ADMIN</span>{!person.isCurrent && <button className="remove-admin" type="button" onClick={() => updateAdmin(person)}>Remove</button>}</article>) : <p>No administrator accounts found.</p>}</div></section>
@@ -521,7 +555,7 @@ export default function MasterAdmin() {
         {page === 'history' && <>
           <section className="master-card"><span className="eyebrow">MESSAGE HISTORY</span><h2>Sent announcements and reports</h2><div className="master-list">{workspace.sentMessages?.length ? workspace.sentMessages.map((item) => <article className="master-row" key={item.id}><div><b>{item.type === 'announcement' ? 'ANNOUNCEMENT' : 'WEEKLY REPORT'} · {item.subject}</b><small>Sent by {item.senderName}{item.senderEmail ? ` (${item.senderEmail})` : ''} · {fmt(item.createdAt)} · {item.recipientCount} recipients</small></div></article>) : <p>No messages have been sent.</p>}</div></section>
           <section className="master-card"><span className="eyebrow">ANNOUNCEMENTS & REPORTS</span><h2>Compose a message</h2><p>Choose everyone, a whole group, or any combination of individual staff and interns.</p><form id="workspaceMessageForm" className="master-form" onSubmit={sendMessage}><label>Message type<select name="type"><option value="announcement">Announcement</option><option value="weekly_report">Weekly report</option></select></label><label>Subject<input name="subject" maxLength="180" required /></label><label className="wide">Message<textarea name="body" rows="6" maxLength="20000" required /></label><button className="button secondary" type="button" onClick={loadWeeklyReport}>Load weekly summary</button><button className="button" type="submit" disabled={messageBusy}>{messageBusy ? 'Sending…' : 'Send to selected'}</button><fieldset className="wide master-recipient-fieldset"><legend>Recipients</legend><div className="master-recipient-actions">{[['all', 'Everyone'], ['staff', 'All staff'], ['intern', 'All interns'], ['none', 'Clear']].map(([key, label]) => <button className="button secondary" key={key} type="button" onClick={() => selectGroup(key)}>{label}</button>)}</div><div className="master-recipient-groups">{[['staff', 'Staff'], ['intern', 'Interns']].map(([type, label]) => { const people = workspace.recipients.filter((person) => person.accountType === type); return <section className="master-recipient-group" key={type}><h3>{label} ({people.length})</h3>{people.length ? people.map((person) => <label className="master-recipient-option" key={person.id}><input type="checkbox" checked={selectedRecipients.includes(person.id)} onChange={() => toggleRecipient(person.id)} /><span>{[person.name, person.role, person.email].filter(Boolean).join(' · ')}</span></label>) : <p>No active {label.toLowerCase()} accounts.</p>}</section> })}</div></fieldset></form><Notice>{messageNotice}</Notice></section>
-          <section className="master-card"><span className="eyebrow">STAFF SIGN-INS & ATTENDANCE</span><h2>Daily team activity</h2><div className="master-list">{activity.staffActivity.length ? activity.staffActivity.map((item, index) => <article className="master-row" key={`${item.email}-${item.occurredAt}-${index}`}><div><b>{item.name}</b><small>{item.email} · {item.eventType === 'login' ? `Signed in · ${fmt(item.occurredAt)}` : `Attendance ${item.attendanceDate}: in ${item.clockInAt ? new Date(item.clockInAt).toLocaleTimeString() : '—'}, out ${item.clockOutAt ? new Date(item.clockOutAt).toLocaleTimeString() : '—'}`}</small></div></article>) : <p>No staff login or attendance records yet.</p>}</div></section>
+          <section className="master-card"><span className="eyebrow">STAFF SIGN-INS & ATTENDANCE</span><h2>Clock-in and activity history</h2><div className="master-list">{activity.staffActivity.length ? activity.staffActivity.map((item, index) => <article className="master-row" key={`${item.email}-${item.occurredAt}-${index}`}><div><b>{item.name}</b><small>{item.email} · {item.eventType === 'login' ? `Signed in · ${fmt(item.occurredAt)}` : `${item.eventType === 'clock_in' ? 'Clocked in' : 'Clocked out'} · ${fmt(item.occurredAt)}`}</small></div></article>) : <p>No staff login or clock records yet.</p>}</div></section>
           <section className="master-card"><span className="eyebrow">INTERN CHECK-INS</span><h2>Morning and evening updates</h2><div className="master-list">{activity.internCheckins.length ? activity.internCheckins.map((item, index) => <article className="master-row" key={`${item.email}-${item.date}-${index}`}><div><b>{item.name}</b><small>{item.email} · {item.date || 'No check-ins yet'} · Morning: {item.morning || '—'} · Evening: {item.evening || '—'}</small></div></article>) : <p>No onboarded interns or check-ins yet.</p>}</div></section>
           <section className="master-card"><span className="eyebrow">ADMIN CHANGE HISTORY</span><h2>People changes by administrator</h2><div className="master-list">{activity.audit.length ? activity.audit.map((event, index) => <article className="master-row" key={`${event.id || event.createdAt}-${index}`}><div><b>{event.action.toUpperCase()} · {event.personName} ({event.personType})</b><small>{event.personEmail} · {event.role} · {event.jobType || '—'} · {fmt(event.createdAt)} · By {event.performedByName} ({event.performedByEmail || 'no email'}){event.details?.before && event.details?.after ? ` · Change: ${JSON.stringify(event.details.before)} → ${JSON.stringify(event.details.after)}` : ''}</small></div></article>) : <p>No onboarding changes have been recorded yet.</p>}</div></section>
         </>}
