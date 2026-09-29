@@ -148,6 +148,7 @@ export function SiteFooter() {
 
 export default function HomePage() {
   const heroRef = useRef(null)
+  const lifecycleRef = useRef(null)
 
   useEffect(() => {
     setPageSeo({
@@ -169,6 +170,18 @@ export default function HomePage() {
     return () => observer.disconnect()
   }, [])
 
+  useEffect(() => {
+    const lifecycle = lifecycleRef.current
+    if (!lifecycle) return
+
+    const observer = new IntersectionObserver(([entry]) => {
+      lifecycle.classList.toggle('lifecycle-image-visible', entry.isIntersecting)
+    }, { threshold: 0.1 })
+
+    observer.observe(lifecycle)
+    return () => observer.disconnect()
+  }, [])
+
   return <>
     <SiteHeader />
     <main>
@@ -183,7 +196,7 @@ export default function HomePage() {
 
       <section className="section shell"><SectionHeading eyebrow="Engineering Depth" title="What we build." copy="Venture-grade product thinking applied to commercial digital work." /><div className="cards three">{services.map(([number, title, copy]) => <article className="card service" key={number}><span className="num">{number}</span><h3>{title}</h3><p>{copy}</p></article>)}</div><a className="button secondary" href="/services">View Services <Arrow /></a></section>
 
-      <section className="band"><div className="shell"><SectionHeading eyebrow="Systematic Delivery" title="The WEBLOX Lifecycle" copy="Precision execution from raw technical hypothesis to production software." /><div className="process">{lifecycle.map(([name, stage, copy], index) => <article key={name}><b>{String(index + 1).padStart(2, '0')}</b><h3>{name}</h3><small>[ {stage} ]</small><p>{copy}</p></article>)}</div></div></section>
+      <section ref={lifecycleRef} className="band lifecycle-section"><div className="shell"><SectionHeading eyebrow="Systematic Delivery" title="The WEBLOX Lifecycle" copy="Precision execution from raw technical hypothesis to production software." /><div className="process">{lifecycle.map(([name, stage, copy], index) => <article key={name}><b>{String(index + 1).padStart(2, '0')}</b><h3>{name}</h3><small>[ {stage} ]</small><p>{copy}</p></article>)}</div><img className="lifecycle-image" src="/assets/lifecycle.jpg" alt="Illuminated blue digital systems arranged around a central platform." loading="lazy" decoding="async" /></div></section>
 
       <section className="section shell"><SectionHeading eyebrow="Our Organization" title="Ideas. Technology. Products. Ventures." /><div className="cards three">{organization.map(([title, copy], index) => <article className="card" key={title}><span className="num">0{index + 1} / STUDIO</span><h3>{title}</h3><p>{copy}</p></article>)}</div><div className="inline-cta"><div><span className="eyebrow">Join the Studio</span><h3>Learn by contributing to real work.</h3><p>Emerging professionals can explore practical experience inside the WEBLOX Internship Program.</p></div><a className="button secondary" href="/internship">Explore the Internship <Arrow /></a></div><a className="button secondary" href="/studio">Meet the Studio <Arrow /></a></section>
 
