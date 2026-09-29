@@ -75,6 +75,15 @@ export default function StaffDashboard() {
     if (matchMedia('(max-width: 800px)').matches) requestAnimationFrame(() => document.getElementById(selected)?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
   }
 
+  const handleSidebarItem = (nextPage) => {
+    if (matchMedia('(max-width: 800px)').matches && !sidebarOpen) {
+      setSidebarOpen(true)
+      return
+    }
+    setSidebarOpen(false)
+    showPage(nextPage)
+  }
+
   const updateAttendance = async (action) => {
     setAttendanceNotice('')
     setAttendanceError('')
@@ -141,11 +150,11 @@ export default function StaffDashboard() {
           <small>{staff.role} · {staff.email}</small>
         </div>
         <nav className="dash-nav" aria-label="Staff dashboard navigation">
-          <button className={page === 'overview' ? 'active' : ''} aria-label="Overview" title="Overview" aria-current={page === 'overview' ? 'page' : undefined} type="button" onClick={() => { setSidebarOpen((open) => page === 'overview' ? !open : true); showPage('overview') }}><DashboardNavIcon name="overview" />Overview</button>
-          <button className={page === 'inbox' ? 'active' : ''} aria-label="Inbox" title="Inbox" aria-current={page === 'inbox' ? 'page' : undefined} type="button" onClick={() => { setSidebarOpen((open) => page === 'inbox' ? !open : true); showPage('inbox') }}><DashboardNavIcon name="inbox" />Inbox <span className={`inbox-unread${unreadCount ? '' : ' hidden'}`} aria-label={`${unreadCount} unread messages`}>{unreadCount > 99 ? '99+' : unreadCount}</span></button>
-          <button className={page === 'portfolio' ? 'active' : ''} aria-label="Portfolio builder" title="Portfolio builder" aria-current={page === 'portfolio' ? 'page' : undefined} type="button" onClick={() => { setSidebarOpen((open) => page === 'portfolio' ? !open : true); showPage('portfolio') }}><DashboardNavIcon name="portfolio" />Portfolio builder</button>
-          <button className={page === 'images' ? 'active' : ''} aria-label="Image library" title="Image library" aria-current={page === 'images' ? 'page' : undefined} type="button" onClick={() => { setSidebarOpen((open) => page === 'images' ? !open : true); showPage('images') }}><DashboardNavIcon name="images" />Image library</button>
-          <button className={page === 'settings' ? 'active' : ''} aria-label="Settings" title="Settings" aria-current={page === 'settings' ? 'page' : undefined} type="button" onClick={() => { setSidebarOpen((open) => page === 'settings' ? !open : true); showPage('settings') }}><DashboardNavIcon name="settings" />Settings</button>
+          <button className={page === 'overview' ? 'active' : ''} aria-label="Overview" title="Overview" aria-current={page === 'overview' ? 'page' : undefined} type="button" onClick={() => handleSidebarItem('overview')}><DashboardNavIcon name="overview" />Overview</button>
+          <button className={page === 'inbox' ? 'active' : ''} aria-label="Inbox" title="Inbox" aria-current={page === 'inbox' ? 'page' : undefined} type="button" onClick={() => handleSidebarItem('inbox')}><DashboardNavIcon name="inbox" />Inbox <span className={`inbox-unread${unreadCount ? '' : ' hidden'}`} aria-label={`${unreadCount} unread messages`}>{unreadCount > 99 ? '99+' : unreadCount}</span></button>
+          <button className={page === 'portfolio' ? 'active' : ''} aria-label="Portfolio builder" title="Portfolio builder" aria-current={page === 'portfolio' ? 'page' : undefined} type="button" onClick={() => handleSidebarItem('portfolio')}><DashboardNavIcon name="portfolio" />Portfolio builder</button>
+          <button className={page === 'images' ? 'active' : ''} aria-label="Image library" title="Image library" aria-current={page === 'images' ? 'page' : undefined} type="button" onClick={() => handleSidebarItem('images')}><DashboardNavIcon name="images" />Image library</button>
+          <button className={page === 'settings' ? 'active' : ''} aria-label="Settings" title="Settings" aria-current={page === 'settings' ? 'page' : undefined} type="button" onClick={() => handleSidebarItem('settings')}><DashboardNavIcon name="settings" />Settings</button>
         </nav>
         <section className="dash-attendance" aria-label="Attendance">
           <span className="eyebrow">TODAY’S ATTENDANCE</span>

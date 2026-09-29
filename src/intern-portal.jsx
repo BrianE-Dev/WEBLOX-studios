@@ -38,6 +38,15 @@ export default function InternPortal() {
     if (matchMedia('(max-width: 800px)').matches) requestAnimationFrame(() => document.querySelector('.intern-main-content')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
   }
 
+  const handleSidebarItem = (next) => {
+    if (matchMedia('(max-width: 800px)').matches && !sidebarOpen) {
+      setSidebarOpen(true)
+      return
+    }
+    setSidebarOpen(false)
+    showInternPage(next)
+  }
+
   const loadCheckins = useCallback(async () => {
     const { checkins: entries } = await staffRequest('/api/intern/me/checkins')
     setCheckins(entries)
@@ -217,9 +226,9 @@ export default function InternPortal() {
               {intern.profilePhotoUrl && <button type="button" className="intern-remove-photo" disabled={photoBusy} onClick={removeProfilePhoto}>Remove photo</button>}
             </div>
             <nav className="intern-side-nav" aria-label="Intern dashboard navigation">
-              <button className={page === 'dashboard' ? 'active' : ''} aria-label="Dashboard" title="Dashboard" type="button" onClick={() => { setSidebarOpen((open) => page === 'dashboard' ? !open : true); showInternPage('dashboard') }}><DashboardNavIcon name="dashboard" />Dashboard</button>
-              <button className={page === 'images' ? 'active' : ''} aria-label="My files" title="My files" type="button" onClick={() => { setSidebarOpen((open) => page === 'images' ? !open : true); showInternPage('images') }}><DashboardNavIcon name="images" />My files</button>
-              <button className={page === 'settings' ? 'active' : ''} aria-label="Settings" title="Settings" type="button" onClick={() => { setSidebarOpen((open) => page === 'settings' ? !open : true); showInternPage('settings') }}><DashboardNavIcon name="settings" />Settings</button>
+              <button className={page === 'dashboard' ? 'active' : ''} aria-label="Dashboard" title="Dashboard" type="button" onClick={() => handleSidebarItem('dashboard')}><DashboardNavIcon name="dashboard" />Dashboard</button>
+              <button className={page === 'images' ? 'active' : ''} aria-label="My files" title="My files" type="button" onClick={() => handleSidebarItem('images')}><DashboardNavIcon name="images" />My files</button>
+              <button className={page === 'settings' ? 'active' : ''} aria-label="Settings" title="Settings" type="button" onClick={() => handleSidebarItem('settings')}><DashboardNavIcon name="settings" />Settings</button>
             </nav>
             <button className="intern-signout" type="button" onClick={signOut}>Sign out <span>↗</span></button>
             </div>

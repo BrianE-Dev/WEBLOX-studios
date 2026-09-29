@@ -109,6 +109,16 @@ export default function StaffAdmin() {
     if (matchMedia('(max-width: 800px)').matches) requestAnimationFrame(() => document.querySelector('.admin-main')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
   }
 
+  const handleSidebarItem = (event, page) => {
+    event.preventDefault()
+    if (matchMedia('(max-width: 800px)').matches && !sidebarOpen) {
+      setSidebarOpen(true)
+      return
+    }
+    setSidebarOpen(false)
+    showPage(page)
+  }
+
   const signIn = async (event) => {
     event.preventDefault()
     setLoginBusy(true)
@@ -259,7 +269,7 @@ export default function StaffAdmin() {
       {!account ? <section className="admin-card"><h2>Administrator sign in</h2><p>Use the administrator account created by the local bootstrap command.</p><form className="admin-form" onSubmit={signIn}><label className="wide">Email address<input name="email" type="email" autoComplete="username" required /></label><label className="wide">Password<input name="password" type="password" autoComplete="current-password" required /></label><button className="button wide" type="submit" disabled={loginBusy}>{loginBusy ? 'Signing in…' : 'Sign in'}</button></form>{loginNotice && <div className="admin-notice" role="alert">{loginNotice}</div>}</section> : <div className="admin-layout">
         <aside className={`admin-sidebar${sidebarOpen ? ' is-open' : ''}`}>
           <div className="dashboard-sidebar-content" id="staffAdminSidebarContent"><div className="admin-profile"><span className="eyebrow">SIGNED IN AS</span><strong>{account.name || 'Administrator'}</strong><small>{account.email}</small></div>
-          <nav aria-label="Staff admin navigation">{[['overview', 'Overview'], ['people', 'People'], ['applicants', 'Applicants'], ['history', 'History'], ['images', 'Image library'], ['settings', 'Settings']].map(([page, label]) => <a key={page} href={`#${page}`} title={label} aria-label={label} className={activePage === page ? 'active' : ''} aria-current={activePage === page ? 'page' : undefined} onClick={(event) => { event.preventDefault(); setSidebarOpen((open) => activePage === page ? !open : true); showPage(page) }}><DashboardNavIcon name={page} />{label}</a>)}</nav>
+          <nav aria-label="Staff admin navigation">{[['overview', 'Overview'], ['people', 'People'], ['applicants', 'Applicants'], ['history', 'History'], ['images', 'Image library'], ['settings', 'Settings']].map(([page, label]) => <a key={page} href={`#${page}`} title={label} aria-label={label} className={activePage === page ? 'active' : ''} aria-current={activePage === page ? 'page' : undefined} onClick={(event) => handleSidebarItem(event, page)}><DashboardNavIcon name={page} />{label}</a>)}</nav>
           <section aria-label="Attendance"><span className="eyebrow">TODAY’S ATTENDANCE</span><p className="admin-notice">{attendance ? `In: ${attendance.clockInAt ? new Date(attendance.clockInAt).toLocaleTimeString() : '—'} · Out: ${attendance.clockOutAt ? new Date(attendance.clockOutAt).toLocaleTimeString() : '—'}` : attendanceError || 'Loading attendance…'}</p><div className="admin-clock"><button className="button" type="button" onClick={() => updateAttendance('clock_in')}>Clock in</button><button className="button secondary" type="button" onClick={() => updateAttendance('clock_out')}>Clock out</button></div>{attendanceNotice && <p className="admin-notice success" role="status">{attendanceNotice}</p>}{attendanceError && <p className="admin-notice" role="alert">{attendanceError}</p>}</section>
           </div>
         </aside>
