@@ -31,12 +31,22 @@
     padding: 6px 8px calc(6px + env(safe-area-inset-bottom)) !important;
     border-radius: 14px 14px 0 0;
     box-shadow: 0 -8px 32px #0005;
+    transition: width .25s ease-in-out;
   }
 
   .master-sidebar.is-open,
   .admin-sidebar.is-open,
   #staffSidebar.is-open,
   .intern-sidebar.is-open { padding: 12px 12px calc(12px + env(safe-area-inset-bottom)) !important; }
+
+  .master-sidebar.is-open,
+  .admin-sidebar.is-open,
+  #staffSidebar.is-open,
+  .intern-sidebar.is-open {
+    right: auto;
+    left: 0;
+    width: 50vw;
+  }
 
   .master-sidebar .dashboard-sidebar-content,
   .admin-sidebar .dashboard-sidebar-content,
