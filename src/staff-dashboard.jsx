@@ -20,6 +20,7 @@ export default function StaffDashboard() {
   const [portfolio, setPortfolio] = useState(null)
   const [portfolioLoaded, setPortfolioLoaded] = useState(false)
   const [portfolioError, setPortfolioError] = useState('')
+  const [passwordNotice, setPasswordNotice] = useState({ text: '', success: false })
 
   useEffect(() => {
     let current = true
@@ -98,6 +99,19 @@ export default function StaffDashboard() {
     }
   }
 
+  const changePassword = async (event) => {
+    event.preventDefault()
+    const form = event.currentTarget
+    setPasswordNotice({ text: '', success: false })
+    try {
+      await authRequest('/password', { method: 'POST', body: JSON.stringify({ currentPassword: form.elements.currentPassword.value, newPassword: form.elements.newPassword.value }) })
+      form.reset()
+      setPasswordNotice({ text: 'Password updated.', success: true })
+    } catch (error) {
+      setPasswordNotice({ text: error.message || 'Could not update the password.', success: false })
+    }
+  }
+
   const signOut = async () => {
     await authRequest('/logout', { method: 'POST' }).catch(() => {})
     clearStaffSession()
@@ -172,7 +186,7 @@ export default function StaffDashboard() {
         </section>
       )}
 
-      {page === 'settings' && <section id="settings" className="dash-panel" aria-label="Settings"><span className="eyebrow">PREFERENCES</span><h2>Appearance</h2><p className="theme-settings-copy">Choose how your staff workspace looks. This preference is saved for your next visit.</p><ThemeSettings theme={theme} onChange={setTheme} /></section>}
+      {page === 'settings' && <div id="settings" className="dash-settings"><section className="dash-panel" aria-label="Appearance settings"><span className="eyebrow">PREFERENCES</span><h2>Appearance</h2><p className="theme-settings-copy">Choose how your staff workspace looks. This preference is saved for your next visit.</p><ThemeSettings theme={theme} onChange={setTheme} /></section><section className="dash-panel" aria-label="Password settings"><span className="eyebrow">ACCOUNT SETTINGS</span><h2>Change password</h2><form className="dash-password-form" onSubmit={changePassword}><label>Current password<input name="currentPassword" type="password" autoComplete="current-password" required /></label><label>New password<input name="newPassword" type="password" autoComplete="new-password" minLength="8" required /></label><button className="button" type="submit">Update password</button></form><p className={`dash-password-notice${passwordNotice.success ? ' success' : ''}`} role="status" aria-live="polite">{passwordNotice.text}</p></section></div>}
       {page === 'images' && <div id="images"><ImageLibrary /></div>}
     </main>
   )

@@ -26,3 +26,13 @@
 .dash-error{color:#ffaaa2!important}
 @media(max-width:800px){.staff-dash{grid-template-columns:1fr}#staffSidebar,.dash-hero,#overview,#inbox,#settings,#images{grid-column:1;grid-row:auto}#staffSidebar{position:static}.dash-workspace-card{grid-column:1}}
 html[data-theme="light"] .dash-hero{background:radial-gradient(circle at 5% 0%,#7b3ff214,transparent 48%),#fff;border-color:#c9c1d1}html[data-theme="light"] .dash-panel{background:#fff;border-color:#c9c1d1}html[data-theme="light"] .dash-role{color:#5225a0;border-color:#bfa8e8}html[data-theme="light"] .dash-nav button{background:#f6f3f9;color:#5f5966}html[data-theme="light"] .dash-nav button.active{background:#f1eaff;color:#5225a0;border-color:#c9b3ef}html[data-theme="light"] .dash-link-card,html[data-theme="light"] .dash-project-preview article{background:#f6f3f9;border-color:#d8d0df}html[data-theme="light"] .portfolio-tip{background:#f4efff;border-color:#d7c5f5}html[data-theme="light"] .portfolio-result{border-color:#c9c1d1}html[data-theme="light"] .portfolio-result input{background:#fff}html[data-theme="light"] .skill-pills span{color:#5225a0}
+.dash-settings{grid-column:2;display:grid;gap:14px;min-width:0}
+.dash-settings>.dash-panel{min-width:0}
+.dash-password-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:720px;margin-top:12px}
+.dash-password-form label{display:grid;gap:6px;color:#d1bcff;font:600 11px 'JetBrains Mono'}
+.dash-password-form input{width:100%;font:14px Inter,Arial,sans-serif}
+.dash-password-form .button{justify-self:start}
+.dash-password-notice{min-height:18px;margin:10px 0 0!important;color:#ffaaa2!important;font-size:12px!important}
+.dash-password-notice.success{color:#7fe5a2!important}
+html[data-theme="light"] .dash-password-form label{color:#5225a0}
+@media(max-width:800px){.dash-settings{grid-column:1}.dash-password-form{grid-template-columns:1fr}}
