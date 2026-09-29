@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import HeroProductScene from './HeroProductScene.jsx'
 import { setPageSeo } from '../../lib/seo.js'
 import './HomePage.css'
@@ -147,6 +147,8 @@ export function SiteFooter() {
 }
 
 export default function HomePage() {
+  const heroRef = useRef(null)
+
   useEffect(() => {
     setPageSeo({
       title: 'WEBLOX Studios | Technology Venture Studio',
@@ -155,10 +157,22 @@ export default function HomePage() {
     })
   }, [])
 
+  useEffect(() => {
+    const hero = heroRef.current
+    if (!hero) return
+
+    const observer = new IntersectionObserver(([entry]) => {
+      hero.classList.toggle('hero-bg-visible', entry.isIntersecting)
+    }, { threshold: 0.1 })
+
+    observer.observe(hero)
+    return () => observer.disconnect()
+  }, [])
+
   return <>
     <SiteHeader />
     <main>
-      <section className="hero shell">
+      <section ref={heroRef} className="hero shell">
         <div><span className="chip"><i /> TECHNOLOGY VENTURE STUDIO</span><h1><strong>We build, launch, and scale digital products for global markets.</strong></h1><p>WEBLOX Studios turns ideas into useful products through thoughtful engineering, decisive execution, and systems built to grow.</p><div className="actions"><a className="button" href="#enquiry">Start a Project <Arrow /></a><a className="button secondary" href="/ventures">Explore Our Work</a></div><div className="metrics"><span><b>100%</b>Custom-built</span><span><b>6 weeks</b>Idea to MVP</span><span><b>Day 1</b>Scalable architecture</span></div></div>
         <div className="hero-visual"><HeroProductScene /><TerminalPreview /></div>
       </section>
