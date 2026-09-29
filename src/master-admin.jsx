@@ -115,10 +115,10 @@ export default function MasterAdmin() {
   }, [])
 
   const loadAll = useCallback(async () => {
-    const results = await Promise.allSettled([refreshStaff(), refreshInterns(), refreshAdmins(), refreshApplicants(), refreshInternshipTracks(), refreshActivity(), refreshWorkspace(), loadMasterPortfolio(), refreshCertificates()])
+    const results = await Promise.allSettled([refreshStaff(), refreshOnlineStaff(), refreshInterns(), refreshAdmins(), refreshApplicants(), refreshInternshipTracks(), refreshActivity(), refreshWorkspace(), loadMasterPortfolio(), refreshCertificates()])
     const error = results.find((result) => result.status === 'rejected')
     if (error) setNotice({ text: error.reason?.message || 'Some administrator data could not be loaded.', success: false })
-  }, [refreshStaff, refreshInterns, refreshAdmins, refreshApplicants, refreshInternshipTracks, refreshActivity, refreshWorkspace, loadMasterPortfolio, refreshCertificates])
+  }, [refreshStaff, refreshOnlineStaff, refreshInterns, refreshAdmins, refreshApplicants, refreshInternshipTracks, refreshActivity, refreshWorkspace, loadMasterPortfolio, refreshCertificates])
 
   useEffect(() => {
     let active = true
@@ -153,7 +153,7 @@ export default function MasterAdmin() {
   useEffect(() => {
     if (!account) return undefined
     refreshOnlineStaff()
-    const timer = setInterval(refreshOnlineStaff, 180_000)
+    const timer = setInterval(refreshOnlineStaff, 30_000)
     return () => clearInterval(timer)
   }, [account, refreshOnlineStaff])
 
