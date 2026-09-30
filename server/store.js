@@ -40,6 +40,23 @@ export function createPostgresStore(pool) {
       );
     },
 
+    async promoteStaffAccountByEmail({ email, salt, hash, actor }) {
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
+        const { rows } = await client.query(
+          `UPDATE accounts SET account_type = 'admin', salt = $2, hash = $3
+           WHERE email = $1 AND account_type = 'staff' AND active = true
+           RETURNING id, email, name, role, job_type AS "jobType"`, [email, salt, hash],
+        );
+        if (!rows[0]) { await client.query('ROLLBACK'); return null; }
+        await appendAdminAudit(client, { personType: 'staff', personAccountId: rows[0].id, personEmail: rows[0].email, personName: rows[0].name, action: 'promoted_to_admin', role: rows[0].role, jobType: rows[0].jobType, actor });
+        await client.query('COMMIT');
+        return rows[0];
+      } catch (error) { await client.query('ROLLBACK'); throw error; }
+      finally { client.release(); }
+    },
+
     async removeAdmin(id, currentId) {
       const client = await pool.connect();
       try {

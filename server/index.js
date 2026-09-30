@@ -1036,6 +1036,8 @@ async function handler(req, res) {
         return send(res, 400, { error: "Enter a valid name and email, and a password of at least 8 characters." });
       const credentials = await passwordRecord(password);
       try {
+        const promoted = await store.promoteStaffAccountByEmail({ email, ...credentials, actor: current.account });
+        if (promoted) return send(res, 200, { ok: true, promoted: true, email: promoted.email });
         await store.createAdmin({ id: randomUUID(), email, name, gender, ...credentials });
       } catch (error) {
         if (error.code === "23505") return send(res, 409, { error: "An account already exists for this email." });
