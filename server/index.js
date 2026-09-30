@@ -687,6 +687,18 @@ async function handler(req, res) {
     return send(res, 200, { staff: await store.listStaff() });
   }
 
+  const promoteStaffMatch = url.pathname.match(/^\/api\/admin\/staff\/([^/]+)\/promote$/);
+  if (req.method === "POST" && promoteStaffMatch) {
+    const current = await currentSession(req);
+    if (!current || current.account.accountType !== "master_admin")
+      return send(res, 403, { error: "Master administrator access is required." });
+    const temporaryPassword = randomBytes(12).toString("base64url");
+    const credentials = await passwordRecord(temporaryPassword);
+    const promoted = await store.promoteStaffToAdmin({ id: decodeURIComponent(promoteStaffMatch[1]), ...credentials, actor: current.account });
+    if (!promoted) return send(res, 404, { error: "Active staff account not found." });
+    return send(res, 200, { staff: promoted, temporaryPassword }, { "cache-control": "no-store" });
+  }
+
   if (url.pathname === "/api/staff/attendance") {
     const current = await currentSession(req);
     if (!current || !["staff", "admin", "master_admin"].includes(current.account.accountType))
