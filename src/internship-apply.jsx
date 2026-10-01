@@ -47,7 +47,7 @@ export default function InternshipApply() {
   }
 
   return <main className="internship-page">
-    <header className="internship-nav"><a href="/" className="internship-brand"><ThemeAwareLogo /><b>WEBLOX <small>STUDIOS</small></b></a><button className="theme-toggle" type="button" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>{theme === 'dark' ? '☀' : '◐'}</button><a className="button secondary" href="/internship">Back to internship</a></header>
+    <header className="internship-nav"><a href="/" className="internship-brand"><ThemeAwareLogo /><b>WEBLOX <small>STUDIOS</small></b></a><div className="internship-apply-nav-actions"><button className="theme-toggle" type="button" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>{theme === 'dark' ? '☀' : '◐'}</button><a className="button secondary" href="/internship">Back to internship</a></div></header>
     <section className="internship-section">
       <div className="internship-section-heading"><div><span className="eyebrow">INTERNSHIP APPLICATION · THREE MONTHS</span><h1>Apply for an internship</h1></div><p>Choose a track and tell us how you can contribute to practical WEBLOX studio work. The program runs for three months.</p></div>
       {status === 'success' ? <article className="internship-card"><h2>Application received</h2><p>Thank you for applying to the WEBLOX internship. The team will review your application.</p></article> : <form className="internship-application-form" onSubmit={submit}>
